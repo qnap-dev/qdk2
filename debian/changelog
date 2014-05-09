@@ -1,0 +1,1099 @@
+lp-fish-tools (1.28.2) precise; urgency=low
+
+  * Add progress message of `fish-init manifest create`
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 22 Apr 2014 15:14:54 +0800
+
+lp-fish-tools (1.28.1) precise; urgency=low
+
+  * Fix building error
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 22 Apr 2014 14:43:10 +0800
+
+lp-fish-tools (1.28) precise; urgency=low
+
+  * Fix `fish-fix deploy` error because of disallow project name
+  * Fix KeyError exception of `fish-fix-release` (LP: #1310925)
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 22 Apr 2014 14:28:55 +0800
+
+lp-fish-tools (1.27.1) precise; urgency=low
+
+  * Fix non-batchmode revisionInfo edit function
+
+ -- Shawn Wang <shawn.wang@canonical.com>  Tue, 22 Apr 2014 11:39:03 +0800
+
+lp-fish-tools (1.27) precise; urgency=low
+
+  * Fix create new Project issue of fish-manifest
+  * Fix some html escape issue like ' " > 
+
+ -- Shawn Wang <shawn.wang@canonical.com>  Wed, 16 Apr 2014 18:39:45 +0800
+
+lp-fish-tools (1.26) precise; urgency=low
+
+  * Fix `fish-init bug` and `dup-bug` error because of incorrect
+    information_type
+  * Fix runtime error and polish fish-manifest
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 15 Apr 2014 14:20:34 +0800
+
+lp-fish-tools (1.25) precise; urgency=low
+
+  * Modify fish-manifest from hard code html output to jinja2 Template
+
+ -- Shawn Wang <shawn.wang@canonical.com>  Fri, 11 Apr 2014 17:00:49 +0800
+
+lp-fish-tools (1.24) precise; urgency=low
+
+  * Update dell project name in LP from "dell" to "somerville"
+  * Add workaround for epoch comparison in case that one of package
+    version was infered by filename that epoch was not included.
+
+ -- Doro Wu <doro.wu@canonical.com>  Thu, 10 Apr 2014 10:31:52 +0800
+
+lp-fish-tools (1.23) precise; urgency=low
+
+  * Fix epoch comparison of dpkg was ignored
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 08 Apr 2014 09:33:03 +0800
+
+lp-fish-tools (1.23~jinja0) precise; urgency=low
+
+  * fish-manifest code refactoring with jinja2 template 
+
+ -- Shawn Wang <shawn.wang@canonical.com>  Mon, 31 Mar 2014 18:59:43 +0800
+
+lp-fish-tools (1.22.1) precise; urgency=low
+
+  * Fix `fish-init manifest sync` failed to fetch manifests in case
+    that platform path is ignored after "-". For example, platform
+    name "general-sff" is under "Platforms/general" but 
+    "Platform/general-sff"
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 10 Mar 2014 17:44:44 +0800
+
+lp-fish-tools (1.22) precise; urgency=low
+
+  * Add `fish-init extract` to print or download FISH(es) according to
+    bug number on Launchpad
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 10 Mar 2014 14:18:01 +0800
+
+lp-fish-tools (1.21) precise; urgency=low
+
+  * lp_fish_tools/SomervilleShare.py (LP: #1289143)
+    - When manifest is committed, fish-manifest will try to upload it
+      automatically.
+    - When the library behind fish-manifest can not finds the platform
+      directory based on the platform-tag, it should create such a directory,
+      but it does not.
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Fri, 07 Mar 2014 17:27:50 +0800
+
+lp-fish-tools (1.20) precise; urgency=low
+
+  * Add `fish-init extract` to print or download FISH(es) according to
+    manifest
+
+ -- Doro Wu <doro.wu@canonical.com>  Fri, 07 Mar 2014 15:15:26 +0800
+
+lp-fish-tools (1.19) precise; urgency=low
+
+  * lp_fish_tools/util.py
+    - dup-bug fails when any Unicode char in bug description. (LP: #1284404)
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Wed, 05 Mar 2014 15:45:51 +0800
+
+lp-fish-tools (1.18) precise; urgency=low
+
+  * Upgrade Energy Star 5.2/6.0 calculator to v1.2.
+    - Add Excel output. (LP: #1285499)
+    - Reduce some unneeded interactive steps.
+    - Fix many bugs.
+
+ -- Shih-Yuan Lee (FourDollars) <sylee@canonical.com>  Mon, 03 Mar 2014 07:14:36 +0000
+
+lp-fish-tools (1.17) precise; urgency=low
+
+  * Update `fish-init manifest commit` to generate a manifest with 
+    a release sign by `fish-manifest -f`
+  * Minor fix for `fish-init recovery`
+
+ -- Doro Wu <doro.wu@canonical.com>  Fri, 21 Feb 2014 09:34:21 +0800
+
+lp-fish-tools (1.16) precise; urgency=low
+
+  * Copy fish-init-target to /usr/local/bin when executing.
+
+ -- Doro Wu <doro.wu@canonical.com>  Wed, 19 Feb 2014 10:48:23 +0800
+
+lp-fish-tools (1.15) precise; urgency=low
+
+  * Sort the FISHes of manifest by `fish-manifest` 
+
+ -- Doro Wu <doro.wu@canonical.com>  Thu, 13 Feb 2014 15:09:55 +0800
+
+lp-fish-tools (1.14) precise; urgency=low
+
+  * Fix `fish-manifest` crash if the name of tarball FISH includs 2 or
+    more "_"
+  * Fix `fish-package --hexr` didn't list all matched packages
+
+ -- Doro Wu <doro.wu@canonical.com>  Thu, 13 Feb 2014 14:42:36 +0800
+
+lp-fish-tools (1.13.1) precise; urgency=low
+
+  * Fix cache of MD5 function
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 11 Feb 2014 18:03:26 +0800
+
+lp-fish-tools (1.13) precise; urgency=low
+
+  * Add default action of user input requests.
+  * Modify `fish-init package` output file(package.txt) format.
+  * Polish batch mode in `fish-fix` to decrease user interaction by
+    `fish-init bug`.
+  * Decrease the time doing "fish-fix" by adding cache of MD5.
+  * Remove unused items in share/common-bugs.txt.
+  * Fix `fish-init bug` shows false error and warning.
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 11 Feb 2014 15:55:20 +0800
+
+lp-fish-tools (1.12) precise; urgency=low
+
+  * Fix failure to download package from local repo by `fish-fix`
+  * Fix `fish-init search` do not show package without modalias
+  * Fix zsh completion for fish-fix do not show local files
+  * Sort result by `fish-init search`
+  * Update common bugs list
+  * Minor update for `fish-init bug`
+
+ -- Doro Wu <doro.wu@canonical.com>  Wed, 29 Jan 2014 15:11:52 +0800
+
+lp-fish-tools (1.11) precise; urgency=low
+
+  * Fix from Cyrus to resolve the low graphic mode issue. (LP: #1266700)
+    - debian/rules: alias target.
+    - debian/dkms.conf.in: build path of DKMS tree.
+
+  * Add -w (workaround) option for delaying the building time point of fglrx
+    DKMS package.  Shawn found that some AMD driver can only work when the
+    building time is postponed.
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Mon, 27 Jan 2014 16:12:16 +0800
+
+lp-fish-tools (1.10) precise; urgency=low
+
+  * Fix `fish-fix` to append category '[]' if no given category
+  * Add sanity checking for duplicate package name
+
+ -- Doro Wu <doro.wu@canonical.com>  Thu, 23 Jan 2014 11:46:28 +0800
+
+lp-fish-tools (1.9) precise; urgency=low
+
+  * Using local index as default, including search, package, fish-fix.
+  * Switch modaliases service to HEXR
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 21 Jan 2014 07:43:25 +0800
+
+lp-fish-tools (1.8.3) precise; urgency=low
+
+  * Fix `fish-init recovery` crash
+  * Fix `fish-init search -ld` would download from modaliases service
+
+ -- Doro Wu <doro.wu@canonical.com>  Wed, 15 Jan 2014 17:10:15 +0800
+
+lp-fish-tools (1.8.2) precise; urgency=low
+
+  * Fix `fish-init package -l`, `fish-init search -l` and offrepo 
+    functions
+
+ -- Doro Wu <doro.wu@canonical.com>  Wed, 15 Jan 2014 11:35:21 +0800
+
+lp-fish-tools (1.8.1) precise; urgency=low
+
+  * Boost searching performance by offrepo
+  * Add `fish-init package -l' that create packages.txt using offrepo
+    database
+  * Fix `fish-init search` crash if package hasn't modalias
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 14 Jan 2014 18:14:26 +0800
+
+lp-fish-tools (1.8) precise; urgency=low
+
+  * Fix `fish-init power` malfunction
+  * Add zsh completion for `fish-fix`
+    - it must run `fish-init update` and `fish-init manifest create` to
+      create reference data first
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 13 Jan 2014 15:03:32 +0800
+
+lp-fish-tools (1.7) precise; urgency=low
+
+  * bin/amdscript-helper
+    - Execute `aticonfig --initial' after package is installed.
+    - Set power-saving mode by default.
+    - New `-d' option can change default GPU mode to performance mode.
+
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Mon, 13 Jan 2014 11:10:58 +0800
+
+lp-fish-tools (1.6) precise; urgency=low
+
+  * Add `fish-init search -l` to search in offrepo repository
+  * Add `fish-init manifest bzr` to download bugsy-config
+
+ -- Doro Wu <doro.wu@canonical.com>  Thu, 09 Jan 2014 16:44:53 +0800
+
+lp-fish-tools (1.5) precise; urgency=low
+
+  * Add "Confirmed" and "In Progress" fields in bug statistics of 
+    manifest html
+  * Add `fish-init update` command to update offrepo repository with
+    somerville source list
+
+ -- Doro Wu <doro.wu@canonical.com>  Wed, 08 Jan 2014 17:43:24 +0800
+
+lp-fish-tools (1.4) precise; urgency=low
+
+  * Remove "Platform Status" section in manifest html by `fish-manifest`
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 07 Jan 2014 15:53:16 +0800
+
+lp-fish-tools (1.3) precise; urgency=low
+
+  * Decrease the time to fish-fix bug by offrepo if available, which
+    offrepo would get checksum and dependency from local cache.
+  * Update mount that do not mount recovery partition default, and add
+    -r option means to mount recovery partition
+  * Add offrepo to recognize .gz file
+
+ -- Doro Wu <doro.wu@canonical.com>  Fri, 03 Jan 2014 16:48:12 +0800
+
+lp-fish-tools (1.2) precise; urgency=low
+
+  * Add offrepo command, which is a utility to index apt repository in
+    local.
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 31 Dec 2013 21:56:56 +0800
+
+lp-fish-tools (1.1) precise; urgency=low
+
+  * Add `fish-init config -a` to auto-configure IP address
+
+ -- Doro Wu <doro.wu@canonical.com>  Fri, 27 Dec 2013 17:33:38 +0800
+
+lp-fish-tools (1.0-public99) precise; urgency=low
+
+  * Rename fish-init.completion.zsh to _fish-init to comply zsh naming
+    conversion
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 23 Dec 2013 09:13:27 +0800
+
+lp-fish-tools (1.0-public98) precise; urgency=low
+
+  * Fix building error in 1.0-public97
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 23 Dec 2013 08:52:03 +0800
+
+lp-fish-tools (1.0-public97) precise; urgency=low
+
+  [ Shih-Yuan Lee (FourDollars) ]
+  * share/localscripts/mainline-kernels.sh:
+    - Escape double quotes from dialog's checklist.
+
+  [ Doro Wu ]
+  * fish-init.completion.zsh
+    - zsh completion
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 23 Dec 2013 08:46:40 +0800
+
+lp-fish-tools (1.0-public96) precise; urgency=low
+
+  * Update 'fish-init power' to upload xls format
+
+ -- Doro Wu <doro.wu@canonical.com>  Thu, 12 Dec 2013 16:54:58 +0800
+
+lp-fish-tools (1.0-public95) precise; urgency=low
+
+  * Add 'fish-init search' to download package
+  * Fix 'fish-fix' dependant checking error if depending on virtual package
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 10 Dec 2013 10:24:09 +0800
+
+lp-fish-tools (1.0-public94) precise; urgency=low
+
+  [ Shih-Yuan Lee (FourDollars) ]
+  * mainline-kernels.sh: Add some parameters and use dialog for better user
+    experience.
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 10 Dec 2013 11:39:19 +0800
+
+lp-fish-tools (1.0-public93) precise; urgency=low
+
+  * Fix 'fish-fix' cannot fix BIOS issue
+
+ -- Doro Wu <doro.wu@canonical.com>  Fri, 06 Dec 2013 14:19:52 +0800
+
+lp-fish-tools (1.0-public92) precise; urgency=low
+
+  * Add script
+    - debug-symbols.sh: Add debug symbol to apt repo
+    - mainline-kernels.sh: Install ubuntu mainline kernels
+
+ -- Doro Wu <doro.wu@canonical.com>  Fri, 06 Dec 2013 10:26:11 +0800
+
+lp-fish-tools (1.0-public91) precise; urgency=low
+
+  [ Bofu Chen (bafu) ]
+  * Add the "power" command to collect power consumption information and upload
+    it to Launchpad automatically.
+
+ -- Doro Wu <doro.wu@canonical.com>  Wed, 04 Dec 2013 16:55:10 +0800
+
+lp-fish-tools (1.0-public90) precise; urgency=low
+
+  * Fix "bug" command does not pull dependant package into fix 
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 02 Dec 2013 16:20:55 +0800
+
+lp-fish-tools (1.0-public89) precise; urgency=low
+
+  * Fix fish-fix error to upload tarball from local 
+  * Popup a error message if FishInitConfig not found
+  * Revise bash completion
+  * Replace angle bracket with square bracket in bug template to avoid
+    HTML tags issue
+
+ -- Doro Wu <doro.wu@canonical.com>  Thu, 28 Nov 2013 17:05:29 +0800
+
+lp-fish-tools (1.0-public88) precise; urgency=low
+
+  * Fix "deploy" function return error even if it's successful
+
+ -- Doro Wu <doro.wu@canonical.com>  Wed, 27 Nov 2013 09:33:05 +0800
+
+lp-fish-tools (1.0-public87) precise; urgency=low
+
+  * bin/amdscript-helper
+    - Create driver packages in an isolated environment.
+    - Disable debug mode by default.
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Tue, 26 Nov 2013 11:12:30 +0800
+
+lp-fish-tools (1.0-public86) precise; urgency=low
+
+  * Rename openbug to bug
+  * Add command "bug new"
+  * Fix package dependency problem
+
+ -- Doro Wu <doro.wu@canonical.com>  Thu, 21 Nov 2013 18:01:00 +0800
+
+lp-fish-tools (1.0-public85) precise; urgency=low
+
+  * Fix "fish-fix" error if uploading package from modalias service
+  * Enhance "search" command that able to search with VID:DID and wildcard
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 19 Nov 2013 16:55:06 +0800
+
+lp-fish-tools (1.0-public84) precise; urgency=low
+
+  * bin/amdscript-helper
+    - New utility which helps to create Debian source package from AMD driver
+      script.
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Tue, 19 Nov 2013 13:37:13 +0800
+
+lp-fish-tools (1.0-public83) precise; urgency=low
+
+  * Fix "mount" doesn't return code, causing "package" return error
+  * Fix "mount" fails to mount recovery if recovery mounted before
+  * Remove unnecessary package in common-bug list
+  * Fix "fish-fix" error if depends rule was not given version
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 18 Nov 2013 15:53:14 +0800
+
+lp-fish-tools (1.0-public82) precise; urgency=low
+
+  * Add "execlocal" scripts
+    - s3.sh: s3 stress
+    - s4.sh: s4 stress
+    - pm_test.sh: poweroff and reboot stress
+    - bt_debug.sh: Bluetooth S3 stress
+
+ -- Doro Wu <doro.wu@canonical.com>  Fri, 15 Nov 2013 17:39:00 +0800
+
+lp-fish-tools (1.0-public81) precise; urgency=low
+
+  * Add "execlocal" completion by "-l" argument and bash_completion
+  * Add "execlocal -r" to run script as root
+  * Add "execlocal -h" to copy script to home direcotry
+
+ -- Doro Wu <doro.wu@canonical.com>  Thu, 14 Nov 2013 16:49:57 +0800
+
+lp-fish-tools (1.0-public80) precise; urgency=low
+
+  * Fix "fish-fix" miscompare package version if any version prefix with a 
+    "<number>:" such as 1:7.6+12ubuntu2
+
+ -- Doro Wu <doro.wu@canonical.com>  Wed, 13 Nov 2013 14:15:33 +0800
+
+lp-fish-tools (1.0-public79) precise; urgency=low
+
+  * Add "-d" args of fish-init deploy to downlad fixes only
+  * Fix "manifest sync" would fail to download discontinous version
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 12 Nov 2013 10:45:56 +0800
+
+lp-fish-tools (1.0-public78) precise; urgency=low
+
+  * Fix login problem of download command if user never login before
+  * Update mail command to print message on the screen (LP: #1249945)
+  * Add `fish-init open ibs` command
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 11 Nov 2013 13:41:31 +0800
+
+lp-fish-tools (1.0-public77) precise; urgency=low
+
+  * bin/fetch-manifest
+    - Change default Ubuntu code from oneiric to precise.
+  
+  * lp_fish_tools/ManifestFileData.py
+    - Fix the bug title issue that manifest creation will fail with syntax
+      parsing error when fish-manifest is executed if there is a quotation
+      mark at the end of a bug title string.
+ 
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Thu, 07 Nov 2013 16:52:31 +0800
+
+lp-fish-tools (1.0-public76) precise; urgency=low
+
+  * Update fish-fix to choose the oldest package from depends field.
+  * Fix fish-init download error because ibs-cli output format changed
+
+ -- Doro Wu <doro.wu@canonical.com>  Wed, 06 Nov 2013 16:20:03 +0800
+
+lp-fish-tools (1.0-public75) precise; urgency=low
+
+  * Supress fish-init download log message
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 05 Nov 2013 11:42:47 +0800
+
+lp-fish-tools (1.0-public74) precise; urgency=low
+
+  * Update fish-init recovery to skip confirm form in phase 2 
+
+ -- Doro Wu <doro.wu@canonical.com>  Tue, 05 Nov 2013 10:48:25 +0800
+
+lp-fish-tools (1.0-public73) precise; urgency=low
+
+  * Merge lp-fish-init (GIT: af95656b)
+  * Replace fish-fix with fish-init fix
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 04 Nov 2013 15:45:45 +0800
+
+lp-fish-tools (1.0-public72) precise; urgency=low
+
+  * Add README.
+  * Update help description:
+    - bin/add-hwe-task
+    - bin/tb
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Thu, 31 Oct 2013 17:53:57 +0800
+
+lp-fish-tools (1.0-public71) precise; urgency=low
+
+  [Shawn Wang]
+
+  * create platform directory only when new platform
+
+ -- Shawn Wang <shawn.wang@canonical.com>  Fri, 06 Sep 2013 18:55:37 +0800
+
+lp-fish-tools (1.0-public70) precise; urgency=low
+
+  [Shawn Wang]
+
+  * change the default value for somerville to create new platform. (precise)
+  * auto create platform name as platform tag for new platforms.
+
+ -- Shawn Wang <shawn.wang@canonical.com>  Wed, 28 Aug 2013 13:47:08 +0800
+
+lp-fish-tools (1.0-public69) precise; urgency=low
+
+  [Shawn Wang]
+
+  * add auto upload manifest/fish to somerville share
+    - check md5sum of exist fish fish
+    - manually platform name
+
+ -- Shawn Wang <shawn.wang@canonical.com>  Wed, 10 Jul 2013 19:10:59 +0800
+
+lp-fish-tools (1.0-public68) precise; urgency=low
+
+  [Bofu Chen]
+
+  * lp_fish_tools/util.py
+    - When change a cqa-verified bug from fix-committed to fix-released, you
+      don't need to use the same manifest as the one that QA engineer used to
+      verify the bug.  If a bug is fix-committed and cqa-verified, you can
+      change it to fix-released.
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Thu, 13 Jun 2013 23:19:39 +0800
+
+lp-fish-tools (1.0-public67) precise; urgency=low
+
+  [ Doro Wu ]
+
+  * bin/fish-manifest
+    - Add table of IHV-relative bugs
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Tue, 04 Jun 2013 15:35:19 +0800
+
+lp-fish-tools (1.0-public66) precise; urgency=low
+
+  [ Doro Wu ]
+
+  * bin/fish-manifest
+    - Fixed exception when manifest is new theme
+    - Fixed exception when Importance field is 'Wishlist'
+    - Fixed wrong result of Ubuntu Certification Criteria 
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 20 May 2013 14:50:47 +0800
+
+lp-fish-tools (1.0-public65) precise; urgency=low
+
+  [ Doro Wu ]
+
+  * bin/fish-manifest
+    - Apply new theme for Somerville manifest.
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Wed, 08 May 2013 22:15:44 +0800
+
+lp-fish-tools (1.0-public64) precise; urgency=low
+
+  Follow Ubuntu Linux Factory Packaging Guide r88 to generate prepackage.dell
+  with XML format used by superset FISH packages.
+
+  * bin/generate-prepackage
+    - New utility used to generate prepackage.dell with XML format.
+
+  * bin/supersetFish
+    - Use generate-prepackage to generate prepackage.dell.
+    - Add a new optional parameter, osVersion, to indicate the value of <os> tag
+      in prepackage.dell.
+
+  * lp_fish_tools/ManifestFileData.py
+    - Add 2 new attributes: version (manifest version) and fixed_bug_dscs.
+
+  * debian/control
+    - Add ${python:Depends} to avoid litian error: missing-dependency-on-python-support.
+    - Upgrade Standards-Version from 3.9.2 to 3.9.3.
+
+ -- Bofu Chen (bafu) <bofu.chen@canonical.com>  Mon, 25 Mar 2013 13:22:40 +0800
+
+lp-fish-tools (1.0-public62) precise; urgency=low
+
+  * Add an item to the checklist of fish-manifest --engineering-sign
+
+  [ Steve Magoun ]
+
+  * Fix a pair of typos
+
+ -- Hao-Ran Liu (Joseph Liu) <hao-ran.liu@canonical.com>  Thu, 10 Jan 2013 19:07:54 +0800
+
+lp-fish-tools (1.0-public61) precise; urgency=low
+
+  * covert %7E string in fix name to make sure bug fix name in manifest
+
+ -- Hsin-Yi Chen (hychen) <hychen@canonical.com>  Thu, 01 Nov 2012 10:36:52 +0800
+
+lp-fish-tools (1.0-public60) precise; urgency=low
+
+  * bin/supersetFISH: New file. Dell uses superset FISH for software bundle now.
+  * /bin/fish-manifest: Add two options: -e to sign off a manifest for QA 
+    testing. -f to sign off a manifest for release to Dell.
+
+  [ Rex Tsai ]
+
+  * Changed default encoding to UTF-8. (LP: #1029789)
+
+ -- Hao-Ran Liu (Joseph Liu) <hao-ran.liu@canonical.com>  Mon, 08 Oct 2012 19:04:13 +0800
+
+lp-fish-tools (1.0-public59) precise; urgency=low
+
+  * change copyright year to 2012
+
+ -- Hsin-Yi Chen (hychen) <hychen@canonical.com>  Mon, 28 May 2012 17:24:02 +0800
+
+lp-fish-tools (1.0-public58) precise; urgency=low
+
+  * bin/nocqaverified:
+    bin/search-platform:
+          - compat with lp-cli 4.0+70~precise1
+
+ -- Hsin-Yi Chen (hychen) <hychen@canonical.com>  Mon, 28 May 2012 17:18:37 +0800
+
+lp-fish-tools (1.0-public57) precise; urgency=low
+
+  * debian/control: add xclip in Depends.
+
+ -- Hsin-Yi Chen (hychen) <hychen@canonical.com>  Mon, 28 May 2012 17:13:28 +0800
+
+lp-fish-tools (1.0-public56) precise; urgency=low
+
+  * bin/masterBug: New file.  Xref bugs as master and sub.  Beta quality.
+
+  * bin/retag-bugs: Allow adding of more than one tag.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Tue, 10 Apr 2012 09:56:15 -0400
+
+lp-fish-tools (1.0-public55) oneiric; urgency=low
+
+  * bin/nocqaverified: search bugs of platform without cqa-verified
+  * bin/lp-cli-dell-print : add listbugs format method of collected bugtaks
+  * bin/search-platform: update help of command
+
+ -- Hsin-Yi Chen (hychen) <hychen@canonical.com>  Thu, 22 Mar 2012 15:56:29 +0800
+
+lp-fish-tools (1.0-public54) oneiric; urgency=low
+
+  * bin/search-platform:
+  * bin/lp-cli-dell-print:
+
+    Add a a script intolp-fish-tools for search platform by fish (LP:#929346)
+
+    Limitation: it is only avaliable to search platforms by fish md5string
+    because python-launchpadpad bug.
+
+ -- Hsin-Yi Chen (hychen) <hychen@canonical.com>  Wed, 21 Mar 2012 15:25:01 +0800
+
+lp-fish-tools (1.0-public53) oneiric; urgency=low
+
+  * bin/reassign-bugs:
+    reassign bugs of specify tags, useful when reassign somerville
+    platform to another one.
+
+ -- Hsin-Yi Chen (hychen) <hychen@ubuntu.com>  Tue, 17 Jan 2012 16:51:27 +0800
+
+lp-fish-tools (1.0-public52) oneiric; urgency=low
+
+  * bin/tb: Allow setting of series with -s argument.
+  * bin/add-hwe-task: tweaks to be able to handle bug series tasks
+  * bin/add-hwe-task (guessTags): updated tag list doc string from wiki
+
+ -- James Ferguson <james.ferguson@canonical.com>  Fri, 13 Jan 2012 11:38:16 -0500
+
+lp-fish-tools (1.0-public51) oneiric; urgency=low
+
+  * Add xsltproc dependency as it seems many systems don't have this installed
+    by default. (LP:906549)
+
+ -- Chris Townsend <christopher.townsend@canonical.com>  Tue, 20 Dec 2011 10:06:54 -0500
+
+lp-fish-tools (1.0-public50) oneiric; urgency=low
+
+  * Revert pyversions as it didn't work quite as intended.
+
+ -- Chris Townsend <christopher.townsend@canonical.com>  Mon, 28 Nov 2011 19:59:50 -0500
+
+lp-fish-tools (1.0-public49) oneiric; urgency=low
+
+  * Change defaults to oneiric.
+  * Point BTO autobuilder build config default to the GM base ISO.
+
+ -- Chris Townsend <christopher.townsend@canonical.com>  Thu, 17 Nov 2011 11:19:39 -0500
+
+lp-fish-tools (1.0-public48) natty; urgency=low
+
+  * Changed the array index to find FISH package md5sum to account for the Category column.
+
+ -- Chris Townsend <christopher.townsend@canonical.com>  Thu, 15 Sep 2011 15:00:12 -0400
+
+lp-fish-tools (1.0-public47) natty; urgency=low
+
+  * Changed default project architecture to amd64.
+  * Changed the default autobuilder image to a version of the somerville-oneiric-amd64
+    image.
+
+ -- Chris Townsend <christopher.townsend@canonical.com>  Thu, 15 Sep 2011 08:21:45 -0400
+
+lp-fish-tools (1.0-public46~maverick) maverick; urgency=low
+
+  * Maverick version of 1.0-public46.
+
+ -- Chris Townsend <christopher.townsend@canonical.com>  Tue, 02 Aug 2011 10:19:20 -0400
+
+lp-fish-tools (1.0-public46) natty; urgency=low
+
+  * Added a new variable to the project file for BTO autobuilder projects.
+    This variable can set the build type of release or nightly. (LP:818277)
+  * Changed the default autobuilder image to the somerville-natty-amd64 golden
+    image.
+
+ -- Chris Townsend <christopher.townsend@canonical.com>  Mon, 01 Aug 2011 15:28:06 -0400
+
+lp-fish-tools (1.0-public45) natty; urgency=low
+
+  * natty version of the 1.0-public45~maverick
+
+ -- Alex Wolfson <alex.wolfson@canonical.com>  Tue, 26 Jul 2011 14:00:47 -0400
+
+lp-fish-tools (1.0-public45~maverick) maverick; urgency=low
+
+  * if no category is provided, there is no X-Dell-Subsystem-Category field in the bug now (#LP:796858)
+
+ -- Alex Wolfson <alex.wolfson@canonical.com>  Tue, 26 Jul 2011 13:44:32 -0400
+
+lp-fish-tools (1.0-public44~maverick) maverick; urgency=low
+
+  * Add the manifest name to the bug updated by verify-manifest (LP:#777419)
+
+ -- Alex Wolfson <alex.wolfson@canonical.com>  Fri, 20 May 2011 10:10:15 -0400
+
+lp-fish-tools (1.0-public43) natty; urgency=low
+
+  * included jamesf fix in lp_fish_tools/ManifestFileData.py that
+    changed xslt from absolute column numbers to relative column numbers.
+    That prevents verify-manifest from bracking by the new "Category" column
+
+ -- Alex Wolfson <alex.wolfson@canonical.com>  Tue, 17 May 2011 16:31:29 -0400
+
+lp-fish-tools (1.0-public42) natty; urgency=low
+
+  * Fixed error print for verify-manifest (#LP:778869)
+
+ -- Alex Wolfson <alex.wolfson@canonical.com>  Tue, 17 May 2011 13:20:36 -0400
+
+lp-fish-tools (1.0-public41) natty; urgency=low
+
+  * fixed typo that impacted (#778160)
+
+ -- Alex Wolfson <alex.wolfson@canonical.com>  Fri, 13 May 2011 08:24:43 -0400
+
+lp-fish-tools (1.0-public40) natty; urgency=low
+
+  * fixed debian/changelog - removed garbage picked by lintian
+
+ -- Alex Wolfson <alex.wolfson@canonical.com>  Tue, 03 May 2011 17:28:20 -0400
+
+lp-fish-tools (1.0-public39) natty; urgency=low
+
+  * Added category (-c) to fish-fix and fish-manifest (LP #751943)
+
+ -- Alex Wolfson <alex.wolfson@canonical.com>  Tue, 03 May 2011 17:05:11 -0400
+
+lp-fish-tools (1.0-public38) maverick; urgency=low
+
+  * Never check in code without testing it first(!)
+
+ -- James Ferguson <james.ferguson@canonical.com>  Mon, 11 Apr 2011 15:02:07 -0400
+
+lp-fish-tools (1.0-public37) maverick; urgency=low
+
+  * tweak the re.split of user input lists to prevent picking up
+    empty strings if list has a trailing separator (e.g. space)
+
+ -- James Ferguson <james.ferguson@canonical.com>  Mon, 11 Apr 2011 14:16:04 -0400
+
+lp-fish-tools (1.0-public36) natty; urgency=low
+
+  * debian/control (Depends): Previous attempt to set modify depends was
+    flawed
+
+ -- James Ferguson <james.ferguson@canonical.com>  Mon, 11 Apr 2011 09:16:53 -0400
+
+lp-fish-tools (1.0-public35) maverick; urgency=low
+
+  * debian/control (Depends): Explicitly set python depends to make
+    compatibile with natty (python 2.7)
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 07 Apr 2011 14:48:27 -0400
+
+lp-fish-tools (1.0-public34) maverick; urgency=low
+
+  * md5 hash is now saved for reuse, to avoid recalculating in the case of
+    more then one bug fixed
+
+ -- Alex Wolfson <alex.wolfson@canonical.com>  Wed, 06 Apr 2011 13:38:44 -0400
+
+lp-fish-tools (1.0-public33) maverick; urgency=low
+
+  * rename lb to bug, to avoid clash with live-helper
+
+ -- James Ferguson <james.ferguson@canonical.com>  Fri, 01 Apr 2011 16:05:11 -0400
+
+lp-fish-tools (1.0-public32) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 30 Mar 2011 12:06:07 -0400
+
+lp-fish-tools (1.0-public31) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 23 Mar 2011 20:31:44 -0400
+
+lp-fish-tools (1.0-public30) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 23 Mar 2011 20:30:41 -0400
+
+lp-fish-tools (1.0-public29ubuntu1) maverick; urgency=low
+
+  * add-hwe-task now usable
+  * tb, lb, dup-bug, add-hwe-task scripts now take clipboard data when
+    called without bug/tag arguments
+  * tb now has -o option - only open bugs needing attention
+  * fish-manifest updates for IBS building of isos
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 23 Mar 2011 20:27:50 -0400
+
+lp-fish-tools (1.0-public29) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 03 Mar 2011 10:19:27 -0500
+
+lp-fish-tools (1.0-public28ubuntu1) maverick; urgency=low
+
+  * Bugfix for dup-bug, plus when user is editing and quits script, will
+    exit properly.  Previously, may have continued.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 03 Mar 2011 10:17:57 -0500
+
+lp-fish-tools (1.0-public28) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Fri, 25 Feb 2011 14:43:00 -0500
+
+lp-fish-tools (1.0-public26ubuntu1) maverick; urgency=low
+
+  * Changes for lexbuilding BTOs - manifests now stored to IBS project bzr branch
+  * util.py code soup now split into various files
+  * fish-manifest: now has -c/--commit option, to commit to IBS
+    project. If no project exists, will create branch and submit project
+    creatoin request bug.  Non-incremental manifest versions now
+    explicitly created with -v <ver> option.
+  * fetch-manifest: new script to simply fetch the current manifest from
+    the IBS project config branch.
+  * lb: trivial script to open launchpad bug
+  * tb: now project in use can be set by environment variable
+    DEFAULT_LP_PROJECT
+  * dup-bug: now presents tags and title for editing in the description
+    text
+
+ -- James Ferguson <james.ferguson@canonical.com>  Fri, 25 Feb 2011 10:35:14 -0500
+
+lp-fish-tools (1.0-public26) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 16 Feb 2011 10:36:57 -0500
+
+lp-fish-tools (1.0-public25) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 16 Feb 2011 10:36:05 -0500
+
+lp-fish-tools (1.0-public24) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Tue, 15 Feb 2011 09:00:45 -0500
+
+lp-fish-tools (1.0-public23) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 03 Feb 2011 11:21:38 -0500
+
+lp-fish-tools (1.0-public22) maverick; urgency=low
+
+  * fish-fix - revert to non-package fixes going to fix-committed, not fix-released
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 03 Feb 2011 11:20:00 -0500
+
+lp-fish-tools (1.0-public21) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Tue, 25 Jan 2011 11:12:32 -0500
+
+lp-fish-tools (1.0-public20) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 20 Jan 2011 11:42:21 -0500
+
+lp-fish-tools (1.0-public19) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 20 Jan 2011 11:32:26 -0500
+
+lp-fish-tools (1.0-public18) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 16 Dec 2010 12:26:18 -0500
+
+lp-fish-tools (1.0-public17) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Tue, 14 Dec 2010 14:24:54 -0500
+
+lp-fish-tools (1.0-public16) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Tue, 14 Dec 2010 14:24:12 -0500
+
+lp-fish-tools (1.0-public15ubuntu1) maverick; urgency=low
+
+  * fish-manifest: allow -o option to take a directory, in which case it
+    will find the previous manifest, choose next version, get and add new
+    revision history.  -a option promotes from X-rev to A-rev. Fix
+    unclosed <br> element in output.
+  * btobuild: fix bug in file name with -t option.  Run up usb-creator-gtk
+    at end (though bug makes this not very usable)
+  * verify-manifest: "Verify all" option
+
+ -- James Ferguson <james.ferguson@canonical.com>  Tue, 14 Dec 2010 14:19:11 -0500
+
+lp-fish-tools (1.0-public15) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Tue, 30 Nov 2010 14:52:35 -0500
+
+lp-fish-tools (1.0-public12ubuntu1) maverick; urgency=low
+
+  * superFISH: update to new extract-manifest-fish, use tarFish, no
+  longer require davfs
+  * all: identify all scripts to LP as "lp-fish-tools"
+  * extract-manifest-fish: moved to python, simplified.  Args
+  changed!
+  * verify-manifest: add -e <engineer> option, to reassign verified
+  bugs
+  * fish-fix-release: remove assignee
+  * btobuild: new script
+
+ -- James Ferguson <james.ferguson@canonical.com>  Tue, 30 Nov 2010 14:52:08 -0500
+
+lp-fish-tools (1.0-public12) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 24 Nov 2010 15:05:31 -0500
+
+lp-fish-tools (1.0-public11) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 24 Nov 2010 15:04:49 -0500
+
+lp-fish-tools (1.0-public10) maverick; urgency=low
+
+  * fish-fix:
+          added batch mode
+  * verify-manifest:
+          performance and logging improvement
+  * fish-fix-release:
+          do checking that bugs are properly verified (manifest hash etc.)
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 24 Nov 2010 15:03:05 -0500
+
+lp-fish-tools (1.0-public9) maverick; urgency=low
+
+  * added makeKernelFish
+
+ -- James Ferguson <james.ferguson@canonical.com>  Fri, 19 Nov 2010 15:49:36 -0500
+
+lp-fish-tools (1.0-public8) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 10 Nov 2010 09:37:29 -0500
+
+lp-fish-tools (1.0-public6) maverick; urgency=low
+
+  * update SuperFISH to create appropriate tar of tars
+
+ -- James Ferguson <james.ferguson@canonical.com>  Wed, 10 Nov 2010 09:23:11 -0500
+
+lp-fish-tools (1.0-public5) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Tue, 09 Nov 2010 21:42:52 -0500
+
+lp-fish-tools (1.0-public4) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Fri, 05 Nov 2010 16:08:58 -0400
+
+lp-fish-tools (1.0-public3) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Fri, 05 Nov 2010 16:08:11 -0400
+
+lp-fish-tools (1.0-public2) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Fri, 22 Oct 2010 13:37:58 -0400
+
+lp-fish-tools (1.0-public1) maverick; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Mon, 04 Oct 2010 11:42:21 -0400
+
+lp-fish-tools (0.8-public7) lucid; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Fri, 17 Sep 2010 14:08:08 -0400
+
+lp-fish-tools (0.8-public6) lucid; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 09 Sep 2010 11:09:10 -0400
+
+lp-fish-tools (0.8-public5) lucid; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 22 Jul 2010 15:48:28 -0400
+
+lp-fish-tools (0.8-public4) lucid; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Fri, 16 Jul 2010 15:22:04 -0400
+
+lp-fish-tools (0.8-public3) lucid; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 15 Jul 2010 14:12:55 -0400
+
+lp-fish-tools (0.8-public2) lucid; urgency=low
+
+  * New release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 15 Jul 2010 13:15:25 -0400
+
+lp-fish-tools (0.8-public1) lucid; urgency=low
+
+  * Initial release.
+
+ -- James Ferguson <james.ferguson@canonical.com>  Thu, 15 Jul 2010 13:04:48 -0400

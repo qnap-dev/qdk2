@@ -1,0 +1,34 @@
+Source: template-abba
+Section: python
+Vcs-Bzr: lp:~oem-solutions-group/dell/template-abba
+Homepage: http://123.com.tw/
+Priority: extra
+Build-Depends: cdbs (>= 0.4.43),
+ debhelper (>= 6),
+ python,
+ python-support (>= 0.6.4),
+ python-distutils-extra (>= 2.10)
+Maintainer: Doro Wu <dorowu@qnap.com>
+
+Package: template-abba
+Architecture: all
+Q-AppName: Template Abba
+Q-Firmware: qnap (>= 4.1), qnap (<< 4.2)
+Recommends: python-xlsxwriter
+Depends: python (<< 3.0), python (>= 2.6),
+ python-launchpadlib,
+ python-distutils-extra,
+ python-gtk2,
+ python-launchpadlib,
+ xsltproc,
+ xclip,
+ python-webdavlib,
+ lp-cli (>> 0.4 ),
+ ibs-cli (>= 1.4 ),
+ python-requests,
+ python-dialog,
+ python-jinja2,
+ sshfs
+Conflicts: lp-fish-init (<< 0.4)
+Description: Utility scripts for OEM Dell enablement
+ UNKNOWN

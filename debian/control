@@ -1,0 +1,35 @@
+Source: lp-fish-tools
+Section: python
+Vcs-Bzr: lp:~oem-solutions-group/dell/lp-fish-tools
+Priority: extra
+Build-Depends: cdbs (>= 0.4.43),
+ debhelper (>= 6),
+ python,
+ python-support (>= 0.6.4),
+ python-distutils-extra (>= 2.10)
+Maintainer: James Ferguson <james.ferguson@canonical.com>
+Standards-Version: 3.9.3
+XS-Python-Version: current
+
+Package: lp-fish-tools
+Architecture: all
+Recommends: python-xlsxwriter
+Depends: python (<< 3.0), python (>= 2.6),
+ ${misc:Depends},
+ ${python:Depends},
+ python-launchpadlib,
+ python-distutils-extra,
+ python-gtk2,
+ python-launchpadlib,
+ xsltproc,
+ xclip,
+ python-webdavlib,
+ lp-cli (>> 0.4 ),
+ ibs-cli (>= 1.4 ),
+ python-requests,
+ python-dialog,
+ python-jinja2,
+ sshfs
+Conflicts: lp-fish-init (<< 0.4)
+Description: Utility scripts for OEM Dell enablement
+ UNKNOWN

@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+LINK=/usr/share/dell/grub/patches/oneiric
+
+case "$1" in
+  upgrade)
+    if dpkg --compare-versions "$2" le "1.19" && [ -L $LINK ]; then
+        rm -f $LINK
+    fi
+esac
+
+#DEBHELPER#
