@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+
+# https://www.debian.org/doc/debian-policy/ch-source.html#s-debianrules
+# qbuild-ng build would run QNAP/rule ${Arch} in $PKG_ROOT, where ${Arch} is 
+# the Architecture field of QNAP/control
+
+build: build-indep build-arch
+
+build-indep:
+
+build-arch:
+	make -C src
+
+clean:
+	make -C src clean
+
+get-orig-source:
+	git clone https://github.com/fcwu/foobar
