@@ -1,0 +1,8 @@
+qdk-ng: arch-independent-package-contains-binary-or-object usr/share/qdk*
+qdk-ng: arch-dependent-file-in-usr-share usr/share/qdk*
+qdk-ng: unstripped-binary-or-object usr/share/qdk*
+qdk-ng: shared-lib-without-dependency-information usr/share/qdk*
+qdk-ng: embedded-library usr/share/qdk*
+qdk-ng: missing-dependency-on-libc *usr/share/qdk*
+qdk-ng: script-not-executable */template/*
+qdk-ng: missing-dep-for-interpreter */template/*
