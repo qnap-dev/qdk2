@@ -1,0 +1,4 @@
+bin/* usr/bin/
+QDK_2.2_amd64/* usr/share/qdk2/QDK/
+qpkg_4.2.0_amd64/* usr/share/qdk2/qpkg/
+template usr/share/qdk2/

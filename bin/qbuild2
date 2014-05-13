@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+
+from argparse import ArgumentParser, SUPPRESS, RawTextHelpFormatter
+from os.path import exists as pexists
+from shutil import copytree, rmtree
+from os import mkdir
+
+
+class BaseStringException(Exception):
+    def __init__(self, data=None):
+        self._data = data
+
+    def __str__(self):
+        if self._data is None:
+            return self.__class__.__name__
+        return '{}: {}'.format(self.__class__.__name__, self._data)
+
+
+class FileExistError(BaseStringException):
+    def __init__(self, file_path):
+        BaseStringException.__init__()
+        self.message = file_path
+
+    def __str__(self):
+        return 'Package not found: {}'.format(self.package)
+
+
+class BaseCommand(object):
+    def __init__(self, args=None, extra_args=None):
+        self._args = args
+        self._extra_args = extra_args
+
+
+class CommandBuild(BaseCommand):
+    key = 'build'
+
+    @classmethod
+    def build_argparse(cls, subparser):
+        parser = subparser.add_parser('build', help='build QPKG')
+        parser.add_argument('--build', help=SUPPRESS)
+        parser.add_argument('-d', metavar='directory',
+                            help='destination folder')
+
+    def run(self):
+        print(str(self.__class__))
+
+
+class CommandCreate(BaseCommand):
+    key = 'create'
+
+    @classmethod
+    def build_argparse(cls, subparser):
+        parser = subparser.add_parser('create', help='create template')
+        parser.add_argument('--create', help=SUPPRESS)
+        parser.add_argument('-d', metavar='directory',
+                            help='destination folder')
+
+    def run(self):
+        #TODO
+        directory = self._args.d or './'
+        if pexists(directory):
+            # TODO call rmtree
+            raise BaseStringException('file exists')
+        copytree('/usr/share/qdk2/template/foobar', directory)
+
+
+Commands = (CommandBuild, CommandCreate)
+
+
+class MyArgumentParser(object):
+    """Command-line argument parser
+    """
+    def __init__(self):
+        """Create parser object
+        """
+        description = ('Assist to create and build QPKG'
+                       '')
+        epilog = ('',
+                  '',)
+        parser = ArgumentParser(description=description,
+                                epilog='\n'.join(epilog),
+                                formatter_class=RawTextHelpFormatter)
+        parser.add_argument('-v', '--verbose', action='store_true',
+                            default=False, help='verbose')
+        subparsers = parser.add_subparsers(help='')
+
+        for c in Commands:
+            c.build_argparse(subparsers)
+
+        self.parser = parser
+
+    def parse(self):
+        """Parse command-line arguments
+        """
+        args, extra_args = self.parser.parse_known_args()
+
+        return args, extra_args
+
+
+def main():
+    args, extra_args = MyArgumentParser().parse()
+    try:
+        for c in Commands:
+            if c.key in args:
+                c(args, extra_args).run()
+    except Exception as e:
+        if args.verbose:
+            raise e
+
+
+if __name__ == "__main__":
+    main()
+
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

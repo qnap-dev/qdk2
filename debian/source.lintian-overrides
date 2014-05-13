@@ -1,3 +1,0 @@
-qdk-ng: source-is-missing qpkg_4.2.0_amd64/*
-qdk-ng: arch-independent-package-contains-binary-or-object usr/share/qdk*
-qdk-ng: unstripped-binary-or-object usr/share/qdk*

@@ -1,0 +1,9 @@
+qdk2: source-is-missing qpkg_4.2.0_amd64/*
+qdk2: arch-dependent-file-in-usr-share usr/share/qdk*
+qdk2: shared-lib-without-dependency-information usr/share/qdk*
+qdk2: arch-independent-package-contains-binary-or-object usr/share/qdk*
+qdk2: unstripped-binary-or-object usr/share/qdk*
+qdk2: embedded-library usr/share/qdk*
+qdk2: script-not-executable usr/share/qdk*
+qdk2: missing-dep-for-interpreter */template/*
+qdk2: missing-dependency-on-libc needed by usr/share/qdk*
