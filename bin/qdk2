@@ -1,0 +1,199 @@
+#!/usr/bin/env python
+
+from argparse import ArgumentParser, SUPPRESS, RawTextHelpFormatter
+from os.path import (exists as pexists
+                     , join as pjoin
+                     , dirname as pdirname
+                     , basename as pbasename
+                     , realpath as prealpath
+                     , isdir
+                    )
+from shutil import copytree, rmtree, move, copy
+from os import makedirs, listdir
+from glob import glob
+import fileinput
+
+TEMPLATE_PATH = '/usr/share/qdk2/template'
+CONTROL_PATH = 'QNAP'
+DEFAULT_TEMPLATE = 'foobar'
+TEMPLATE_V1_PATH = '/usr/share/qdk2/QDK/template'
+
+
+class BaseStringException(Exception):
+    def __init__(self, data=None):
+        self._data = data
+
+    def __str__(self):
+        if self._data is None:
+            return self.__class__.__name__
+        return '{}: {}'.format(self.__class__.__name__, self._data)
+
+
+class UserExit(BaseStringException):
+    def __init__(self):
+        BaseStringException.__init__(self)
+
+
+class BaseCommand(object):
+    def __init__(self, args=None, extra_args=None):
+        self._args = args
+        self._extra_args = extra_args
+
+
+class CommandBuild(BaseCommand):
+    key = 'build'
+
+    @classmethod
+    def build_argparse(cls, subparser):
+        parser = subparser.add_parser('build', help='build QPKG')
+        parser.add_argument('--build', help=SUPPRESS)
+        parser.add_argument('-d', metavar='directory',
+                            help='destination folder')
+
+    def run(self):
+        print(str(self.__class__))
+
+
+class CommandCreate(BaseCommand):
+    key = 'create'
+
+    @classmethod
+    def build_argparse(cls, subparser):
+        parser = subparser.add_parser('create', help='create template')
+        parser.add_argument('--create', help=SUPPRESS)
+        parser.add_argument('--fmt-qdk1', action='store_true', default=False,
+                            help='QDK1 format')
+        parser.add_argument('-p', metavar='package_name',
+                            default=DEFAULT_TEMPLATE,
+                            help='package_name (Default: {0})'.format(
+                                DEFAULT_TEMPLATE))
+        parser.add_argument('-d', metavar='directory', default='./foobar',
+                            help='destination folder (Default: $PWD)')
+        parser.add_argument('-s', '--sample-files', action='store_true',
+                            default=False, help='.c, .so and doc samples')
+
+    def format_qdk1(self):
+        print('The template are putting to ' + self.directory)
+        if pexists(self.directory):
+            yn = raw_input('{} folder exists! Confirm? [Y/n] '.format(
+                            self.directory))
+            if len(yn) and yn[0].lower() == 'n':
+                raise UserExit()
+        else:
+            makedirs(self.directory)
+        for fn in glob(pjoin(TEMPLATE_V1_PATH, '*')):
+            dest = pjoin(self.directory, pbasename(fn))
+            if isdir(fn):
+                copytree(fn, dest)
+            else:
+                copy(fn, dest)
+
+    def format_qdk2(self):
+        if pexists(pjoin(self.directory, CONTROL_PATH)):
+            yn = raw_input('{} folder exists! Delete? [Y/n] '.format(
+                            pjoin(self.directory, CONTROL_PATH)))
+            if len(yn) and yn[0].lower() == 'n':
+                raise UserExit()
+            rmtree(pjoin(self.directory, CONTROL_PATH))
+        if not pexists(self.directory):
+            makedirs(self.directory)
+
+        copytree(pjoin(TEMPLATE_PATH, DEFAULT_TEMPLATE, CONTROL_PATH),
+                 pjoin(self.directory, CONTROL_PATH))
+
+        if self.sample_files:
+            for fn in listdir(pjoin(TEMPLATE_PATH, DEFAULT_TEMPLATE)):
+                fn = pjoin(TEMPLATE_PATH, DEFAULT_TEMPLATE, fn)
+                dest = pjoin(self.directory, pbasename(fn))
+                if isdir(fn):
+                    dest = pjoin(self.directory, pbasename(fn))
+                    if not pexists(dest):
+                        copytree(fn, dest)
+                else:
+                    copy(fn, dest)
+        if self.package_name != DEFAULT_TEMPLATE:
+            # sed control, *.init, rules, *.conf
+            files_check = ('control', 'rules', 'foobar.init', 'foobar.conf')
+            for fn in files_check:
+                fp = pjoin(self.directory, CONTROL_PATH, fn)
+                for line in fileinput.input(fp, inplace=True):
+                    print line.replace(DEFAULT_TEMPLATE, self.package_name),
+                    # Python 3
+                    # print(line.replace(DEFAULT_TEMPLATE, self.package_name),
+                    #       end='')
+            # mv foobar.* to self.package_name.*
+            for fn in glob(pjoin(self.directory, CONTROL_PATH,
+                                 DEFAULT_TEMPLATE + '.*')):
+                move(fn, pjoin(pdirname(fn),
+                               self.package_name + fn[fn.rindex('.'):]))
+
+    def run(self):
+        try:
+            if self._args.fmt_qdk1:
+                self.format_qdk1()
+            else:
+                self.format_qdk2()
+        except BaseStringException as e:
+            print(str(e))
+            return -1
+        return 0
+
+    @property
+    def package_name(self):
+        return self._args.p
+
+    @property
+    def directory(self):
+        if not hasattr(self, '_directory'):
+            self._directory = prealpath(self._args.d)
+        return self._directory
+
+    @property
+    def sample_files(self):
+        return self._args.sample_files
+
+
+Commands = (CommandBuild, CommandCreate)
+
+
+class MyArgumentParser(object):
+    """Command-line argument parser
+    """
+    def __init__(self):
+        """Create parser object
+        """
+        description = ('Assist to create and build QPKG'
+                       '')
+        epilog = ('',
+                  '',)
+        parser = ArgumentParser(description=description,
+                                epilog='\n'.join(epilog),
+                                formatter_class=RawTextHelpFormatter)
+        parser.add_argument('-v', '--verbose', action='store_true',
+                            default=False, help='verbose')
+        subparsers = parser.add_subparsers(help='')
+
+        for c in Commands:
+            c.build_argparse(subparsers)
+
+        self.parser = parser
+
+    def parse(self):
+        """Parse command-line arguments
+        """
+        args, extra_args = self.parser.parse_known_args()
+
+        return args, extra_args
+
+
+def main():
+    args, extra_args = MyArgumentParser().parse()
+    for c in Commands:
+        if c.key in args:
+            c(args, extra_args).run()
+
+
+if __name__ == "__main__":
+    main()
+
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

@@ -29,6 +29,8 @@
 # Cleanup any temporary directories and files at termination.
 trap 'cleanup_all' INT TERM
 
+QDK_PATH=/usr/share/qdk2/QDK
+
 # Check for deprecated definitions and replace them with new
 # definitions (when applicable).
 check_deprecated_definitions(){
@@ -161,7 +163,7 @@ get_qdk_area_data_pos(){
 	# Traverse QDK area looking for specified data type. Stop if reaching the end
 	# of the QDK area either by finding the QDK_AREA_EOF tag or by reaching the
 	# tail data.
-	local qdk_area_end=$(($(/bin/ls -l $qpkg | /bin/awk '{ print $5 }') - $TAIL_DATA_LEN))
+	local qdk_area_end=$(($(/bin/ls -l $qpkg | awk '{ print $5 }') - $TAIL_DATA_LEN))
 	local qdk_size=
 	local qdk_pos=$qdk_area
 	local qdk_type=$(/usr/bin/hexdump -s $qdk_area -n $QDK_AREA_DATA_TYPE_LEN -e '1/1 "%d"' $qpkg)
@@ -471,8 +473,8 @@ create_packages_file(){
 		[ -f $file ] || err_msg "$file: no such file"
 		/bin/tar -xOf $file ./control.tar.gz | /bin/tar xzO ./control | /bin/sed -e '/Priority.*/d' -e '/.*: $/d' >> tmp.$$/Packages || warn_msg "$file: missing control file"
 		echo "Filename: ${file##*/} " >> tmp.$$/Packages
-		echo "MD5Sum: $($QDK_MD5SUM_APP $file | /bin/awk '{ print $1 }')" >> tmp.$$/Packages
-		echo "Size: $(/bin/ls -l $file | /bin/awk '{ print $5 }')" >> tmp.$$/Packages
+		echo "MD5Sum: $($QDK_MD5SUM_APP $file | awk '{ print $1 }')" >> tmp.$$/Packages
+		echo "Size: $(/bin/ls -l $file | awk '{ print $5 }')" >> tmp.$$/Packages
 		printf "\n\n" >> tmp.$$/Packages
 	done
 	if [ -f tmp.$$/Packages ]; then
@@ -554,9 +556,9 @@ add_qpkg_header(){
 		echo "arch_ok || wrong_arch" >>$QDK_QPKG_FILE
 	fi
 
-	local ctrl_len=$(/bin/ls -l tmp.$$/$QDK_CONTROL_FILE | /bin/awk '{ print $5 }')
-	local data_len=$(/bin/ls -l tmp.$$/$QDK_COMPRESS_FILE | /bin/awk '{ print $5 }')
-	[ -f tmp.$$/extra.tar ] && local extra_len=$(/bin/ls -l tmp.$$/extra.tar | /bin/awk '{ print $5 }')
+	local ctrl_len=$(/bin/ls -l tmp.$$/$QDK_CONTROL_FILE | awk '{ print $5 }')
+	local data_len=$(/bin/ls -l tmp.$$/$QDK_COMPRESS_FILE | awk '{ print $5 }')
+	[ -f tmp.$$/extra.tar ] && local extra_len=$(/bin/ls -l tmp.$$/extra.tar | awk '{ print $5 }')
 
 	/bin/cat >>$QDK_QPKG_FILE <<-EOF
 	_EXTRACT_DIR="$extract_dir"
@@ -583,7 +585,7 @@ add_qpkg_header(){
 	# Calculate header size (add 1 if number of digits in length will
 	# increase the total size).
 	# -10 is for the length of the placeholder, SCRIPT_LEN
-	local script_len=$(($(/bin/ls -l $QDK_QPKG_FILE | /bin/awk '{ print $5 }') - 10))
+	local script_len=$(($(/bin/ls -l $QDK_QPKG_FILE | awk '{ print $5 }') - 10))
 	local num_of_digits_in_script_len=${#script_len}
 	script_len=$(($script_len + ${#script_len}))
 	if (( $num_of_digits_in_script_len < ${#script_len} )); then
@@ -644,7 +646,7 @@ add_qdk_area_signature(){
 	[ -n "$1" ] || err_msg "internal error: add_qdk_area_signature called with no argument"
 	local data="$1"
 	local qpkg="${2:-$QDK_QPKG_FILE}"
-	local size="$(/bin/ls -l $data | /bin/awk '{ print $5 }')"
+	local size="$(/bin/ls -l $data | awk '{ print $5 }')"
 	add_qdk_area_data_type $QDK_AREA_SIGNATURE $qpkg
 	add_qdk_area_data_size $size $qpkg
 	debug_msg "Data: $data"
@@ -704,7 +706,10 @@ add_qpkg_tail(){
 
 # Add encryption.
 add_qpkg_encryption(){
-	verbose_msg "Adding QPKG checksum: $(/sbin/qpkg --encrypt $QDK_QPKG_FILE)"
+    tar xf /usr/share/qdk2/qpkg/qpkg_*.tgz -C ${QDK_BUILD_DIR}/
+    cp $QDK_QPKG_FILE ${QDK_BUILD_DIR}/qpkg_*/cde-root/
+	verbose_msg "Adding QPKG checksum: $(${QDK_BUILD_DIR}/qpkg_*/qpkg --encrypt /$QDK_QPKG_FILE)"
+    cp ${QDK_BUILD_DIR}/qpkg_*/cde-root/$QDK_QPKG_FILE $QDK_QPKG_FILE
 }
 
 create_qpkg(){
@@ -1547,7 +1552,7 @@ main(){
 }
 
 # System-wide definitions
-. /etc/config/qdk.conf
+. /usr/share/qdk2/QDK/qdk.conf
 
 # User definitions
 QDK_USER_CONFIG_FILE="${QDK_USER_CONFIG_FILE:-$HOME/.qdkrc}"

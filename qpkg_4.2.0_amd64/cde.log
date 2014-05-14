@@ -1,2 +1,0 @@
-cd 'cde-root/root'
-'./qpkg.cde' '--encrypt' '/lxc-docker_0.6.qpkg'
