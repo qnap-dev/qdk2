@@ -1,0 +1,23 @@
+SERIES = precise trusty
+
+.PYONY: ${SERIES}
+
+all: ${SERIES}
+
+${SERIES}:
+	-rm -rf debuild/$@
+	mkdir -p debuild/$@
+	find . -maxdepth 1 ! -name "." ! -name "debuild" -exec cp -r {} debuild/$@ \;
+	cd debuild/$@ \
+		&& git reset --hard HEAD \
+		&& git clean -xdf \
+		&& rm -rf .git \
+		&& dch -i -D $@ "auto build" \
+		&& sed -i '1 s/(\(.*\))/(\1~$@)/' debian/changelog \
+		&& debuild -S
+
+clean:
+	-rm -rf debuild
+
+dput:
+	dput ppa:fcwu-tw/ppa qdk2_*_source.changes
