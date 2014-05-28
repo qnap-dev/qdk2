@@ -979,6 +979,7 @@ create_uninstall_script(){
 	# Stop the service before we begin the removal.
 	if [ -x $SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM ]; then
 		$SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM stop
+		$SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM remove
 		$CMD_SLEEP 5
 		$CMD_SYNC
 	fi

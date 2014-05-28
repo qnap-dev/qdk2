@@ -3,7 +3,7 @@ Section: devel
 Vcs-Git: https://github.com/fcwu/foobar
 Homepage: http://www.qnap.com
 Priority: extra
-Build-Depends: qdk-ng
+Build-Depends: qdk2
 Maintainer: Doro Wu <dorowu@qnap.com>
 
 Package: foobar

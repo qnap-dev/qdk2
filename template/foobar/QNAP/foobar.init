@@ -1,9 +1,8 @@
 #!/bin/sh
-CONF=/etc/config/qpkg.conf
 QPKG_NAME=foobar
+CONF=/etc/config/qpkg.conf
 QPKG_DIR=${QPKG_DIR:-$(/sbin/getcfg $QPKG_NAME Install_Path -d "" -f $CONF)}
 export PATH=$PATH:${QPKG_DIR}/bin:${QPKG_DIR}/usr/bin:/usr/sbin:/sbin
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${QPKG_DIR}/usr/lib:${QPKG_DIR}/lib:${QPKG_DIR}/lib/x86_64-linux-gnu
 
 log()
 {
