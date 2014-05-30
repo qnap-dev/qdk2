@@ -85,9 +85,9 @@ error = logging.error
 
 def trace(f):
     def my_f(*args, **kwargs):
-        debug("entering " + f.__name__)
+        debug("T> " + f.__name__)
         result = f(*args, **kwargs)
-        debug("exiting " + f.__name__)
+        debug("T< " + f.__name__)
         return result
     my_f.__name = f.__name__
     my_f.__doc__ = f.__doc__
