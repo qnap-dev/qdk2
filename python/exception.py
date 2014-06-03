@@ -27,7 +27,18 @@ class ControlFileSyntaxError(BaseStringException):
 class ChangelogFileSyntaxError(BaseStringException):
     def __init__(self, filename, line, msg=''):
         super(self.__class__, self).__init__()
-        self._msg = 'ChangeFile Syntax Error ({}:{}): {}'.format(
+        self._msg = 'ChangeFile Syntax Error in {}({}): {}'.format(
+            filename, line, msg)
+
+
+class PackageNotFound(BaseStringException):
+    pass
+
+
+class FileSyntaxError(BaseStringException):
+    def __init__(self, filename, line, msg=''):
+        super(self.__class__, self).__init__()
+        self._msg = 'Syntax Error in {}({}): {}'.format(
             filename, line, msg)
 
 

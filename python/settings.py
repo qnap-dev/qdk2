@@ -11,7 +11,7 @@ if sys.argv[0].startswith('/usr'):
     PREFIX = '/usr/share/qdk2'
     QDK_BINARY = 'QDK'
 else:
-    PREFIX = pdirname(sys.argv[0])
+    PREFIX = pdirname(pdirname((sys.argv[0])))
     QDK_BINARY = 'QDK_2.2_amd64'
 
 
@@ -21,6 +21,7 @@ class Settings(object):
     DEFAULT_TEMPLATE = 'foobar'
     TEMPLATE_PATH = pjoin(PREFIX, 'template')
     TEMPLATE_V1_PATH = pjoin(PREFIX, QDK_BINARY, 'template')
+    QBUILD = pjoin(PREFIX, QDK_BINARY, 'bin', 'qbuild')
 
 
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

@@ -34,10 +34,11 @@ class ControlFile(File):
                 raise ControlFileSyntaxError('source section > 1')
             self._source = section.copy()
         elif 'package' in section:
-            if section['package'] in self._packages:
+            package_name = section['package'] + '_' + section['architecture']
+            if package_name in self._packages:
                 raise ControlFileSyntaxError('duplicate package name ' +
-                                             section['package'])
-            self._packages[section['package']] = section.copy()
+                                             package_name)
+            self._packages[package_name] = section.copy()
         else:
             raise ControlFileSyntaxError(
                 'Package and source section not found')
@@ -244,6 +245,13 @@ class ChangelogFile(File):
     def package_name(self):
         self.parse()
         return self._package_name
+
+    @property
+    def version(self):
+        self.parse()
+        if len(self._logs) == 0:
+            return 'none'
+        return self._logs[0]['version']
 
     @property
     def filename(self):
