@@ -1,3 +1,9 @@
+qdk2 (0.2) UNRELEASED; urgency=medium
+
+  * Update build and extract function
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Wed, 04 Jun 2014 16:08:11 +0800
+
 qdk2 (0.1) trusty; urgency=low
 
   * First package
