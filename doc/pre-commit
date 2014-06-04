@@ -1,0 +1,10 @@
+#!/bin/sh
+
+VERSION=`git describe --tags`
+if grep -q "^VERSION = $VERSION" python/settings.py
+then
+    exit 0
+fi
+echo "new verison: $VERSION"
+sed -i "s/^VERSION = .*/VERSION = '${VERSION}'/" python/settings.py
+git add python/settings.py

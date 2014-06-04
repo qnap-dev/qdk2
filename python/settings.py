@@ -17,6 +17,9 @@ else:
     QPKG_FILE = 'qpkg_4.2.0_amd64.tgz'
 
 
+VERSION = 'v0.2'
+
+
 class Settings(object):
     DEBUG = False if getenv('DEBUG') is None else True
     CONTROL_PATH = 'QNAP'

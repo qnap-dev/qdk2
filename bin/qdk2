@@ -20,6 +20,7 @@ from build import CommandBuild
 from create import CommandCreate
 from changelog import CommandChangelog
 from extract import CommandExtract
+from version import CommandVersion
 # from lint import CommandLint
 
 
@@ -28,6 +29,7 @@ Commands = (CommandBuild,
             CommandCreate,
             CommandChangelog,
             CommandExtract,
+            CommandVersion,
             # CommandLint,
             )
 
