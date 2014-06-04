@@ -16,11 +16,11 @@ sys.path.append(pjoin(prefix, 'python'))
 
 from log import LoggingConfiguration
 from settings import Settings
-from lint import CommandLint
 from build import CommandBuild
 from create import CommandCreate
 from changelog import CommandChangelog
 from extract import CommandExtract
+# from lint import CommandLint
 
 
 LoggingConfiguration.set(logging.DEBUG if Settings.DEBUG else logging.INFO)
@@ -28,7 +28,7 @@ Commands = (CommandBuild,
             CommandCreate,
             CommandChangelog,
             CommandExtract,
-            CommandLint,
+            # CommandLint,
             )
 
 

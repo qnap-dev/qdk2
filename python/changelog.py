@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from argparse import SUPPRESS
-from basecommand import BaseCommand
 from os import getenv
 from os.path import exists as pexists
 from shutil import copy
@@ -9,7 +8,8 @@ import tempfile
 import subprocess
 import os
 
-
+from basecommand import BaseCommand
+from log import error
 from controlfiles import ControlFile, ChangelogFile
 
 
@@ -18,11 +18,8 @@ class CommandChangelog(BaseCommand):
 
     @classmethod
     def build_argparse(cls, subparser):
-        parser = subparser.add_parser(cls.key, help='build QPKG')
+        parser = subparser.add_parser(cls.key, help='Modify changelog')
         parser.add_argument('--' + cls.key, help=SUPPRESS)
-        #parser.add_argument('-i', '--increase', action='store_true',
-        #                    default=True,
-        #                    help='Increase version number and edit it')
         parser.add_argument('-m', '--message', default=None, nargs="*",
                             help='log message')
         parser.add_argument('--custom-version', default=None,
@@ -37,7 +34,6 @@ class CommandChangelog(BaseCommand):
         return ChangelogFile(dest)
 
     def run(self):
-        #debug(pprint.pformat(self.parse('./QNAP/control').packages))
         control = ControlFile()
         changelog = ChangelogFile()
         kv = {'package_name': control.source['source']}
@@ -47,6 +43,13 @@ class CommandChangelog(BaseCommand):
             kv['version'] = self._args.custom_version
         kv['author'] = getenv('QPKG_NAME')
         kv['email'] = getenv('QPKG_EMAIL')
+        if len(kv['author']) == 0 or len(kv['email']) == 0:
+            error('Environment variable QPKG_NAME and QPKG_EMAIL are empty')
+            yn = raw_input('Continue? (Y/n) ')
+            if yn.lower() == 'n':
+                return 0
+            kv['author'] = 'noname'
+            kv['email'] = 'noname@local.host'
         entry = changelog.format(**kv)
         fid, filename = tempfile.mkstemp()
         os.close(fid)

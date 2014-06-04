@@ -338,12 +338,12 @@ class CommandBuild(BaseCommand):
         parser.add_argument('--build-dir',
                             default='../build-area',
                             help='Folder to store building stuff')
-        parser.add_argument('--to-qbuild', action='store_true',
-                            default=False,
-                            help='translate QDK2 format to qbuild format')
         parser.add_argument('--build-env',
                             default=None,
                             help='List build environment')
+        parser.add_argument('--as-qdk1', action='store_true',
+                            default=False,
+                            help='Source package is QDK 1 format')
 
     @property
     def qpkg_dir(self):
@@ -386,13 +386,7 @@ class CommandBuild(BaseCommand):
         except BaseStringException as e:
             error(str(e))
             return -1
-        #    error = False
-        #    # lint
-        #    try:
-        #        CommandLint().lint(self.qpkg_dir)
-        #    except BaseStringException:
-        #        error = True
-        #    # TODO
+
         return 0
 
 

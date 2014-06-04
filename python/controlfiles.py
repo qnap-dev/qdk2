@@ -85,6 +85,10 @@ class ControlFile(File):
         self.parse()
         return self._packages
 
+    @property
+    def filename(self):
+        return self._filename
+
 
 class ChangelogFile(File):
     ''' Example: Note the space prefix and empty line
