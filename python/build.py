@@ -15,7 +15,7 @@ from contextlib import contextmanager
 from collections import defaultdict
 
 from basecommand import BaseCommand
-from log import info, trace, error, debug
+from log import info, error, debug
 # from lint import CommandLint
 from controlfiles import ControlFile, ChangelogFile
 from settings import Settings
@@ -31,11 +31,12 @@ class QbuildToQpkg(object):
         cwd = getcwd()
         chdir(self._path)
         try:
-            cmd = [Settings.QBUILD]
+            cmd = [pjoin(cwd, Settings.QBUILD)]
             if Settings.DEBUG:
                 cmd.append('--verbose')
             else:
                 cmd.append('-q')
+            debug(cmd)
             subprocess.check_call(cmd)
         finally:
             chdir(cwd)
@@ -84,7 +85,6 @@ class Qdk2ToQbuild(object):
         chdir(cwd)
         del self.source
 
-    @trace
     def _transform_one(self, package):
         with self._setup(package):
             self._build()
@@ -92,7 +92,8 @@ class Qdk2ToQbuild(object):
             self._cook_install()
             self._cook_dirs()
             self._cook_links()
-            self._move_controls()
+            self._copy_controls()
+            self._copy_icons()
             self._cook_package_routines()
             self._cook_init_sh()
             self._cook_qpkg_cfg()
@@ -123,7 +124,7 @@ class Qdk2ToQbuild(object):
             myenv['QPKG_VERSION'] = ChangelogFile().version
             if pexists(pjoin(Settings.CONTROL_PATH,
                              package['package'] + '.init')):
-                myenv['QPKG_INIT'] = 'init.sh'
+                myenv['QPKG_INIT'] = package['package'] + '.init'
             self._env = myenv
 
         self.package = package
@@ -133,7 +134,6 @@ class Qdk2ToQbuild(object):
         del self._env
         del self.package
 
-    @trace
     def _build(self):
         try:
             subprocess.check_call([pjoin(Settings.CONTROL_PATH, 'rules'),
@@ -142,7 +142,6 @@ class Qdk2ToQbuild(object):
         except subprocess.CalledProcessError as e:
             raise e
 
-    @trace
     def _binary(self):
         try:
             subprocess.check_call([pjoin(Settings.CONTROL_PATH, 'rules'),
@@ -151,7 +150,6 @@ class Qdk2ToQbuild(object):
         except subprocess.CalledProcessError as e:
             raise e
 
-    @trace
     def _cook_install(self):
         src_install = pjoin(Settings.CONTROL_PATH,
                             self.package['package'] + '.install')
@@ -175,7 +173,6 @@ class Qdk2ToQbuild(object):
         except ValueError:
             raise FileSyntaxError(src_install, lineno, line)
 
-    @trace
     def _cook_links(self):
         src_install = pjoin(Settings.CONTROL_PATH,
                             self.package['package'] + '.links')
@@ -198,7 +195,6 @@ class Qdk2ToQbuild(object):
         except ValueError:
             raise FileSyntaxError(src_install, lineno, line)
 
-    @trace
     def _cook_dirs(self):
         src_install = pjoin(Settings.CONTROL_PATH,
                             self.package['package'] + '.dirs')
@@ -215,18 +211,21 @@ class Qdk2ToQbuild(object):
         except ValueError:
             raise FileSyntaxError(src_install, lineno, line)
 
-    @trace
-    def _move_controls(self):
+    def _copy_controls(self):
         package = self.package
-        replace_mapping = []
-        for k, v in self._env.iteritems():
-            replace_mapping.append(('%' + k + '%', v))
-        suffix_to_copy = ['.conffiles', '.postrm', '.prerm', '.postinst',
-                          '.preinst', '.mime', '.service', '.init']
-        for suffix in suffix_to_copy:
+        replace_mapping = [('%' + k + '%', v) for k, v in self._env.iteritems()
+                           if k.startswith('QPKG_')]
+        suffix_all = ['.conffiles', '.postrm', '.prerm', '.postinst',
+                      '.preinst', '.mime', '.service', '.init']
+        suffix_to_fixperm = ['.postrm', '.prerm', '.postinst', '.preinst']
+        dest_base = pjoin(self._env['QPKG_DEST_DATA'], '.qdk2')
+        makedirs(dest_base)
+        for suffix in suffix_all:
             src = pjoin(Settings.CONTROL_PATH, package['package'] + suffix)
-            dest = pjoin(self._env['QPKG_DEST_CONTROL'],
-                         package['package'] + suffix)
+            dest = pjoin(dest_base, package['package'] + suffix)
+            if suffix in ('.init',):
+                dest = pjoin(self._env['QPKG_DEST_CONTROL'],
+                             package['package'] + suffix)
             if not pexists(src):
                 continue
             with open(src, 'r') as fin, open(dest, 'w+') as fout:
@@ -234,32 +233,77 @@ class Qdk2ToQbuild(object):
                     for k, v in replace_mapping:
                         line = line.replace(k, v)
                     fout.write(line)
+            # fix perm
+            if suffix in suffix_to_fixperm:
+                chmod(dest, 0555)
 
-    @trace
+    def _copy_icons(self):
+        dest_base = pjoin(self._env['QPKG_DEST_CONTROL'], 'icons')
+        makedirs(dest_base)
+        package_name = self.package['package']
+        icons = (('.icon.64', '.gif'), ('.icon.80', '_80.gif'),
+                 ('.icon.gray', '_gray.gif'),
+                 )
+        for suffix, rsuffix in icons:
+            src = pjoin(Settings.CONTROL_PATH, package_name + suffix)
+            dest = pjoin(dest_base, package_name + rsuffix)
+            if not pexists(src):
+                continue
+            copy(src, dest)
+
     def _cook_package_routines(self):
+        # TODO postrm would not be executed because the file already was removed
         content = (
             r'PKG_PRE_REMOVE="{',
+            r'echo 3s >> /tmp/p.txt',
+            r'QPKG_INIT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.service',
+            r'if [ -f ${QPKG_INIT} ]; then ',
+            r'    rm -f /etc/config/systemd/system/' + self._env['QPKG_PACKAGE'] + r'.service',
+            r'fi',
+            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.prerm',
+            r'[ -x \${SCRIPT} ] && \${SCRIPT} remove',
+            r'echo 3e >> /tmp/p.txt',
             r'}"',
             r'',
             r'PKG_MAIN_REMOVE="{',
+            r'true',
             r'}"',
             r'',
             r'PKG_POST_REMOVE="{',
+            r'echo 4s >> /tmp/p.txt',
+            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.postrm',
+            r'[ -x \${SCRIPT} ] && \${SCRIPT} remove',
+            r'echo 4e >> /tmp/p.txt',
             r'}"',
             r'',
             r'pkg_init(){',
+            r'true',
             r'}',
             r'',
             r'pkg_check_requirement(){',
+            r'true',
             r'}',
             r'',
             r'pkg_pre_install(){',
+            r'echo 1s > /tmp/p.txt',
+            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.preinst',
+            r'[ -x \${SCRIPT} ] && \${SCRIPT} install',
+            r'echo 1e >> /tmp/p.txt',
             r'}',
             r'',
             r'pkg_install(){',
+            r'true',
             r'}',
             r'',
             r'pkg_post_install(){',
+            r'echo 2s >> /tmp/p.txt',
+            r'QPKG_INIT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.service',
+            r'if [ -f ${QPKG_INIT} ]; then ',
+            r'    ln -s "$QPKG_INIT" /etc/config/systemd/system/',
+            r'fi',
+            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.postinst',
+            r'[ -x \${SCRIPT} ] && \${SCRIPT} install',
+            r'echo 2e >> /tmp/p.txt',
             r'}',
         )
 
@@ -267,10 +311,10 @@ class Qdk2ToQbuild(object):
                         'package_routines'), 'w+') as f:
             f.write('\n'.join(content))
 
-    @trace
     def _cook_qpkg_cfg(self):
         content = (
             r'QPKG_NAME="{0[QPKG_PACKAGE]}"',
+            r'QPKG_DISPLAYNAME="{0[QPKG_Q_APPNAME]}"',
             r'QPKG_VER="{0[QPKG_VERSION]}"',
             r'QPKG_AUTHOR="{0[QPKG_MAINTAINER]}"',
             r'QPKG_LICENSE="{0[QPKG_LICENSE]}"',
@@ -281,10 +325,10 @@ class Qdk2ToQbuild(object):
             r'#QPKG_CONFLICT="Python, OPT/sed"',
             r'#QPKG_CONFIG="myApp.conf"',
             r'#QPKG_CONFIG="/etc/config/myApp.conf"',
-            r'#QPKG_SERVICE_PORT=""',
+            r'QPKG_SERVICE_PORT="{0[QPKG_Q_SERVICE_PORT]}"',
             r'#QPKG_SERVICE_PIDFILE=""',
-            r'#QPKG_WEBUI=""',
-            r'#QPKG_WEB_PORT=""',
+            r'QPKG_WEBUI="{0[QPKG_Q_WEBUI]}"',
+            r'QPKG_WEB_PORT="{0[QPKG_Q_WEB_PORT]}"',
             r'#QDK_DATA_DIR_ICONS="icons"',
         )
 
@@ -296,28 +340,26 @@ class Qdk2ToQbuild(object):
                         'qpkg.cfg'), 'w+') as f:
             f.write(('\n'.join(content)).format(env))
 
-    @trace
     def _cook_init_sh(self):
-        init = pjoin(Settings.CONTROL_PATH, self.package['package'] + '.init')
+        init = pjoin(self._env['QPKG_DEST_CONTROL'],
+                     self.package['package'] + '.init')
         if pexists(init):
             copy(init, self._env['QPKG_DEST_DATA'])
             move(pjoin(self._env['QPKG_DEST_DATA'], pbasename(init)),
-                 pjoin(self._env['QPKG_DEST_DATA'], 'init.sh'))
-            chmod(pjoin(self._env['QPKG_DEST_DATA'], 'init.sh'), 555)
+                 pjoin(self._env['QPKG_DEST_DATA'], self._env['QPKG_INIT']))
+            chmod(pjoin(self._env['QPKG_DEST_DATA'], self._env['QPKG_INIT']),
+                  0555)
 
-    @trace
     def _cook_conffiles(self):
         # conffiles
         pass
 
-    @trace
     def _cook_list(self):
         # list
         #   links
         #   dirs
         pass
 
-    @trace
     def _cook_md5sum(self):
         # md5sum
         # hashlib.md5(

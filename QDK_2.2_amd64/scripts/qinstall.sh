@@ -74,6 +74,7 @@ SYS_QPKG_DATA_PACKAGES_FILE="./Packages.gz"
 SYS_QPKG_CONFIG_FILE="$SYS_CONFIG_DIR/qpkg.conf"
 SYS_QPKG_CONF_FIELD_QPKGFILE="QPKG_File"
 SYS_QPKG_CONF_FIELD_NAME="Name"
+SYS_QPKG_CONF_FIELD_DISPLAYNAME="Display_Name"
 SYS_QPKG_CONF_FIELD_VERSION="Version"
 SYS_QPKG_CONF_FIELD_ENABLE="Enable"
 SYS_QPKG_CONF_FIELD_DATE="Date"
@@ -471,6 +472,9 @@ disable_qpkg(){
 set_qpkg_name(){
 	set_qpkg_field $SYS_QPKG_CONF_FIELD_NAME "$QPKG_NAME"
 }
+set_qpkg_displayname(){
+	set_qpkg_field $SYS_QPKG_CONF_FIELD_DISPLAYNAME "$QPKG_DISPLAYNAME"
+}
 set_qpkg_version(){
 	set_qpkg_field $SYS_QPKG_CONF_FIELD_VERSION "$QPKG_VER"
 }
@@ -542,6 +546,7 @@ register_qpkg(){
 	[ -f $SYS_QPKG_CONFIG_FILE ] || $CMD_TOUCH $SYS_QPKG_CONFIG_FILE
 
 	set_qpkg_name
+	set_qpkg_displayname
 	set_qpkg_version
 	set_qpkg_author
 
