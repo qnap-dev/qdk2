@@ -399,9 +399,6 @@ class CommandBuild(BaseCommand):
             self._build_dir = self._args.build_dir
         return self._build_dir
 
-    def phase_qbuild_to_qpkg(self):
-        pass
-
     def run(self, **kargs):
         for k in kargs:
             setattr(self, '_' + k, kargs[k])
@@ -413,6 +410,16 @@ class CommandBuild(BaseCommand):
                     print "%s=%s" % (k, env[k])
             except PackageNotFound:
                 error('No package ' + self._args.build_env)
+            return 0
+
+        if self._args.as_qdk1:
+            q = self._args.qpkg_dir
+            result = QbuildToQpkg(q).build()
+            arch = '_i386'  # TODO
+            dest = pjoin(self.build_dir,
+                         pbasename(result)[:-5] + arch + '.qpkg')
+            move(result, dest)
+            info('Package is ready: ' + dest)
             return 0
 
         try:
