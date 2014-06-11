@@ -8,7 +8,7 @@ from os.path import (exists as pexists,
                      realpath as prealpath,
                      isdir,
                      )
-from os import listdir, makedirs
+from os import listdir, makedirs, remove
 from shutil import copytree, copy, rmtree, move
 from basecommand import BaseCommand
 from glob import glob
@@ -72,6 +72,17 @@ class CommandCreate(BaseCommand):
                        Settings.CONTROL_PATH),
                  pjoin(self.directory, Settings.CONTROL_PATH))
 
+        # cook QNAP
+        if self.sample_files:
+            for fn in glob(pjoin(self.directory,
+                                 Settings.CONTROL_PATH,
+                                 '*.sample')):
+                dst = fn[:fn.rfind('.')]
+                copy(fn, dst)
+        for fn in glob(pjoin(self.directory, Settings.CONTROL_PATH, '*.sample')):
+            remove(fn)
+
+        # copy samples
         if self.sample_files:
             info('Copy samples')
             default_template_path = pjoin(Settings.TEMPLATE_PATH,

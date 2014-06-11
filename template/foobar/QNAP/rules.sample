@@ -11,8 +11,10 @@ build: build-indep build-arch
 build-indep:
 
 build-arch:
+	make -C src
 
 clean:
+	make -C src clean
 
 get-orig-source:
 	git clone https://github.com/fcwu/foobar
