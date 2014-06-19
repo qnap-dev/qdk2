@@ -83,6 +83,7 @@ SYS_QPKG_CONF_FIELD_INSTALL_PATH="Install_Path"
 SYS_QPKG_CONF_FIELD_CONFIG_PATH="Config_Path"
 SYS_QPKG_CONF_FIELD_WEBUI="WebUI"
 SYS_QPKG_CONF_FIELD_WEBPORT="Web_Port"
+SYS_QPKG_CONF_FIELD_DESKTOP="Desktop"
 SYS_QPKG_CONF_FIELD_SERVICEPORT="Service_Port"
 SYS_QPKG_CONF_FIELD_SERVICE_PIDFILE="Pid_File"
 SYS_QPKG_CONF_FIELD_AUTHOR="Author"
@@ -511,6 +512,9 @@ set_qpkg_web_port(){
 		[ -n "$QPKG_WEBUI" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_WEBUI "/"
 	fi
 }
+set_qpkg_desktop(){
+	[ -n "$QPKG_DESKTOP" ] && set_qpkg_field $SYS_QPKG_CONF_FIELD_DESKTOP "$QPKG_DESKTOP"
+}
 set_qpkg_status(){
 	if [ "$SYS_QPKG_SERVICE_ENABLED" = "TRUE" ]; then
 		enable_qpkg
@@ -560,6 +564,7 @@ register_qpkg(){
 	set_qpkg_web_url
 	set_qpkg_web_port
 	set_qpkg_rc_number
+	set_qpkg_desktop
 }
 
 ##################
@@ -993,7 +998,12 @@ create_uninstall_script(){
 	$PKG_PRE_REMOVE
 
 	# Remove QPKG directory, init-scripts, and icons.
-	$CMD_RM -fr "$SYS_QPKG_DIR"
+    if which rsync >/dev/null 2>&1; then
+        $CMD_MKDIR -p /tmp/qpkg_blankdir
+        rsync -a --delete /tmp/qpkg_blankdir "$SYS_QPKG_DIR"
+        $CMD_RM -fr "$SYS_QPKG_DIR"
+    fi
+    $CMD_RM -fr "$SYS_QPKG_DIR"
 	$CMD_RM -f "$SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM"
 	$CMD_FIND $SYS_STARTUP_DIR -type l -name 'QS*${QPKG_NAME}' | $CMD_XARGS $CMD_RM -f 
 	$CMD_FIND $SYS_SHUTDOWN_DIR -type l -name 'QK*${QPKG_NAME}' | $CMD_XARGS $CMD_RM -f
