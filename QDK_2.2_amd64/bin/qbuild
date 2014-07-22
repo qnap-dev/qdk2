@@ -694,9 +694,14 @@ add_qpkg_tail(){
 
 	verbose_msg "Adding tail data..."
 
+	local max_qpkg_name_len=40
+	if (( $max_qpkg_name_len < ${#QPKG_NAME} )); then
+		warn_msg "QPKG_NAME: the length of $QPKG_NAME must be less than or equal to $max_qpkg_name_len; name truncated."
+		QPKG_NAME_SHORTER=$(/usr/bin/expr substr "$QPKG_NAME" 1 $max_qpkg_name_len)
+	fi
 	[ -z "$QDK_BUILD_MODEL" ] || _QPKG_MODEL="$QDK_BUILD_MODEL"
 	pad_field _QPKG_MODEL
-	_QPKG_NAME="$QPKG_NAME"
+	_QPKG_NAME="$QPKG_NAME_SHORTER"
 	pad_field _QPKG_NAME 20
 	_QPKG_VERSION="$QPKG_VER"
 	pad_field _QPKG_VERSION
@@ -872,7 +877,7 @@ truncate_qpkg_name(){
 		edit_qpkg_config QPKG_NAME "${QPKG_NAME%% *}"
 	fi
 
-	local max_qpkg_name_len=20
+	local max_qpkg_name_len=40
 	if (( $max_qpkg_name_len < ${#QPKG_NAME} )); then
 		warn_msg "QPKG_NAME: the length of $QPKG_NAME must be less than or equal to $max_qpkg_name_len; name truncated."
 		QPKG_NAME=$(/usr/bin/expr substr "$QPKG_NAME" 1 $max_qpkg_name_len)
