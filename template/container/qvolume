@@ -1,0 +1,1 @@
+#lxc.mount.entry = /share/Public /share/Public none bind 0 0

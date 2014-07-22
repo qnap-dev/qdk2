@@ -13,10 +13,14 @@ from shutil import copytree, copy, rmtree, move
 from basecommand import BaseCommand
 from glob import glob
 import fileinput
+import subprocess as sp
 
 
 from settings import Settings
-from exception import BaseStringException, UserExit
+from exception import (BaseStringException,
+                       UserExit,
+                       ContainerUnsupported,
+                       )
 from log import info, error
 
 
@@ -27,16 +31,25 @@ class CommandCreate(BaseCommand):
     def build_argparse(cls, subparser):
         parser = subparser.add_parser(cls.key, help='create template')
         parser.add_argument('--' + cls.key, help=SUPPRESS)
-        parser.add_argument('--fmt-qdk1', action='store_true', default=False,
-                            help='QDK1 format')
-        parser.add_argument('-p', metavar='package_name',
-                            default=Settings.DEFAULT_TEMPLATE,
-                            help='package_name (Default: {0})'.format(
-                                Settings.DEFAULT_TEMPLATE))
         parser.add_argument('-d', metavar='directory', default='./',
                             help='destination folder (Default: $PWD)')
+        parser.add_argument(
+            '-p', metavar='package_name', default=Settings.DEFAULT_TEMPLATE,
+            help='package_name (Default: {0})'.format(
+                Settings.DEFAULT_TEMPLATE))
         parser.add_argument('-s', '--sample-files', action='store_true',
                             default=False, help='.c, .so and doc samples')
+        parser.add_argument('-c', '--container',
+                            nargs=2, metavar=('ctype', 'cid'),
+                            help='for example, -c docker u1')
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument('--format-qdk1',
+                           action='store_true',
+                           default=False,
+                           help='QDK1 format')
+        group.add_argument('--format-qdk2',
+                           action='store_true',
+                           default=True, help='QDK2 format (default)')
 
     def format_qdk1(self):
         info('The template are putting to ' + self.directory)
@@ -79,7 +92,8 @@ class CommandCreate(BaseCommand):
                                  '*.sample')):
                 dst = fn[:fn.rfind('.')]
                 copy(fn, dst)
-        for fn in glob(pjoin(self.directory, Settings.CONTROL_PATH, '*.sample')):
+        samples = pjoin(self.directory, Settings.CONTROL_PATH, '*.sample')
+        for fn in glob(samples):
             remove(fn)
 
         # copy samples
@@ -96,6 +110,7 @@ class CommandCreate(BaseCommand):
                         copytree(fn, dest)
                 else:
                     copy(fn, dest)
+        # rename
         if self.package_name != Settings.DEFAULT_TEMPLATE:
             info('Modify package name to ' + self.package_name)
             # sed control, *.init, rules, *.conf
@@ -114,12 +129,39 @@ class CommandCreate(BaseCommand):
                 move(fn, pjoin(pdirname(fn),
                                self.package_name + fn[fn.rindex('.'):]))
 
+    def container(self):
+        if self._args.container is None:
+            return
+
+        info('Copy container')
+        if self._args.container[0] == 'lxc':
+            info('switch to root')
+            sp.call(['sudo', 'rsync', '-a', '--delete',
+                     '/var/lib/lxc/' + self._args.container[1] + '/.',
+                     'image'])
+            sp.call(['sudo', 'tar', 'cvf', 'image.tar', 'image'])
+            sp.call(['sudo', 'rm', '-rf', 'image'])
+        elif self._args.container[0] == 'docker':
+            sp.call(['docker', 'save', '-o', 'image.tar',
+                     self._args.container[1],
+                     ])
+        else:
+            raise ContainerUnsupported(str(self._args.container))
+        for fn in glob(pjoin(Settings.TEMPLATE_PATH, 'container', 'q*')):
+            dst = pjoin(self.directory, pbasename(fn))
+            copy(fn, dst)
+
     def run(self):
         try:
-            if self._args.fmt_qdk1:
+            if self._args.format_qdk1:
                 self.format_qdk1()
-            else:
+                return 0
+            self.container()
+            if self._args.format_qdk2:
+                info('Build QPKG')
                 self.format_qdk2()
+        except UserExit:
+            pass
         except BaseStringException as e:
             error(str(e))
             return -1

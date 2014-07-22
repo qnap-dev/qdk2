@@ -1,0 +1,1 @@
+# qnap.cgroup.devices.allow = SCSI_Disk rwm

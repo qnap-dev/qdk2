@@ -17,7 +17,7 @@ else:
     QPKG_FILE = 'qpkg_4.2.0_amd64.tgz'
 
 
-VERSION = 'v0.3-2-g1621c23'
+VERSION = 'v0.3-3-ge517c01'
 
 
 class Settings(object):

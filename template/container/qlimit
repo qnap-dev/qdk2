@@ -1,0 +1,2 @@
+# lxc.cgroup.cpu.shares = 512
+# lxc.cgroup.memory.limit_in_bytes 53687091
