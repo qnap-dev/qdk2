@@ -287,7 +287,7 @@ class Qdk2ToQbuild(object):
             r'pkg_pre_install(){',
             r'echo 1s > /tmp/p.txt',
             r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.preinst',
-            r'[ -x \${SCRIPT} ] && \${SCRIPT} install',
+            r'[ -x ${SCRIPT} ] && ${SCRIPT} install',
             r'echo 1e >> /tmp/p.txt',
             r'}',
             r'',
@@ -302,7 +302,7 @@ class Qdk2ToQbuild(object):
             r'    ln -s "$QPKG_INIT" /etc/config/systemd/system/',
             r'fi',
             r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.postinst',
-            r'[ -x \${SCRIPT} ] && \${SCRIPT} install',
+            r'[ -x ${SCRIPT} ] && ${SCRIPT} configure',
             r'echo 2e >> /tmp/p.txt',
             r'}',
         )
