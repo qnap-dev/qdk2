@@ -1,3 +1,9 @@
+qdk2 (0.6) UNRELEASED; urgency=medium
+
+  * switch `qdk2 -c lxc cid` from rsync to lxc-clone
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Wed, 11 Jun 2014 11:26:06 +0800
+
 qdk2 (0.5) UNRELEASED; urgency=medium
 
   * draft `qdk2 -c lxc cid`

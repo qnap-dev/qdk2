@@ -136,10 +136,10 @@ class CommandCreate(BaseCommand):
         info('Copy container')
         if self._args.container[0] == 'lxc':
             info('switch to root')
-            sp.call(['sudo', 'rsync', '-a', '--delete',
-                     '/var/lib/lxc/' + self._args.container[1] + '/.',
+            sp.call(['sudo', 'lxc-clone', '-P', '.', self._args.container[1],
                      'image'])
-            sp.call(['sudo', 'tar', 'cvf', 'image.tar', 'image'])
+            info('compress')
+            sp.call(['sudo', 'tar', 'cf', 'image.tar', 'image'])
             sp.call(['sudo', 'rm', '-rf', 'image'])
         elif self._args.container[0] == 'docker':
             sp.call(['docker', 'save', '-o', 'image.tar',
