@@ -5,6 +5,7 @@ import sys
 from os import getenv
 from os.path import (join as pjoin,
                      dirname as pdirname,
+                     abspath as pabspath,
                      )
 
 if sys.argv[0].startswith('/usr'):
@@ -12,7 +13,7 @@ if sys.argv[0].startswith('/usr'):
     QDK_BINARY = 'QDK'
     QPKG_FILE = 'qpkg/qpkg_4.2.0_amd64.tgz'
 else:
-    PREFIX = pdirname(pdirname((sys.argv[0])))
+    PREFIX = pdirname(pdirname(pabspath(sys.argv[0])))
     QDK_BINARY = 'QDK_2.2_amd64'
     QPKG_FILE = 'qpkg_4.2.0_amd64.tgz'
 
