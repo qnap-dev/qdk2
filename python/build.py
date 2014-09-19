@@ -253,14 +253,16 @@ class Qdk2ToQbuild(object):
 
     def _cook_package_routines(self):
         # TODO postrm would not be executed because the file already was removed
+        path = self._env['QPKG_PACKAGE']
+
         content = (
             r'PKG_PRE_REMOVE="{',
             r'echo 3s >> /tmp/p.txt',
-            r'QPKG_INIT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.service',
+            r'QPKG_INIT=${SYS_QPKG_DIR}/.qdk2/' + path + r'.service',
             r'if [ -f ${QPKG_INIT} ]; then ',
-            r'    rm -f /etc/config/systemd/system/' + self._env['QPKG_PACKAGE'] + r'.service',
+            r'    rm -f /etc/config/systemd/system/' + path + r'.service',
             r'fi',
-            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.prerm',
+            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + path + r'.prerm',
             r'[ -x \${SCRIPT} ] && \${SCRIPT} remove',
             r'echo 3e >> /tmp/p.txt',
             r'}"',
@@ -271,7 +273,7 @@ class Qdk2ToQbuild(object):
             r'',
             r'PKG_POST_REMOVE="{',
             r'echo 4s >> /tmp/p.txt',
-            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.postrm',
+            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + path + r'.postrm',
             r'[ -x \${SCRIPT} ] && \${SCRIPT} remove',
             r'echo 4e >> /tmp/p.txt',
             r'}"',
@@ -286,7 +288,7 @@ class Qdk2ToQbuild(object):
             r'',
             r'pkg_pre_install(){',
             r'echo 1s > /tmp/p.txt',
-            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.preinst',
+            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + path + r'.preinst',
             r'[ -x ${SCRIPT} ] && ${SCRIPT} install',
             r'echo 1e >> /tmp/p.txt',
             r'}',
@@ -297,11 +299,11 @@ class Qdk2ToQbuild(object):
             r'',
             r'pkg_post_install(){',
             r'echo 2s >> /tmp/p.txt',
-            r'QPKG_INIT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.service',
+            r'QPKG_INIT=${SYS_QPKG_DIR}/.qdk2/' + path + r'.service',
             r'if [ -f ${QPKG_INIT} ]; then ',
             r'    ln -s "$QPKG_INIT" /etc/config/systemd/system/',
             r'fi',
-            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + self._env['QPKG_PACKAGE'] + r'.postinst',
+            r'SCRIPT=${SYS_QPKG_DIR}/.qdk2/' + path + r'.postinst',
             r'[ -x ${SCRIPT} ] && ${SCRIPT} configure',
             r'echo 2e >> /tmp/p.txt',
             r'}',

@@ -89,6 +89,7 @@ SYS_QPKG_CONF_FIELD_SERVICE_PIDFILE="Pid_File"
 SYS_QPKG_CONF_FIELD_AUTHOR="Author"
 SYS_QPKG_CONF_FIELD_RC_NUMBER="RC_Number"
 SYS_QPKG_CONF_FIELD_CONTAINER="Container"
+SYS_QPKG_CONF_FIELD_EXEC_FILES="Exec_Files"
 # The following variables are assigned values at run-time.
 SYS_HOSTNAME=$($CMD_HOSTNAME)
 # Data file name (one of SYS_QPKG_DATA_FILE_GZIP, SYS_QPKG_DATA_FILE_BZIP2,
@@ -537,6 +538,9 @@ set_qpkg_rc_number(){
 set_qpkg_container(){
 	set_qpkg_field $SYS_QPKG_CONF_FIELD_CONTAINER "$QPKG_CONTAINER"
 }
+set_qpkg_exec_file(){
+	set_qpkg_field $SYS_QPKG_CONF_FIELD_EXEC_FILES "$QPKG_EXEC_FILES"
+}
 
 ############################################################
 # Store the current status of the QPKG to be able to
@@ -570,6 +574,7 @@ register_qpkg(){
 	set_qpkg_rc_number
 	set_qpkg_desktop
     set_qpkg_container
+    set_qpkg_exec_file
 }
 
 ##################
