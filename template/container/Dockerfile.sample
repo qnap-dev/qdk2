@@ -1,0 +1,5 @@
+FROM dockerfile/ubuntu
+
+RUN apt-get install node
+
+CMD ["bash"]

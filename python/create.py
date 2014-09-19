@@ -8,7 +8,7 @@ from os.path import (exists as pexists,
                      realpath as prealpath,
                      isdir,
                      )
-from os import listdir, makedirs, remove
+from os import listdir, makedirs, remove, getpid
 from shutil import copytree, copy, rmtree, move
 from basecommand import BaseCommand
 from glob import glob
@@ -31,14 +31,15 @@ class CommandCreate(BaseCommand):
     def build_argparse(cls, subparser):
         parser = subparser.add_parser(cls.key, help='create template')
         parser.add_argument('--' + cls.key, help=SUPPRESS)
-        parser.add_argument('-d', metavar='directory', default='./',
-                            help='destination folder (Default: $PWD)')
         parser.add_argument(
-            '-p', metavar='package_name', default=Settings.DEFAULT_TEMPLATE,
-            help='package_name (Default: {0})'.format(
-                Settings.DEFAULT_TEMPLATE))
-        parser.add_argument('-s', '--sample-files', action='store_true',
-                            default=False, help='.c, .so and doc samples')
+            '-p', metavar='package_name', default=Settings.DEFAULT_PROJECT,
+            help='package_name (Default: {0})'.format(Settings.DEFAULT_PROJECT))
+        parser.add_argument('-d', '--directory', metavar='directory', default='./',
+                            help='destination folder (Default: $PWD/$package_name)')
+        parser.add_argument('-t', '--template-type', metavar='type',
+                            help='.c, .so and doc (c_cpp) / \
+                                  codeigniter framework (php) / \
+                                  html (webapp) samples')
         parser.add_argument('-c', '--container',
                             nargs=2, metavar=('ctype', 'cid'),
                             help='for example, -c docker u1')
@@ -78,15 +79,15 @@ class CommandCreate(BaseCommand):
         if not pexists(self.directory):
             makedirs(self.directory)
 
+        # copy template control files
         info('Copy default CONTROL files to {}'.format(
             pjoin(self.directory, Settings.CONTROL_PATH)))
         copytree(pjoin(Settings.TEMPLATE_PATH,
-                       Settings.DEFAULT_TEMPLATE,
                        Settings.CONTROL_PATH),
                  pjoin(self.directory, Settings.CONTROL_PATH))
 
         # cook QNAP
-        if self.sample_files:
+        if self.template_type != '':
             for fn in glob(pjoin(self.directory,
                                  Settings.CONTROL_PATH,
                                  '*.sample')):
@@ -96,11 +97,11 @@ class CommandCreate(BaseCommand):
         for fn in glob(samples):
             remove(fn)
 
-        # copy samples
-        if self.sample_files:
-            info('Copy samples')
+        # copy template data files
+        if self.template_type in Settings.SUPPORT_TEMPLATES:
+            info('Copy template data files: ' + self.template_type)
             default_template_path = pjoin(Settings.TEMPLATE_PATH,
-                                          Settings.DEFAULT_TEMPLATE)
+                                          self.template_type)
             for fn in listdir(default_template_path):
                 fn = pjoin(default_template_path, fn)
                 dest = pjoin(self.directory, pbasename(fn))
@@ -111,21 +112,21 @@ class CommandCreate(BaseCommand):
                 else:
                     copy(fn, dest)
         # rename
-        if self.package_name != Settings.DEFAULT_TEMPLATE:
+        if self.package_name != Settings.DEFAULT_CONTROL_PACKAGE:
             info('Modify package name to ' + self.package_name)
             # sed control, *.init, rules, *.conf
             files_check = ('control', 'rules', 'foobar.init', 'foobar.conf')
             for fn in files_check:
                 fp = pjoin(self.directory, Settings.CONTROL_PATH, fn)
                 for line in fileinput.input(fp, inplace=True):
-                    print line.replace(Settings.DEFAULT_TEMPLATE,
+                    print line.replace(Settings.DEFAULT_CONTROL_PACKAGE,
                                        self.package_name),
                     # Python 3
                     # print(line.replace(DEFAULT_TEMPLATE, self.package_name),
                     #       end='')
             # mv foobar.* to self.package_name.*
             for fn in glob(pjoin(self.directory, Settings.CONTROL_PATH,
-                                 Settings.DEFAULT_TEMPLATE + '.*')):
+                                 Settings.DEFAULT_CONTROL_PACKAGE + '.*')):
                 move(fn, pjoin(pdirname(fn),
                                self.package_name + fn[fn.rindex('.'):]))
 
@@ -133,33 +134,38 @@ class CommandCreate(BaseCommand):
         if self._args.container is None:
             return
 
-        info('Copy container')
+        # TODO: check container type and copy this type config file(s)
+        info('Copy container config files')
+        for fn in glob(pjoin(Settings.TEMPLATE_PATH, 'container', '*')):
+            dst = pjoin(self.directory, pbasename(fn))
+            copy(fn, dst)
+
+        info('Copy container (switch to root)')
         if self._args.container[0] == 'lxc':
-            info('switch to root')
-            sp.call(['sudo', 'lxc-clone', '-P', '.', self._args.container[1],
-                     'image'])
+            image_path = './'
+            image_dir = 'image' + '-' + str(getpid())
+            # TODO: lxc-clone use rsync and it too slow
+            sp.call(['sudo', 'lxc-clone', '-P', image_path, self._args.container[1],
+                     image_dir])
             info('compress')
-            sp.call(['sudo', 'tar', 'cf', 'image.tar', 'image'])
-            sp.call(['sudo', 'rm', '-rf', 'image'])
+            sp.call(['sudo', 'tar', 'cf', pjoin(self.directory, 'image.tar'), image_path + image_dir])
+            sp.call(['sudo', 'rm', '-rf', image_path + image_dir])
         elif self._args.container[0] == 'docker':
-            sp.call(['docker', 'save', '-o', 'image.tar',
+            sp.call(['sudo', 'docker', 'save', '-o', pjoin(self.directory, 'image.tar'),
                      self._args.container[1],
                      ])
         else:
             raise ContainerUnsupported(str(self._args.container))
-        for fn in glob(pjoin(Settings.TEMPLATE_PATH, 'container', 'q*')):
-            dst = pjoin(self.directory, pbasename(fn))
-            copy(fn, dst)
 
     def run(self):
         try:
             if self._args.format_qdk1:
                 self.format_qdk1()
                 return 0
-            self.container()
             if self._args.format_qdk2:
                 info('Build QPKG')
                 self.format_qdk2()
+            self.container()
         except UserExit:
             pass
         except BaseStringException as e:
@@ -174,12 +180,14 @@ class CommandCreate(BaseCommand):
     @property
     def directory(self):
         if not hasattr(self, '_directory'):
-            self._directory = prealpath(self._args.d)
+            self._directory = pjoin(prealpath(self._args.directory), self.package_name)
         return self._directory
 
     @property
-    def sample_files(self):
-        return self._args.sample_files
+    def template_type(self):
+        if not hasattr(self, '_template_type'):
+            self._template_type = '' if self._args.template_type is None else self._args.template_type
+        return self._template_type
 
 
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

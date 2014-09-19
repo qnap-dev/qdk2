@@ -23,8 +23,12 @@ VERSION = 'v0.6'
 
 class Settings(object):
     DEBUG = False if getenv('DEBUG') is None else True
+    QPKG_VERSION = '2.0'
     CONTROL_PATH = 'QNAP'
-    DEFAULT_TEMPLATE = 'foobar'
+    SUPPORT_TEMPLATES = ('c_cpp', 'custom-webserver', 'php', 'python', 'webapp')
+    DEFAULT_TEMPLATE = 'c_cpp'
+    DEFAULT_PROJECT = 'new_project'
+    DEFAULT_CONTROL_PACKAGE = 'foobar'
     TEMPLATE_PATH = pjoin(PREFIX, 'template')
     TEMPLATE_V1_PATH = pjoin(PREFIX, QDK_BINARY, 'template')
     QBUILD = pjoin(PREFIX, QDK_BINARY, 'bin', 'qbuild')

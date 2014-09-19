@@ -1,0 +1,19 @@
+{
+    "containers": [
+        {
+            "image": "__IMAGE_ID__",
+            "source": "__IMAGE_ID__.tar",
+            "name": "ct_name",
+            "type": "docker",
+            "network": {
+                "port": [
+                    [
+                        8888,
+                        "tcp"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+

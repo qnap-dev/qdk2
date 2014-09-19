@@ -99,6 +99,7 @@ class Qdk2ToQbuild(object):
             self._cook_qpkg_cfg()
             self._cook_conffiles()
             self._cook_list()
+            self._cook_signature()
             self._cook_md5sum()
             return self._env['QPKG_DEST_CONTROL']
 
@@ -358,6 +359,12 @@ class Qdk2ToQbuild(object):
         # list
         #   links
         #   dirs
+        pass
+
+    def _cook_signature(self):
+        # TODO: add gpg
+        with open(pjoin(self._env['QPKG_DEST_CONTROL'], 'qpkg-version'), 'w') as f:
+            f.write(Settings.QPKG_VERSION)
         pass
 
     def _cook_md5sum(self):
