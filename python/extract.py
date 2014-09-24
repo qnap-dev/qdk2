@@ -23,7 +23,9 @@ from settings import Settings
 def create_temp_direcory():
     tempd = mkdtemp()
     debug(tempd)
+
     yield tempd
+
     if not Settings.DEBUG:
         rmtree(tempd)
 
@@ -33,19 +35,24 @@ class CommandExtract(BaseCommand):
 
     @classmethod
     def build_argparse(cls, subparser):
-        parser = subparser.add_parser(cls.key, help='extract *.qpkg or *.img')
+        parser = subparser.add_parser(cls.key, help='extract App(*.qpkg) or Firmware(*.img)')
         parser.add_argument('--' + cls.key, help=SUPPRESS)
         group = parser.add_mutually_exclusive_group()
-        group.add_argument('--as-qpkg', action='store_true', default=False,
+        group.add_argument('--as-qpkg', action='store_true',
+                           default=False,
                            help='treat as qpkg, ignore suffix')
-        group.add_argument('--as-image', action='store_true', default=False,
+        group.add_argument('--as-image', action='store_true',
+                           default=False,
                            help='treat as image, ignore suffix')
-        parser.add_argument('-d', metavar='directory', default='./',
-                            help='extract to')
-        parser.add_argument('image', metavar='image_or_qpkg',
+        parser.add_argument('-d', '--directory', metavar='path',
+                            default='./',
+                            help='extract file to specific directory'
+                                 ' (default: %(default)s)')
+        parser.add_argument('file', metavar='file',
                             help='such as TS-870_20140502-4.1.0.img'
                                  ' or photostation.qpkg')
 
+    # FIXME: couldn't extract every qpkg and would return error(tar extract)
     def extract_qpkg(self, package, to):
         extractor = Settings.QBUILD
         check_call([extractor, '--extract', package, to])
@@ -72,19 +79,24 @@ class CommandExtract(BaseCommand):
                         '-C', to])
 
     def run(self):
-        if pexists(self._args.d) and not pisdir(self._args.d):
-            error('{} is not directory'.format(self._args.d))
+        directory = pjoin(self._args.directory)
+
+        if pexists(directory) and not pisdir(directory):
+            error('{} is not directory'.format(directory))
             return -1
-        if not pexists(self._args.d):
-            makedirs(self._args.d)
+        if not pexists(self._args.file) and pisdir(self._args.file):
+            error('{} is not file'.format(self._args.file))
+            return -1
+        if not pexists(directory):
+            makedirs(directory)
         if self._args.as_qpkg:
-            self.extract_qpkg(self._args.image, self._args.d)
+            self.extract_qpkg(self._args.file, directory)
         elif self._args.as_image:
-            self.extract_image(self._args.image, self._args.d)
-        elif self._args.image.endswith('.img'):
-            self.extract_image(self._args.image, self._args.d)
-        elif self._args.image.endswith('.qpkg'):
-            self.extract_qpkg(self._args.image, self._args.d)
+            self.extract_image(self._args.file, directory)
+        elif self._args.file.endswith('.img'):
+            self.extract_image(self._args.file, directory)
+        elif self._args.file.endswith('.qpkg'):
+            self.extract_qpkg(self._args.file, directory)
         else:
             error('Unknown file suffix. Speicify --qpkg or --image')
             return -1

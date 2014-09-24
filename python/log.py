@@ -92,3 +92,6 @@ def trace(f):
     my_f.__name = f.__name__
     my_f.__doc__ = f.__doc__
     return my_f
+
+
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

@@ -29,28 +29,28 @@ class CommandCreate(BaseCommand):
 
     @classmethod
     def build_argparse(cls, subparser):
-        parser = subparser.add_parser(cls.key, help='create template')
+        parser = subparser.add_parser(cls.key, help='create QPKG template')
         parser.add_argument('--' + cls.key, help=SUPPRESS)
-        parser.add_argument(
-            '-p', metavar='package_name', default=Settings.DEFAULT_PROJECT,
-            help='package_name (Default: {0})'.format(Settings.DEFAULT_PROJECT))
-        parser.add_argument('-d', '--directory', metavar='directory', default='./',
-                            help='destination folder (Default: $PWD/$package_name)')
-        parser.add_argument('-t', '--template-type', metavar='type',
-                            help='.c, .so and doc (c_cpp) / \
-                                  codeigniter framework (php) / \
-                                  html (webapp) samples')
+        parser.add_argument('-p', '--package', metavar='name',
+                            default=Settings.DEFAULT_PACKAGE,
+                            help='package name (default: %(default)s)')
+        parser.add_argument('-d', '--directory', metavar='path',
+                            default='./',
+                            help='destination folder (default: %(default)s)')
+        parser.add_argument('-t', '--template', metavar='type',
+                            choices=Settings.SUPPORT_TEMPLATES,
+                            default=None,
+                            help='create new QPKG from existed template')
         parser.add_argument('-c', '--container',
                             nargs=2, metavar=('ctype', 'cid'),
-                            help='for example, -c docker u1')
+                            help='e.g., -c lxc ubuntu | -c docker 826544226fdc')
         group = parser.add_mutually_exclusive_group()
-        group.add_argument('--format-qdk1',
-                           action='store_true',
+        group.add_argument('--format-qdk1', action='store_true',
                            default=False,
-                           help='QDK1 format')
-        group.add_argument('--format-qdk2',
-                           action='store_true',
-                           default=True, help='QDK2 format (default)')
+                           help='QDK1 format (legacy)')
+        group.add_argument('--format-qdk2', action='store_true',
+                           default=True,
+                           help='QDK2 format (default)')
 
     def format_qdk1(self):
         info('The template are putting to ' + self.directory)
@@ -87,7 +87,7 @@ class CommandCreate(BaseCommand):
                  pjoin(self.directory, Settings.CONTROL_PATH))
 
         # cook QNAP
-        if self.template_type != '':
+        if self.template != '':
             for fn in glob(pjoin(self.directory,
                                  Settings.CONTROL_PATH,
                                  '*.sample')):
@@ -98,10 +98,10 @@ class CommandCreate(BaseCommand):
             remove(fn)
 
         # copy template data files
-        if self.template_type in Settings.SUPPORT_TEMPLATES:
-            info('Copy template data files: ' + self.template_type)
+        if self.template in Settings.SUPPORT_TEMPLATES:
+            info('Copy template data files: ' + self.template)
             default_template_path = pjoin(Settings.TEMPLATE_PATH,
-                                          self.template_type)
+                                          self.template)
             for fn in listdir(default_template_path):
                 fn = pjoin(default_template_path, fn)
                 dest = pjoin(self.directory, pbasename(fn))
@@ -145,13 +145,15 @@ class CommandCreate(BaseCommand):
             image_path = './'
             image_dir = 'image' + '-' + str(getpid())
             # TODO: lxc-clone use rsync and it too slow
-            sp.call(['sudo', 'lxc-clone', '-P', image_path, self._args.container[1],
-                     image_dir])
+            sp.call(['sudo', 'lxc-clone', '-P', image_path,
+                     self._args.container[1], image_dir])
             info('compress')
-            sp.call(['sudo', 'tar', 'cf', pjoin(self.directory, 'image.tar'), image_path + image_dir])
+            sp.call(['sudo', 'tar', 'cf', pjoin(self.directory, 'image.tar'),
+                     image_path + image_dir])
             sp.call(['sudo', 'rm', '-rf', image_path + image_dir])
         elif self._args.container[0] == 'docker':
-            sp.call(['sudo', 'docker', 'save', '-o', pjoin(self.directory, 'image.tar'),
+            sp.call(['sudo', 'docker', 'save', '-o',
+                     pjoin(self.directory, 'image.tar'),
                      self._args.container[1],
                      ])
         else:
@@ -175,7 +177,7 @@ class CommandCreate(BaseCommand):
 
     @property
     def package_name(self):
-        return self._args.p
+        return self._args.package
 
     @property
     def directory(self):
@@ -184,10 +186,10 @@ class CommandCreate(BaseCommand):
         return self._directory
 
     @property
-    def template_type(self):
-        if not hasattr(self, '_template_type'):
-            self._template_type = '' if self._args.template_type is None else self._args.template_type
-        return self._template_type
+    def template(self):
+        if not hasattr(self, '_template'):
+            self._template = '' if self._args.template is None else self._args.template
+        return self._template
 
 
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
