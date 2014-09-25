@@ -1,10 +1,12 @@
-qdk2 (0.7) trusty; urgency=medium
+qdk2 (0.7) UNRELEASED; urgency=medium
 
-  * Add some template and fixed issue
+  * Add some template and fixed issue - Walker Lee
+  * Support QPKG Exec_Files field - Doro Wu
+  * Fix qdk2 prefix error issue (development environment) - Walker Lee
 
- -- Walker Lee <walkerlee@qnap.com>  Tue, 23 Sep 2014 10:11:49 +0000
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Fri, 19 Sep 2014 11:35:43 +0800
 
-qdk2 (0.6) trusty; urgency=medium
+qdk2 (0.6) UNRELEASED; urgency=medium
 
   * switch `qdk2 -c lxc cid` from rsync to lxc-clone
 
