@@ -27,7 +27,7 @@ class QbuildToQpkg(object):
     def __init__(self, path):
         self._path = path
 
-    def build(self):
+    def build(self, args):
         cwd = getcwd()
         chdir(self._path)
         try:
@@ -36,6 +36,8 @@ class QbuildToQpkg(object):
                 cmd.append('--verbose')
             else:
                 cmd.append('-q')
+            for extra in args._extra_args:
+                cmd.append(extra)
             debug(cmd)
             subprocess.check_call(cmd)
         finally:
@@ -423,7 +425,7 @@ class CommandBuild(BaseCommand):
 
         if self._args.as_qdk1:
             q = self._args.qpkg_dir
-            result = QbuildToQpkg(q).build()
+            result = QbuildToQpkg(q).build(self)
             arch = '_i386'  # TODO
             dest = pjoin(self.build_dir,
                          pbasename(result)[:-5] + arch + '.qpkg')
