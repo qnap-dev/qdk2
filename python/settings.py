@@ -25,7 +25,7 @@ class Settings(object):
     DEBUG = False if getenv('DEBUG') is None else True
     QPKG_VERSION = '2.2'
     CONTROL_PATH = 'QNAP'
-    SUPPORT_TEMPLATES = ['c_cpp', 'custom-webserver', 'php', 'python', 'webapp']
+    SUPPORT_TEMPLATES = ('c_cpp', 'custom-webserver', 'php', 'python', 'webapp')
     DEFAULT_PACKAGE = 'new_project'
     DEFAULT_CONTROL_PACKAGE = 'foobar'
     TEMPLATE_PATH = pjoin(PREFIX, 'template')

@@ -17,6 +17,7 @@ import subprocess as sp
 
 
 from settings import Settings
+from importuri import ImportURI
 from exception import (BaseStringException,
                        UserExit,
                        ContainerUnsupported,
@@ -37,6 +38,9 @@ class CommandCreate(BaseCommand):
         parser.add_argument('-d', '--directory', metavar='path',
                             default='./',
                             help='destination folder (default: %(default)s)')
+        parser.add_argument('-i', '--import-from', metavar='uri',
+                            default=None,
+                            help='import source code from URI')
         parser.add_argument('-t', '--template', metavar='type',
                             choices=Settings.SUPPORT_TEMPLATES,
                             default=None,
@@ -88,8 +92,7 @@ class CommandCreate(BaseCommand):
 
         # cook QNAP
         if self.template != '':
-            for fn in glob(pjoin(self.directory,
-                                 Settings.CONTROL_PATH,
+            for fn in glob(pjoin(self.directory, Settings.CONTROL_PATH,
                                  '*.sample')):
                 dst = fn[:fn.rfind('.')]
                 copy(fn, dst)
@@ -97,6 +100,16 @@ class CommandCreate(BaseCommand):
         for fn in glob(samples):
             remove(fn)
 
+        self.rename_ctrl_files()
+
+    def import_from(self):
+        if self._args.import_from is None:
+            return
+
+        import_uri = ImportURI(self._args.import_from, self.directory)
+        import_uri.run()
+
+    def copy_sample(self):
         # copy template data files
         if self.template in Settings.SUPPORT_TEMPLATES:
             info('Copy template data files: ' + self.template)
@@ -106,11 +119,12 @@ class CommandCreate(BaseCommand):
                 fn = pjoin(default_template_path, fn)
                 dest = pjoin(self.directory, pbasename(fn))
                 if isdir(fn):
-                    dest = pjoin(self.directory, pbasename(fn))
                     if not pexists(dest):
                         copytree(fn, dest)
                 else:
                     copy(fn, dest)
+
+    def rename_ctrl_files(self):
         # rename
         if self.package_name != Settings.DEFAULT_CONTROL_PACKAGE:
             info('Modify package name to ' + self.package_name)
@@ -121,9 +135,7 @@ class CommandCreate(BaseCommand):
                 for line in fileinput.input(fp, inplace=True):
                     print line.replace(Settings.DEFAULT_CONTROL_PACKAGE,
                                        self.package_name),
-                    # Python 3
-                    # print(line.replace(DEFAULT_TEMPLATE, self.package_name),
-                    #       end='')
+
             # mv foobar.* to self.package_name.*
             for fn in glob(pjoin(self.directory, Settings.CONTROL_PATH,
                                  Settings.DEFAULT_CONTROL_PACKAGE + '.*')):
@@ -162,11 +174,14 @@ class CommandCreate(BaseCommand):
     def run(self):
         try:
             if self._args.format_qdk1:
+                info('Build QPKG with QDK1 format')
                 self.format_qdk1()
-                return 0
             if self._args.format_qdk2:
-                info('Build QPKG')
+                info('Build QPKG with QDK2 format')
                 self.format_qdk2()
+
+            self.copy_sample()
+            self.import_from()
             self.container()
         except UserExit:
             pass
@@ -182,7 +197,8 @@ class CommandCreate(BaseCommand):
     @property
     def directory(self):
         if not hasattr(self, '_directory'):
-            self._directory = pjoin(prealpath(self._args.directory), self.package_name)
+            self._directory = pjoin(prealpath(self._args.directory),
+                                    self.package_name)
         return self._directory
 
     @property
