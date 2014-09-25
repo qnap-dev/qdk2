@@ -45,4 +45,5 @@ class FileSyntaxError(BaseStringException):
 class ContainerUnsupported(BaseStringException):
     pass
 
+
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

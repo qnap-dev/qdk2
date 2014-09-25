@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 from argparse import SUPPRESS
 from os.path import (exists as pexists,
@@ -52,7 +52,7 @@ class Qdk2ToQbuild(object):
         self.qpkg_dir = data.qpkg_dir
 
     def transform(self):
-        cfile = ControlFile()
+        cfile = ControlFile(self.qpkg_dir)
         result = []
         with self._setup_all(cfile):
             for k in cfile.packages:
@@ -60,7 +60,7 @@ class Qdk2ToQbuild(object):
         return result
 
     def build_env(self, package):
-        cfile = ControlFile()
+        cfile = ControlFile(self.qpkg_dir)
         if package not in cfile.packages:
             raise PackageNotFound(package)
         with self._setup_all(cfile), self._setup(cfile.packages[package]):
@@ -131,7 +131,9 @@ class Qdk2ToQbuild(object):
         self.package = package
         prepare_env()
         prepare_dest()
+
         yield None
+
         del self._env
         del self.package
 
@@ -365,7 +367,8 @@ class Qdk2ToQbuild(object):
 
     def _cook_signature(self):
         # TODO: add gpg
-        with open(pjoin(self._env['QPKG_DEST_CONTROL'], 'qpkg-version'), 'w') as f:
+        with open(pjoin(self._env['QPKG_DEST_CONTROL'], 'qpkg-version'),
+                  'w') as f:
             f.write(Settings.QPKG_VERSION)
         pass
 
@@ -385,7 +388,7 @@ class CommandBuild(BaseCommand):
         parser.add_argument('--' + cls.key, help=SUPPRESS)
         parser.add_argument('--qpkg-dir',
                             default='./',
-                            help='Source package')
+                            help='Source package (default: %(default)s)')
         parser.add_argument('--build-dir',
                             default='../build-area',
                             help='Folder to store building stuff')
@@ -409,9 +412,11 @@ class CommandBuild(BaseCommand):
         return self._build_dir
 
     def run(self, **kargs):
+        # FIXME: unused now
         for k in kargs:
             setattr(self, '_' + k, kargs[k])
 
+        # TODO: remove later
         if self._args.build_env is not None:
             try:
                 env = Qdk2ToQbuild(self).build_env(self._args.build_env)

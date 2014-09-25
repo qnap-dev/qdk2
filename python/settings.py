@@ -18,16 +18,15 @@ else:
     QPKG_FILE = 'qpkg_4.2.0_amd64.tgz'
 
 
-VERSION = 'v0.6'
+VERSION = 'v0.8'
 
 
 class Settings(object):
     DEBUG = False if getenv('DEBUG') is None else True
-    QPKG_VERSION = '2.0'
+    QPKG_VERSION = '2.2'
     CONTROL_PATH = 'QNAP'
     SUPPORT_TEMPLATES = ('c_cpp', 'custom-webserver', 'php', 'python', 'webapp')
-    DEFAULT_TEMPLATE = 'c_cpp'
-    DEFAULT_PROJECT = 'new_project'
+    DEFAULT_PACKAGE = 'new_project'
     DEFAULT_CONTROL_PACKAGE = 'foobar'
     TEMPLATE_PATH = pjoin(PREFIX, 'template')
     TEMPLATE_V1_PATH = pjoin(PREFIX, QDK_BINARY, 'template')

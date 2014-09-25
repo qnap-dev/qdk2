@@ -11,8 +11,8 @@ class CommandVersion(BaseCommand):
 
     @classmethod
     def build_argparse(cls, subparser):
-        p = subparser.add_parser(cls.key, help='print version')
-        p.add_argument('--' + cls.key, help=SUPPRESS)
+        parser = subparser.add_parser(cls.key, help='print version and exit')
+        parser.add_argument('--' + cls.key, help=SUPPRESS)
 
     def run(self):
         print VERSION

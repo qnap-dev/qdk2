@@ -20,8 +20,8 @@ class File(object):
 
 
 class ControlFile(File):
-    def __init__(self, filename=pjoin(Settings.CONTROL_PATH, 'control')):
-        self._filename = filename
+    def __init__(self, qpkg_dir='.'):
+        self._filename = pjoin(qpkg_dir, Settings.CONTROL_PATH, 'control')
         self._parsed = False
         self._packages = {}
         self._source = None
@@ -104,8 +104,8 @@ class ChangelogFile(File):
     TITLE_REOBJ = re.compile(r"""(\S+) \((\S+)\).*""")
     AUTHOR_REOBJ = re.compile(r""" -- (.*) <(.*)> (.*)""")
 
-    def __init__(self, filename=pjoin(Settings.CONTROL_PATH, 'changelog')):
-        self._filename = filename
+    def __init__(self, qpkg_dir='.'):
+        self._filename = pjoin(qpkg_dir, Settings.CONTROL_PATH, 'changelog')
         self._parsed = False
         self._logs = []
         self._package_name = None

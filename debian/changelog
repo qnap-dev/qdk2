@@ -1,4 +1,10 @@
-qdk2 (0.6) UNRELEASED; urgency=medium
+qdk2 (0.7) trusty; urgency=medium
+
+  * Add some template and fixed issue
+
+ -- Walker Lee <walkerlee@qnap.com>  Tue, 23 Sep 2014 10:11:49 +0000
+
+qdk2 (0.6) trusty; urgency=medium
 
   * switch `qdk2 -c lxc cid` from rsync to lxc-clone
 
