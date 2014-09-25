@@ -437,6 +437,11 @@ create_data_package(){
 		debug_msg "[$QDK_COMPRESS_FILE]"
 		debug_msg "$(/bin/tar $tar_verbose -cf - -C build.$$ . | /usr/local/sbin/7z a -si tmp.$$/data.tar.7z)"
 		;;
+	xz)
+		QDK_COMPRESS_FILE=data.tar.xz
+		debug_msg "[$QDK_COMPRESS_FILE]"
+		debug_msg "$(/bin/tar cvJf tmp.$$/data.tar.xz -C build.$$ .)"
+		;;
 	*)
 		err_msg "$QDK_COMPRESS_METHOD: unknown compression format"
 	esac
@@ -451,6 +456,11 @@ create_control_package(){
 	/bin/cp -p "$QDK_INSTALL_SCRIPT" build.$$/
 	/bin/cp -p "$QDK_PACKAGE_ROUTINES" build.$$/package_routines
 	/bin/cp -p "$QDK_QPKG_CONFIG" build.$$/qpkg.cfg
+    # xz utility
+    if [ "$QDK_COMPRESS_METHOD" == "xz" ]; then
+        /bin/cp $(dirname $(dirname $(realpath $0)))/xz_1404_${QDK_XZ_ARCH}.tgz build.$$/xz.tgz
+    fi
+
 	[ -f tmp.$$/md5sum ] && /bin/cp -p tmp.$$/md5sum build.$$/
 	[ -f tmp.$$/conf.tar.gz ] && /bin/cp -p tmp.$$/conf.tar.gz build.$$/
 
@@ -1227,7 +1237,7 @@ usage: $(/usr/bin/basename $0) [--extract QPKG [DIR]] [--create-env NAME] [-s|--
 	[--build-model MODEL] [--build-dir BUILD_DIR] [--force-config]
 	[--setup SCRIPT] [--teardown SCRIPT] [--pre-build SCRIPT]
 	[--post-build SCRIPT] [--exclude PATTERN] [--exclude-from FILE]
-	[--gzip|--bzip2|--7zip] [--sign] [--gpg-name ID] [--verify QPKG]
+	[--gzip|--bzip2|--7zip|--xz {amd64|armhf}] [--sign] [--gpg-name ID] [--verify QPKG]
 	[--add-sign QPKG] [--import-key KEY] [--remove-key ID] [--list-keys]
 	[--query OPTION QPKG] [-v|--verbose] [-q|--quiet] [--strict]
 	[-?|-h|--help] [--usage] [-V|--version]
@@ -1406,6 +1416,11 @@ main(){
 		--gzip)		QDK_COMPRESS_METHOD="gzip"
 				;;
 		--bzip2)	QDK_COMPRESS_METHOD="bzip2"
+				;;
+		--xz)	QDK_COMPRESS_METHOD="xz"
+				[ -n "$QDK_COMPRESS_METHOD" ] || err_msg "--xz: no arch"
+                QDK_XZ_ARCH=$2
+				shift
 				;;
 		--create-env)	qbuild_qpkg_name="$2"
 				[ -n "$qbuild_qpkg_name" ] || err_msg "--create-env: no name"

@@ -68,6 +68,7 @@ SYS_RSS_IMG_DIR="/home/httpd/RSS/images"
 SYS_QPKG_DATA_FILE_GZIP="./data.tar.gz"
 SYS_QPKG_DATA_FILE_BZIP2="./data.tar.bz2"
 SYS_QPKG_DATA_FILE_7ZIP="./data.tar.7z"
+SYS_QPKG_DATA_FILE_XZ="./data.tar.xz"
 SYS_QPKG_DATA_CONFIG_FILE="./conf.tar.gz"
 SYS_QPKG_DATA_MD5SUM_FILE="./md5sum"
 SYS_QPKG_DATA_PACKAGES_FILE="./Packages.gz"
@@ -203,6 +204,10 @@ extract_data(){
 		;;
 	*.7z)
 		$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || err_log "$SYS_MSG_FILE_ERROR"
+		;;
+	*.xz)
+		$CMD_TAR xf "./xz.tgz"
+		LD_LIBRARY_PATH=${PWD}/lib lib/ld-2.19.so bin/xzcat "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || err_log "$SYS_MSG_FILE_ERROR"
 		;;
 	*)
 		err_log "$SYS_MSG_FILE_ERROR"
@@ -1148,6 +1153,8 @@ main(){
 		SYS_QPKG_DATA_FILE=$SYS_QPKG_DATA_FILE_BZIP2
 	elif [ -f $SYS_QPKG_DATA_FILE_7ZIP ]; then
 		SYS_QPKG_DATA_FILE=$SYS_QPKG_DATA_FILE_7ZIP
+	elif [ -f $SYS_QPKG_DATA_FILE_XZ ]; then
+		SYS_QPKG_DATA_FILE=$SYS_QPKG_DATA_FILE_XZ
 	else
 		err_log "$SYS_MSG_FILE_NOT_FOUND"
 	fi
