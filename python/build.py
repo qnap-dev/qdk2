@@ -442,7 +442,7 @@ class CommandBuild(BaseCommand):
             qbuild_formats = Qdk2ToQbuild(self).transform()
             for q in qbuild_formats:
                 debug(q)
-                result = QbuildToQpkg(q).build()
+                result = QbuildToQpkg(q).build(self)
                 arch = q[q.rfind('_'):]
                 dest = pjoin(self.build_dir,
                              pbasename(result)[:-5] + arch + '.qpkg')
