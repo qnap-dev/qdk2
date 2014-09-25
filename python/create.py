@@ -17,6 +17,7 @@ import subprocess as sp
 
 
 from settings import Settings
+from importuri import ImportURI
 from exception import (BaseStringException,
                        UserExit,
                        ContainerUnsupported,
@@ -101,6 +102,13 @@ class CommandCreate(BaseCommand):
 
         self.rename_ctrl_files()
 
+    def import_from(self):
+        if self._args.import_from is None:
+            return
+
+        import_uri = ImportURI(self._args.import_from, self.directory)
+        import_uri.run()
+
     def copy_sample(self):
         # copy template data files
         if self.template in Settings.SUPPORT_TEMPLATES:
@@ -173,6 +181,7 @@ class CommandCreate(BaseCommand):
                 self.format_qdk2()
 
             self.copy_sample()
+            self.import_from()
             self.container()
         except UserExit:
             pass
