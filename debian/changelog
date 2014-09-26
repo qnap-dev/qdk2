@@ -1,3 +1,11 @@
+qdk2 (0.8) UNRELEASED; urgency=medium
+
+  * XZ supports of QDK1 (--xz {amd64|armhf}) - Doro Wu
+  * Implement create --import-from feature - Walker Lee
+  * Add templates and fixed issues - Walker Lee
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Fri, 26 Sep 2014 10:22:57 +0800
+
 qdk2 (0.7) UNRELEASED; urgency=medium
 
   * Add some template and fixed issue - Walker Lee
