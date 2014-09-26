@@ -393,7 +393,8 @@ class CommandBuild(BaseCommand):
                             help='Source package (default: %(default)s)')
         parser.add_argument('--build-dir',
                             default='../build-area',
-                            help='Folder to store building stuff')
+                            help='Folder to store building stuff'
+                                 ' (default: %(default)s)')
         parser.add_argument('--build-env',
                             default=None,
                             help='List build environment')

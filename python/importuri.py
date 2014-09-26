@@ -8,9 +8,10 @@ import subprocess as sp
 
 from log import warning
 
+
 class ImportURI(object):
     TARBALL_EXTS = ['.tar', '.tar.gz', '.tar.bz2', '.tar.xz',
-                    '.tgz', '.tb2','.tbz2', '.txz']
+                    '.tgz', '.tb2', '.tbz2', '.txz']
 
     def __init__(self, uri, directory):
         self._uri = uri.strip()
