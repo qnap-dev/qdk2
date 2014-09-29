@@ -404,6 +404,8 @@ add_config_data(){
 create_data_package(){
 	local arch_msg="${1:+ for $1}"
 	local arch_dir="$2"
+    local BUILD_DIR=build.$$
+    local TMP_DIR=tmp.$$
 
 	msg "Creating archive with data files${arch_msg}..."
 
@@ -423,7 +425,8 @@ create_data_package(){
 	gzip)
 		QDK_COMPRESS_FILE=data.tar.gz
 		debug_msg "[$QDK_COMPRESS_FILE]"
-		debug_msg "$(/bin/tar -cvzf tmp.$$/data.tar.gz -C build.$$ .)"
+        local SIZE=$(du -sb "${BUILD_DIR}" | grep -o '^[0-9]\+')
+        debug_msg "$(tar cf - -C ${BUILD_DIR} . | pv -s $SIZE -N tar | gzip > ${TMP_DIR}/data.tar.gz)"
 		;;
 	bzip2)
 		QDK_COMPRESS_FILE=data.tar.bz2
@@ -440,7 +443,8 @@ create_data_package(){
 	xz)
 		QDK_COMPRESS_FILE=data.tar.xz
 		debug_msg "[$QDK_COMPRESS_FILE]"
-		debug_msg "$(/bin/tar cvJf tmp.$$/data.tar.xz -C build.$$ .)"
+        local SIZE=$(du -sb "${BUILD_DIR}" | grep -o '^[0-9]\+')
+        debug_msg "$(tar cf - -C ${BUILD_DIR} . | pv -s $SIZE -N tar | xz > ${TMP_DIR}/data.tar.gz)"
 		;;
 	*)
 		err_msg "$QDK_COMPRESS_METHOD: unknown compression format"
