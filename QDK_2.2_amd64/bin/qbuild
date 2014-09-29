@@ -721,10 +721,8 @@ add_qpkg_tail(){
 
 # Add encryption.
 add_qpkg_encryption(){
-    tar xf /usr/share/qdk2/qpkg/qpkg_*.tgz -C ${QDK_BUILD_DIR}/
-    cp $QDK_QPKG_FILE ${QDK_BUILD_DIR}/qpkg_*/cde-root/
-	verbose_msg "Adding QPKG checksum: $(${QDK_BUILD_DIR}/qpkg_*/qpkg --encrypt /$QDK_QPKG_FILE)"
-    cp ${QDK_BUILD_DIR}/qpkg_*/cde-root/$QDK_QPKG_FILE $QDK_QPKG_FILE
+    verbose_msg "Adding QPKG checksum: $QDK_QPKG_FILE"
+    /usr/bin/qpkg_encrypt $QDK_QPKG_FILE
 }
 
 create_qpkg(){

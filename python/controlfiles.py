@@ -254,7 +254,8 @@ class ChangelogFile(File):
     def version(self):
         self.parse()
         if len(self._logs) == 0:
-            return 'none'
+            raise ChangelogFileSyntaxError(self._filename, self._lineno,
+                    'Changlog can\'t be empty')
         return self._logs[0]['version']
 
     @property
