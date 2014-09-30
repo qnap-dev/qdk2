@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
 from argparse import SUPPRESS
-from os import getenv
-from os.path import exists as pexists
+from os import getenv, getcwd
+from os.path import (join as pjoin,
+                     exists as pexists,
+                     abspath as pabspath
+                     )
 from shutil import copy
 import tempfile
 import subprocess
@@ -11,6 +14,8 @@ import os
 from basecommand import BaseCommand
 from log import error, info
 from controlfiles import ControlFile, ChangelogFile
+from settings import Settings
+from configs import QDKrc
 
 
 class CommandChangelog(BaseCommand):
@@ -20,9 +25,6 @@ class CommandChangelog(BaseCommand):
     def build_argparse(cls, subparser):
         parser = subparser.add_parser(cls.key, help='modify QPKG changelog')
         parser.add_argument('--' + cls.key, help=SUPPRESS)
-        parser.add_argument('--qpkg-dir',
-                            default='./',
-                            help='source package path (default: %(default)s)')
         parser.add_argument('-m', '--message', nargs="*",
                             default=None,
                             help='log message(s)')
@@ -42,26 +44,38 @@ class CommandChangelog(BaseCommand):
     @property
     def qpkg_dir(self):
         if not hasattr(self, '_qpkg_dir'):
-            self._qpkg_dir = self._args.qpkg_dir
+            cwd = getcwd()
+            while cwd != '/':
+                if pexists(pjoin(cwd, Settings.CONTROL_PATH, 'control')):
+                    break
+                cwd = pabspath(os.path.join(cwd, os.pardir))
+
+            self._qpkg_dir = cwd if cwd != '/' else None
+
         return self._qpkg_dir
 
     @property
     def author(self):
         if not hasattr(self, '_author'):
             self._author = getenv('QPKG_NAME')
-            if self._author is None:
-                self._author = ''
         return self._author
 
     @property
     def email(self):
         if not hasattr(self, '_email'):
             self._email = getenv('QPKG_EMAIL')
-            if self._email is None:
-                self._email = ''
         return self._email
 
     def run(self):
+        if self.qpkg_dir is None:
+            error('Cannot find QNAP/changelog anywhere!')
+            error('Are you in the source code tree?')
+            return -1
+
+        # read ~/.qdkrc
+        qdkrc = QDKrc()
+        cfg_user = qdkrc.config['user']
+
         control = ControlFile(self.qpkg_dir)
         changelog = ChangelogFile(self.qpkg_dir)
         kv = {'package_name': control.source['source']}
@@ -69,8 +83,8 @@ class CommandChangelog(BaseCommand):
             kv['messages'] = self._args.message
         if self._args.version is not None:
             kv['version'] = self._args.version
-        kv['author'] = self.author
-        kv['email'] = self.email
+        kv['author'] = cfg_user['name'] if self.author is None else self.author
+        kv['email'] = cfg_user['email'] if self.email is None else self.email
         if len(kv['author']) == 0 or len(kv['email']) == 0:
             error('Environment variable QPKG_NAME or QPKG_EMAIL are empty')
             info('QPKG_NAME: ' + kv['author'])
