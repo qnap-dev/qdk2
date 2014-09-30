@@ -16,7 +16,7 @@ else:
     QDK_BINARY = 'QDK_2.2_amd64'
 
 
-VERSION = 'v0.8-2-g378b7ff'
+VERSION = 'v0.8-3-gd7f6d21'
 
 
 class Settings(object):

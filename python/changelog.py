@@ -4,7 +4,8 @@ from argparse import SUPPRESS
 from os import getenv, getcwd
 from os.path import (join as pjoin,
                      exists as pexists,
-                     abspath as pabspath
+                     abspath as pabspath,
+                     getmtime as pgetmtime
                      )
 from shutil import copy
 import tempfile
@@ -31,9 +32,6 @@ class CommandChangelog(BaseCommand):
         parser.add_argument('-v', '--version',
                             default=None,
                             help='this specifies the version number')
-        parser.add_argument('-q', '--quiet', action="store_true",
-                            default=False,
-                            help='quiet mode')
 
     def append(self, fields):
         pass
@@ -103,13 +101,11 @@ class CommandChangelog(BaseCommand):
             with open(changelog.filename, 'r') as fread:
                 fd.writelines(fread)
         fd.close()
+        last_mtime = pgetmtime(filename)
 
         subprocess.check_call(['sensible-editor', filename])
-        if not self._args.quiet and pexists(changelog.filename):
-            yn = raw_input('Overwrite ' + changelog.filename + '? (Y/n) ')
-            if yn.lower() == 'n':
-                return 0
-        copy(filename, changelog.filename)
+        if last_mtime != pgetmtime(filename):
+            copy(filename, changelog.filename)
         return 0
 
 

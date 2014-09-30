@@ -15,8 +15,8 @@ class QDKrc(object):
         self._config = {}
         self._field = {
             'user': {
-                'name': {'type': 'str'},
-                'email': {}
+                'name': {'type': 'str', 'default': ''},
+                'email': {'default': ''}
             }
         }
 
