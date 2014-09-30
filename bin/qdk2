@@ -17,17 +17,17 @@ sys.path.append(pjoin(prefix, 'python'))
 
 from log import LoggingConfiguration
 from settings import Settings
-from build import CommandBuild
-from create import CommandCreate
-from changelog import CommandChangelog
-from extract import CommandExtract
-from version import CommandVersion
+from qdk2.create import CommandCreate
+from qdk2.build import CommandBuild
+from qdk2.changelog import CommandChangelog
+from qdk2.extract import CommandExtract
+from qdk2.version import CommandVersion
 # from lint import CommandLint
 
 
 LoggingConfiguration.set(logging.DEBUG if Settings.DEBUG else logging.INFO)
-Commands = (CommandBuild,
-            CommandCreate,
+Commands = (CommandCreate,
+            CommandBuild,
             CommandChangelog,
             CommandExtract,
             CommandVersion,

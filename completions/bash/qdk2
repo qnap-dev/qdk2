@@ -1,0 +1,108 @@
+#!/bin/bash
+#
+# bash completion file for qdk2 commands
+#
+# This script provides supports completion of:
+#  - commands and their options
+#
+# To enable the completions either:
+#  - place this file in /etc/bash_completion.d
+#  or
+#  - copy this file and add the line below to your .bashrc after
+#    bash completion features are loaded
+#     . qdk2.bash
+
+_qdk2_import()
+{
+	return
+}
+
+_qdk2_create()
+{
+	return
+}
+
+_qdk2_build()
+{
+	return
+}
+
+_qdk2_changelog()
+{
+	return
+}
+
+_qdk2_extract()
+{
+	return
+}
+
+_qdk2_version()
+{
+	return
+}
+
+_qdk2_qdk2()
+{
+	case "$prev" in
+		-h)
+			return
+			;;
+		-v)
+			return
+			;;
+		*)
+			;;
+	esac
+
+	case "$cur" in
+		-*)
+			COMPREPLY=( $( compgen -W "-h -v" -- "$cur" ) )
+			;;
+		*)
+			COMPREPLY=( $( compgen -W "$commands help" -- "$cur" ) )
+			;;
+	esac
+}
+
+_qdk2()
+{
+	local commands="
+			import
+			create
+			build
+			changelog
+			extract
+			version
+		"
+
+	COMPREPLY=()
+	local cur prev words cword
+	_get_comp_words_by_ref -n : cur prev words cword
+
+	local command='qdk2'
+	local counter=1
+	while [ $counter -lt $cword ]; do
+		case "${words[$counter]}" in
+			-H)
+				(( counter++ ))
+				;;
+			-*)
+				;;
+			*)
+				command="${words[$counter]}"
+				cpos=$counter
+				(( cpos++ ))
+				break
+				;;
+		esac
+		(( counter++ ))
+	done
+
+	local completions_func=_qdk2_${command}
+	declare -F $completions_func >/dev/null && $completions_func
+
+	return 0
+}
+
+complete -F _qdk2 qdk2
