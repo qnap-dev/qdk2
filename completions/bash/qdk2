@@ -37,6 +37,11 @@ _qdk2_extract()
 	return
 }
 
+_qdk2_doctor()
+{
+	return
+}
+
 _qdk2_version()
 {
 	return
@@ -73,6 +78,7 @@ _qdk2()
 			build
 			changelog
 			extract
+			doctor
 			version
 		"
 
