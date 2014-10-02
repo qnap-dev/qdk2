@@ -11,7 +11,8 @@ class CommandVersion(BaseCommand):
 
     @classmethod
     def build_argparse(cls, subparser):
-        parser = subparser.add_parser(cls.key, help='print version and exit')
+        parser = subparser.add_parser(cls.key, help='show the QDK2 version'
+                                                    ' information')
         parser.add_argument('--' + cls.key, help=SUPPRESS)
 
     def run(self):

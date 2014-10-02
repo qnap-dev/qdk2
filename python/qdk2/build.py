@@ -390,17 +390,17 @@ class CommandBuild(BaseCommand):
         parser.add_argument('--' + cls.key, help=SUPPRESS)
         parser.add_argument('--qpkg-dir',
                             default='./',
-                            help='Source package (default: %(default)s)')
+                            help='source package (default: %(default)s)')
         parser.add_argument('--build-dir',
                             default='../build-area',
-                            help='Folder to store building stuff'
+                            help='folder to store building stuff'
                                  ' (default: %(default)s)')
         parser.add_argument('--build-env',
                             default=None,
-                            help='List build environment')
+                            help='list build environment')
         parser.add_argument('--as-qdk1', action='store_true',
                             default=False,
-                            help='Source package is QDK 1 format')
+                            help='source package is QDK 1 format')
 
     @property
     def qpkg_dir(self):

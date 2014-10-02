@@ -28,7 +28,7 @@ class CommandChangelog(BaseCommand):
         parser.add_argument('--' + cls.key, help=SUPPRESS)
         parser.add_argument('-m', '--message', nargs="*",
                             default=None,
-                            help='log message(s)')
+                            help='use the given message(s) as the log message')
         parser.add_argument('-v', '--version',
                             default=None,
                             help='this specifies the version number')
@@ -101,8 +101,8 @@ class CommandChangelog(BaseCommand):
             with open(changelog.filename, 'r') as fread:
                 fd.writelines(fread)
         fd.close()
-        last_mtime = pgetmtime(filename)
 
+        last_mtime = pgetmtime(filename)
         subprocess.check_call(['sensible-editor', filename])
         if last_mtime != pgetmtime(filename):
             copy(filename, changelog.filename)

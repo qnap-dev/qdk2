@@ -35,15 +35,17 @@ class CommandExtract(BaseCommand):
 
     @classmethod
     def build_argparse(cls, subparser):
-        parser = subparser.add_parser(cls.key, help='extract App(*.qpkg) or Firmware(*.img)')
+        parser = subparser.add_parser(cls.key, help='extract QNAP App (.qpkg)'
+                                                    ' or firmware image (.img)')
         parser.add_argument('--' + cls.key, help=SUPPRESS)
-        group = parser.add_mutually_exclusive_group()
-        group.add_argument('--as-qpkg', action='store_true',
-                           default=False,
-                           help='treat as qpkg, ignore suffix')
-        group.add_argument('--as-image', action='store_true',
-                           default=False,
-                           help='treat as image, ignore suffix')
+        group = parser.add_argument_group('extract file type')
+        mgroup = group.add_mutually_exclusive_group()
+        mgroup.add_argument('--as-qpkg', action='store_true',
+                            default=False,
+                            help='treat as qpkg, ignore suffix')
+        mgroup.add_argument('--as-image', action='store_true',
+                            default=False,
+                            help='treat as image, ignore suffix')
         parser.add_argument('-d', '--directory', metavar='path',
                             default='./',
                             help='extract file to specific directory'
