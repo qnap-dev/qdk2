@@ -1,2 +1,4 @@
 python/*.pyc
 python/qdk2/*.pyc
+qpkg/qpkg_encrypt
+samples/*.tar.gz

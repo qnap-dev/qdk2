@@ -1,7 +1,9 @@
-.PHONY: all
+DIRS = qpkg samples
+
+.PHONY: all clean
 
 all:
-	@$(MAKE) -C src
+	@for d in $(DIRS); do $(MAKE) -C $$d; done
 
 clean:
-	@$(MAKE) -C src clean
+	@for d in $(DIRS); do $(MAKE) -C $$d clean; done
