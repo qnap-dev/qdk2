@@ -1,3 +1,9 @@
+qdk2 (0.9) UNRELEASED; urgency=medium
+
+  * Bump to v0.8-15-g077f133
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Fri, 03 Oct 2014 12:09:49 +0800
+
 qdk2 (0.8) UNRELEASED; urgency=medium
 
   * XZ supports of QDK1 (--xz {amd64|armhf}) - Doro Wu

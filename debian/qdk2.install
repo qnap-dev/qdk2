@@ -5,6 +5,6 @@ bin/* usr/bin/
 qpkg/qpkg_encrypt usr/bin/
 QDK_2.2_amd64/* usr/share/qdk2/QDK/
 xz_1404_*.tgz usr/share/qdk2/QDK/
-samples/* usr/share/qdk2/samples/
+samples/*.tar.gz usr/share/qdk2/samples/
 template usr/share/qdk2/
 python/* usr/share/qdk2/python/
