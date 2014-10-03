@@ -46,7 +46,7 @@ class CommandExtract(BaseCommand):
         mgroup.add_argument('--as-image', action='store_true',
                             default=False,
                             help='treat as image, ignore suffix')
-        parser.add_argument('-d', '--directory', metavar='path',
+        parser.add_argument('-d', '--directory', metavar='PATH',
                             default='./',
                             help='extract file to specific directory'
                                  ' (default: %(default)s)')

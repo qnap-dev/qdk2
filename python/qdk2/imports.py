@@ -17,6 +17,7 @@ from settings import Settings
 from importuri import ImportURI
 from container import Container
 from archive import Archive
+from versioncontrol import VersionControl
 from log import info, error
 
 
@@ -28,22 +29,26 @@ class CommandImport(BaseCommand):
     def build_argparse(cls, subparser):
         parser = subparser.add_parser(cls.key, help=cls.help)
         parser.add_argument('--' + cls.key, help=SUPPRESS)
-        parser.add_argument('-p', '--project', metavar='name',
+        parser.add_argument('-p', '--project', metavar='NAME',
                             default=Settings.DEFAULT_PROJECT,
                             help='project name (default: %(default)s)')
-        parser.add_argument('-d', '--directory', metavar='path',
+        parser.add_argument('-d', '--directory', metavar='PATH',
                             default='./',
                             help='destination folder (default: %(default)s)')
         group = parser.add_argument_group('import source')
         mgroup = group.add_mutually_exclusive_group(required=True)
-        mgroup.add_argument('-u', '--uri', metavar='path',
-                            help='import source code from local/remote URI')
+        mgroup.add_argument('-a', '--archive', metavar='PATH',
+                            help='import from contents of archive')
+        mgroup.add_argument('-r', '--repository', metavar='URI',
+                            help='import from {} repository'
+                            .format('/'.join(VersionControl.SUPPORT_TYPES)))
         mgroup.add_argument('-c', '--container',
-                            nargs=2, metavar=('ctype', 'cid'),
-                            help='e.g., -c lxc ubuntu | -c docker 826544226f')
-        mgroup.add_argument('-s', '--sample', metavar='name',
+                            nargs=2, metavar=('CTYPE', 'CID'),
+                            help='import from Linux container ({})'
+                                 .format('/'.join(Container.SUPPORT_TYPES)))
+        mgroup.add_argument('-s', '--sample', metavar='NAME',
                             choices=cls.get_sample_list(),
-                            help='import source code from sample ({})'
+                            help='import from built-in samples: {}'
                             .format(', '.join(cls.get_sample_list())))
 
     @classmethod
@@ -52,9 +57,14 @@ class CommandImport(BaseCommand):
         samples = [pbasename(sample)[:-7] for sample in samples]
         return samples
 
-    def _import_uri(self):
+    def _import_archive(self):
         # TODO: code refactoring
-        import_from = ImportURI(self._args.uri, self.directory)
+        import_from = ImportURI(self._args.archive, self.directory)
+        import_from.run()
+
+    def _import_repository(self):
+        # TODO: code refactoring
+        import_from = ImportURI(self._args.repository, self.directory)
         import_from.run()
 
     def _import_container(self):
@@ -83,9 +93,17 @@ class CommandImport(BaseCommand):
         archive.decompress(sample_file, self.directory, 'tarball', strip=1)
 
     def import_source(self):
-        if self._args.uri is not None:
-            info('Import URI: ' + self._args.uri)
-            self._import_uri()
+        source_types = ('archive', 'repository', 'container', 'sample')
+
+        for src_type in source_types:
+            pass
+
+        if self._args.archive is not None:
+            info('Import archive: ' + self._args.archive)
+            self._import_archive()
+        if self._args.repository is not None:
+            info('Import repository: ' + self._args.repository)
+            self._import_repository()
         if self._args.container is not None:
             info('Import container: ' + ' - '.join(self._args.container))
             self._import_container()

@@ -7,6 +7,8 @@ from log import debug, warning
 
 
 class Container(object):
+    SUPPORT_TYPES = ('lxc', 'docker')
+
     def __init__(self):
         self._use_sudo = True
 

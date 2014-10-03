@@ -33,12 +33,6 @@ class CommandChangelog(BaseCommand):
                             default=None,
                             help='this specifies the version number')
 
-    def append(self, fields):
-        pass
-
-    def parse(self, dest='./'):
-        return ChangelogFile(dest)
-
     @property
     def qpkg_dir(self):
         if not hasattr(self, '_qpkg_dir'):
@@ -46,10 +40,8 @@ class CommandChangelog(BaseCommand):
             while cwd != '/':
                 if pexists(pjoin(cwd, Settings.CONTROL_PATH, 'control')):
                     break
-                cwd = pabspath(os.path.join(cwd, os.pardir))
-
+                cwd = pabspath(pjoin(cwd, os.pardir))
             self._qpkg_dir = cwd if cwd != '/' else None
-
         return self._qpkg_dir
 
     @property

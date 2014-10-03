@@ -30,13 +30,13 @@ class CommandCreate(BaseCommand):
     def build_argparse(cls, subparser):
         parser = subparser.add_parser(cls.key, help=cls.help)
         parser.add_argument('--' + cls.key, help=SUPPRESS)
-        parser.add_argument('-p', '--project', metavar='name',
+        parser.add_argument('-p', '--project', metavar='NAME',
                             default=Settings.DEFAULT_PROJECT,
                             help='project name (default: %(default)s)')
-        parser.add_argument('-d', '--directory', metavar='path',
+        parser.add_argument('-d', '--directory', metavar='PATH',
                             default='./',
                             help='destination folder (default: %(default)s)')
-        parser.add_argument('-t', '--template', metavar='type',
+        parser.add_argument('-t', '--template', metavar='TYPE',
                             choices=Settings.SUPPORT_TEMPLATES,
                             default=None,
                             help='create new QPKG from existed template')

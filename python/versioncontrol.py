@@ -6,6 +6,8 @@ from log import warning
 
 
 class VersionControl(object):
+    SUPPORT_TYPES = ('git', 'svn')
+
     @classmethod
     def probe(self, uri):
         probe_cmds = [
