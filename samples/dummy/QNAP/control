@@ -1,0 +1,18 @@
+Source: dummy
+Section: devel
+Vcs-Git: https://github.com/fcwu/dummy
+Homepage: http://www.qnap.com
+Priority: extra
+Build-Depends: qdk2
+Maintainer: Doro Wu <dorowu@qnap.com>
+
+Package: dummy
+Architecture: all
+Q-AppName: Foo Bar
+Q-Firmware: qnap (>= 4.1), qnap (<< 8.0)
+#Recommends: python-xlsxwriter
+Depends: python (<< 3.0),
+ python (>= 2.5),
+#Conflicts: lp-fish-init (<< 0.4)
+Description: Template Application
+ UNKNOWN

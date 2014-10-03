@@ -1,0 +1,22 @@
+#!/bin/sh
+#prerm remove
+#old-prerm upgrade new-version
+#new-prerm failed-upgrade old-version
+
+set -e
+APP_BASE=${PWD}
+
+case "$1" in
+  remove)
+    ;;
+  upgrade)
+    ;;
+  failed-upgrade)
+    ;;
+  *)
+    echo "prerm called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+exit 0
