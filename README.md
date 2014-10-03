@@ -23,7 +23,6 @@ dput ppa:fcwu-tw/ppa debuild/qdk2_0.5ubuntu1\~trusty_source.changes
 dput ppa:fcwu-tw/ppa debuild/qdk2_0.5ubuntu1\~precise_source.changes
 ```
 
-
 Commands
 --------
 
@@ -33,11 +32,20 @@ Commands
 
 ```
 qdk2 import --archive ./phpMyAdmin.tar.xz -p phpmyadmin
+qdk2 import --archive http://ftp.gnu.org/gnu/wget/wget-1.15.tar.xz
+qdk2 import --archive ftp://ftp.gnu.org/gnu/wget/wget-1.15.tar.xz
+```
+
+* import from existing folder
+
+```
+qdk2 import --folder /path/to/project/ -p myproject
 ```
 
 * import from git/svn repository
 
 ```
+qdk2 import --repository docker/docker -p docker
 qdk2 import --repository https://github.com/bower/bower.git -p bower
 qdk2 import --repository http://svn.redmine.org/redmine/trunk/ -p redmine
 ```
@@ -54,7 +62,6 @@ qdk2 import --container docker 826544226fdc -p docker_ubuntu
 ```
 qdk2 import --sample dummy -p dummy_project
 ```
-
 
 **Create a new QPKG from the template**
 

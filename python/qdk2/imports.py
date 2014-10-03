@@ -5,20 +5,22 @@ from os.path import (exists as pexists,
                      join as pjoin,
                      realpath as prealpath,
                      basename as pbasename,
+                     dirname as pdirname,
                      isdir,
                      )
 from os import listdir, makedirs
-from shutil import copy
+from shutil import copy, copytree, rmtree
 from glob import glob
-from exception import ContainerUnsupported
+import subprocess as sp
+import tempfile
 
 from basecommand import BaseCommand
 from settings import Settings
-from importuri import ImportURI
 from container import Container
 from archive import Archive
 from versioncontrol import VersionControl
 from log import info, error
+from exception import ContainerUnsupported
 
 
 class CommandImport(BaseCommand):
@@ -37,18 +39,20 @@ class CommandImport(BaseCommand):
                             help='destination folder (default: %(default)s)')
         group = parser.add_argument_group('import source')
         mgroup = group.add_mutually_exclusive_group(required=True)
-        mgroup.add_argument('-a', '--archive', metavar='PATH',
-                            help='import from contents of archive')
-        mgroup.add_argument('-r', '--repository', metavar='URI',
-                            help='import from {} repository'
+        mgroup.add_argument('-a', '--archive', metavar='FILE',
+                            help='archive file')
+        mgroup.add_argument('-f', '--folder', metavar='PATH',
+                            help='existing folder')
+        mgroup.add_argument('-r', '--repository', metavar='URL',
+                            help='{} repository'
                             .format('/'.join(VersionControl.SUPPORT_TYPES)))
         mgroup.add_argument('-c', '--container',
                             nargs=2, metavar=('CTYPE', 'CID'),
-                            help='import from Linux container ({})'
+                            help='linux container ({})'
                                  .format('/'.join(Container.SUPPORT_TYPES)))
         mgroup.add_argument('-s', '--sample', metavar='NAME',
                             choices=cls.get_sample_list(),
-                            help='import from built-in samples: {}'
+                            help='built-in samples: {}'
                             .format(', '.join(cls.get_sample_list())))
 
     @classmethod
@@ -57,17 +61,55 @@ class CommandImport(BaseCommand):
         samples = [pbasename(sample)[:-7] for sample in samples]
         return samples
 
-    def _import_archive(self):
-        # TODO: code refactoring
-        import_from = ImportURI(self._args.archive, self.directory)
-        import_from.run()
+    def _download(self, url):
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            cmd = ['wget', '--trust-server-names', url, '-P', tmp_dir]
+            sp.check_call(cmd)
+        except:
+            error('Download error: ' + url)
+            rmtree(tmp_dir, True)
+            return None
+        return glob(pjoin(tmp_dir, '*'))[0]
 
-    def _import_repository(self):
-        # TODO: code refactoring
-        import_from = ImportURI(self._args.repository, self.directory)
-        import_from.run()
+    def _import_archive(self, filename, directory):
+        if filename.startswith('http://') \
+                or filename.startswith('https://') \
+                or filename.startswith('ftp://'):
+            download_file = self._download(filename)
+            filename = download_file
 
-    def _import_container(self):
+        if filename is None:
+            return -1
+
+        try:
+            archive = Archive()
+            ftype = archive.file_type(filename)
+            if ftype is None:
+                error('Invalid archive format: ' + filename)
+                return -1
+            archive.decompress(filename, directory, ftype)
+        finally:
+            if download_file is not None:
+                rmtree(pdirname(download_file))
+        return 0
+
+    def _import_folder(self, path, directory):
+        if not isdir(path):
+            error('Invalid folder path: ' + path)
+            return -1
+        rmtree(directory)
+        copytree(path, directory, True)
+        return 0
+
+    def _import_repository(self, url, directory):
+        vcs = VersionControl.probe(url)
+        if vcs is None:
+            error('Unknown repository type: ' + url)
+            return -1
+        return VersionControl.checkout(url, directory, vcs)
+
+    def _import_container(self, container, directory):
         ctype, cid = self._args.container
         container = Container()
 
@@ -85,7 +127,7 @@ class CommandImport(BaseCommand):
             dst = pjoin(self.directory, pbasename(fn))
             copy(fn, dst)
 
-    def _import_sample(self):
+    def _import_sample(self, name, directory):
         sample_file = pjoin(Settings.SAMPLES_PATH,
                             self._args.sample + '.tar.gz')
 
@@ -93,23 +135,18 @@ class CommandImport(BaseCommand):
         archive.decompress(sample_file, self.directory, 'tarball', strip=1)
 
     def import_source(self):
-        source_types = ('archive', 'repository', 'container', 'sample')
+        source_types = ('archive',
+                        'folder',
+                        'repository',
+                        'container',
+                        'sample')
 
         for src_type in source_types:
-            pass
-
-        if self._args.archive is not None:
-            info('Import archive: ' + self._args.archive)
-            self._import_archive()
-        if self._args.repository is not None:
-            info('Import repository: ' + self._args.repository)
-            self._import_repository()
-        if self._args.container is not None:
-            info('Import container: ' + ' - '.join(self._args.container))
-            self._import_container()
-        if self._args.sample is not None:
-            info('Import sample: ' + self._args.sample)
-            self._import_sample()
+            src_value = getattr(self._args, src_type)
+            if src_value is not None:
+                info('Import {}: {}'.format(src_type, str(src_value)))
+                import_func = getattr(self, '_import_' + src_type)
+                return import_func(src_value, self.directory)
 
     def run(self):
         if not pexists(self.directory):
@@ -123,8 +160,7 @@ class CommandImport(BaseCommand):
                 error('This is not directory: ' + self.directory)
                 return -1
 
-        self.import_source()
-        return 0
+        return self.import_source()
 
     @property
     def directory(self):
@@ -132,6 +168,5 @@ class CommandImport(BaseCommand):
             self._directory = pjoin(prealpath(self._args.directory),
                                     self._args.project)
         return self._directory
-
 
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
