@@ -1,2 +1,4 @@
 qdk2: arch-independent-package-contains-binary-or-object usr/share/qdk*
 qdk2: unstripped-binary-or-object usr/share/qdk*
+qdk2 source: source-is-missing template/webapp/scripts/cb7562c6.plugins.js
+qdk2 source: source-is-missing template/webapp/scripts/db02b173.vendor.js
