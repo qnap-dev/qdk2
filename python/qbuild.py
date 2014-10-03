@@ -73,7 +73,7 @@ class Qdk2ToQbuild(object):
         if not pexists(self.build_dir):
             makedirs(self.build_dir)
         # if dest in qpkg_dir
-        copytree(self.qpkg_dir, dest)
+        copytree(self.qpkg_dir, dest, True)
         self.source = control.source
         chdir(dest)
 

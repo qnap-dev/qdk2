@@ -61,7 +61,7 @@ class CommandCreate(BaseCommand):
         for fn in glob(pjoin(Settings.TEMPLATE_V1_PATH, '*')):
             dest = pjoin(self.directory, pbasename(fn))
             if isdir(fn):
-                copytree(fn, dest)
+                copytree(fn, dest, True)
             else:
                 copy(fn, dest)
 
@@ -79,9 +79,8 @@ class CommandCreate(BaseCommand):
         # copy template control files
         info('Copy default CONTROL files to {}'.format(
             pjoin(self.directory, Settings.CONTROL_PATH)))
-        copytree(pjoin(Settings.TEMPLATE_PATH,
-                       Settings.CONTROL_PATH),
-                 pjoin(self.directory, Settings.CONTROL_PATH))
+        copytree(pjoin(Settings.TEMPLATE_PATH, Settings.CONTROL_PATH),
+                 pjoin(self.directory, Settings.CONTROL_PATH), True)
 
         # cook QNAP
         if self.template != '':
@@ -106,7 +105,7 @@ class CommandCreate(BaseCommand):
                 dest = pjoin(self.directory, pbasename(fn))
                 if isdir(fn):
                     if not pexists(dest):
-                        copytree(fn, dest)
+                        copytree(fn, dest, True)
                 else:
                     copy(fn, dest)
 
