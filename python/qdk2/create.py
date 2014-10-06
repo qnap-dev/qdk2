@@ -8,7 +8,7 @@ from os.path import (exists as pexists,
                      realpath as prealpath,
                      isdir,
                      )
-from os import listdir, makedirs, remove
+from os import makedirs, listdir
 from shutil import copytree, copy, rmtree, move
 from basecommand import BaseCommand
 from glob import glob
@@ -19,7 +19,7 @@ from settings import Settings
 from exception import (BaseStringException,
                        UserExit,
                        )
-from log import info, error
+from log import info, warning, error
 
 
 class CommandCreate(BaseCommand):
@@ -82,55 +82,49 @@ class CommandCreate(BaseCommand):
         copytree(pjoin(Settings.TEMPLATE_PATH, Settings.CONTROL_PATH),
                  pjoin(self.directory, Settings.CONTROL_PATH), True)
 
-        # cook QNAP
-        if self.template != '':
-            for fn in glob(pjoin(self.directory, Settings.CONTROL_PATH,
-                                 '*.sample')):
-                dst = fn[:fn.rfind('.')]
-                copy(fn, dst)
-        samples = pjoin(self.directory, Settings.CONTROL_PATH, '*.sample')
-        for fn in glob(samples):
-            remove(fn)
-
         self.rename_ctrl_files()
 
     def copy_sample(self):
+        if pexists(self.directory):
+            if isdir(self.directory):
+                if listdir(self.directory):
+                    error('Directory is not empty: ' + self.directory)
+                    return -1
+            else:
+                error('This is not directory: ' + self.directory)
+                return -1
+
         # copy template data files
         if self.template in Settings.SUPPORT_TEMPLATES:
             info('Copy template data files: ' + self.template)
-            default_template_path = pjoin(Settings.TEMPLATE_PATH,
-                                          self.template)
-            for fn in listdir(default_template_path):
-                fn = pjoin(default_template_path, fn)
-                dest = pjoin(self.directory, pbasename(fn))
-                if isdir(fn):
-                    if not pexists(dest):
-                        copytree(fn, dest, True)
-                else:
-                    copy(fn, dest)
+            copytree(pjoin(Settings.TEMPLATE_PATH, self.template),
+                     self.directory, True)
+        return 0
 
     def rename_ctrl_files(self):
         # rename
-        if self._args.project != Settings.DEFAULT_CONTROL_PACKAGE:
+        if self._args.project != Settings.DEFAULT_PACKAGE:
             info('Modify package name to ' + self._args.project)
-            # sed control, *.init, rules, *.conf
+            # sed control, rules, *.init, *.conf
             files_check = ('control', 'rules', 'foobar.init', 'foobar.conf')
             for fn in files_check:
                 fp = pjoin(self.directory, Settings.CONTROL_PATH, fn)
                 for line in fileinput.input(fp, inplace=True):
-                    print line.replace(Settings.DEFAULT_CONTROL_PACKAGE,
+                    print line.replace(Settings.DEFAULT_PACKAGE,
                                        self._args.project),
 
             # mv foobar.* to self._args.project.*
             for fn in glob(pjoin(self.directory, Settings.CONTROL_PATH,
-                                 Settings.DEFAULT_CONTROL_PACKAGE + '.*')):
-                move(fn, pjoin(pdirname(fn),
-                               self._args.project + fn[fn.rindex('.'):]))
+                                 Settings.DEFAULT_PACKAGE + '.*')):
+                dest = pjoin(pdirname(fn),
+                             self._args.project + fn[fn.index('.'):])
+                move(fn, dest)
 
     def run(self):
-        try:
-            self.copy_sample()
+        if self.copy_sample() != 0:
+            warning("Skip copy sample: " + self.template)
 
+        try:
             if self._args.format_qdk1:
                 info('Build QPKG with QDK1 format')
                 self.format_qdk1()

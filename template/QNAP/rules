@@ -11,8 +11,10 @@ build: build-indep build-arch
 build-indep:
 
 build-arch:
+	@[ ! -f Makefile ] || make
 
 clean:
+	@[ ! -f Makefile ] || make clean
 
 get-orig-source:
 	git clone https://github.com/fcwu/foobar

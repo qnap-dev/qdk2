@@ -16,7 +16,7 @@ else:
     QDK_BINARY = 'QDK_2.2_amd64'
 
 
-VERSION = 'v0.9-2-ga321666'
+VERSION = 'v0.9-3-g30f71da'
 
 
 class Settings(object):
@@ -25,7 +25,7 @@ class Settings(object):
     CONTROL_PATH = 'QNAP'
     SUPPORT_TEMPLATES = ('c_cpp', 'custom-webserver', 'php', 'python', 'webapp')
     DEFAULT_PROJECT = 'new_project'
-    DEFAULT_CONTROL_PACKAGE = 'foobar'
+    DEFAULT_PACKAGE = 'foobar'
     SAMPLES_PATH = pjoin(PREFIX, 'samples')
     TEMPLATE_PATH = pjoin(PREFIX, 'template')
     TEMPLATE_V1_PATH = pjoin(PREFIX, QDK_BINARY, 'template')
