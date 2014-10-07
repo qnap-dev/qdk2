@@ -84,6 +84,11 @@ cd $QPKG_DIR
 qdk2 build
 ```
 
+**Show QPKG information**
+```
+qdk2 info
+```
+
 **Tool for maintenance of the QNAP/changelog file in a source package**
 
 ```

@@ -14,7 +14,7 @@ from settings import Settings
 from qbuild import Qdk2ToQbuild, QbuildToQpkg
 from log import info, error, debug
 # from lint import CommandLint
-from exception import (PackageNotFound, BaseStringException)
+from exception import BaseStringException
 
 
 class CommandBuild(BaseCommand):
@@ -31,9 +31,6 @@ class CommandBuild(BaseCommand):
                             default='../build-area',
                             help='folder to store building stuff'
                                  ' (default: %(default)s)')
-        parser.add_argument('--build-env', metavar='QPKG_NAME',
-                            default=None,
-                            help='list build environment')
         parser.add_argument('--as-qdk1', action='store_true',
                             default=False,
                             help='source package is QDK 1 format')
@@ -61,16 +58,6 @@ class CommandBuild(BaseCommand):
             error('Cannot find QNAP/changelog anywhere!')
             error('Are you in the source code tree?')
             return -1
-
-        # TODO: remove later
-        if self._args.build_env is not None:
-            try:
-                env = Qdk2ToQbuild(self).build_env(self._args.build_env)
-                for k in sorted(env.iterkeys()):
-                    print "%s=%s" % (k, env[k])
-            except PackageNotFound:
-                error('No package ' + self._args.build_env)
-            return 0
 
         # Act as QDK1
         if self._args.as_qdk1:

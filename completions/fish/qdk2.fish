@@ -20,6 +20,7 @@ end
 complete -c qdk2 -n '__fish_use_subcommand' -xa import --description "Create a new QPKG from the various source"
 complete -c qdk2 -n '__fish_use_subcommand' -xa create --description "Create a new QPKG from the template"
 complete -c qdk2 -n '__fish_use_subcommand' -xa build --description "Build a QPKG from a folder"
+complete -c qdk2 -n '__fish_use_subcommand' -xa info --description "Show QPKG information"
 complete -c qdk2 -n '__fish_use_subcommand' -xa changelog --description "Tool for maintenance of the QNAP/changelog file in a source package"
 complete -c qdk2 -n '__fish_use_subcommand' -xa extract --description "Extract QNAP App (.qpkg) or firmware image (.img)"
 complete -c qdk2 -n '__fish_use_subcommand' -xa doctor --description "Check your system for problems"
@@ -35,6 +36,10 @@ complete -c qdk2 -n '__fish_use_subcommand' -xa version --description "Show the 
 
 #
 # qdk2 build
+#
+
+#
+# qdk2 info
 #
 
 #
