@@ -444,7 +444,7 @@ create_data_package(){
 		QDK_COMPRESS_FILE=data.tar.xz
 		debug_msg "[$QDK_COMPRESS_FILE]"
         local SIZE=$(du -sb "${BUILD_DIR}" | grep -o '^[0-9]\+')
-        debug_msg "$(tar cf - -C ${BUILD_DIR} . | pv -s $SIZE -N tar | xz > ${TMP_DIR}/data.tar.gz)"
+        debug_msg "$(tar cf - -C ${BUILD_DIR} . | pv -s $SIZE -N tar | xz > ${TMP_DIR}/${QDK_COMPRESS_FILE})"
 		;;
 	*)
 		err_msg "$QDK_COMPRESS_METHOD: unknown compression format"
