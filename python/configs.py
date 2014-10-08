@@ -29,7 +29,6 @@ class QDKrc(object):
 
         if not config.read(candidates):
             debug('qdkrc not found: ' + str(candidates))
-            return
 
         for s_name, s_value in self._field.items():
             self._config[s_name] = {}
