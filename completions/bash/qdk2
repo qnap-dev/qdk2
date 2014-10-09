@@ -27,6 +27,11 @@ _qdk2_build()
 	return
 }
 
+_qdk2_clean()
+{
+	return
+}
+
 _qdk2_info()
 {
 	return
@@ -81,6 +86,7 @@ _qdk2()
 			import
 			create
 			build
+			clean
 			info
 			changelog
 			extract

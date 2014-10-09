@@ -20,6 +20,7 @@ from settings import Settings
 from qdk2.imports import CommandImport
 from qdk2.create import CommandCreate
 from qdk2.build import CommandBuild
+from qdk2.clean import CommandClean
 from qdk2.info import CommandInfo
 from qdk2.changelog import CommandChangelog
 from qdk2.extract import CommandExtract
@@ -32,6 +33,7 @@ LoggingConfiguration.set(logging.DEBUG if Settings.DEBUG else logging.INFO)
 Commands = (CommandImport,
             CommandCreate,
             CommandBuild,
+            CommandClean,
             CommandInfo,
             CommandChangelog,
             CommandExtract,

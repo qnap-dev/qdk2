@@ -39,14 +39,14 @@ class CommandInfo(BaseCommand):
         print '[Source]'
         for k, v in sorted(self.cfile.source.iteritems()):
             print '  %-*s : %s' % (self._klen,
-                                   'QPKG_' + k.upper().replace('-', '_'), v)
+                                   'QPKG_' + k.upper(), v)
         print
 
     def print_package(self, package):
         print '  * {}'.format(package)
         for k, v in sorted(self.cfile.packages[package].iteritems()):
             print '  %-*s : %s' % (self._klen,
-                                   'QPKG_' + k.upper().replace('-', '_'), v)
+                                   'QPKG_' + k.upper(), v)
         print
 
     def print_all_packages(self):
@@ -75,6 +75,10 @@ class CommandInfo(BaseCommand):
             initfile = self.cfile.packages[k]['package'] + '.init'
             if pexists(pjoin(self.qpkg_dir, Settings.CONTROL_PATH, initfile)):
                 self.cfile.packages[k]['init'] = initfile
+
+            config = self.cfile.packages[k]['package'] + '.conf'
+            if pexists(pjoin(self.qpkg_dir, Settings.CONTROL_PATH, config)):
+                self.cfile.packages[k]['config'] = config
 
         if self._args.show_env:
             for k in sorted(os.environ):
