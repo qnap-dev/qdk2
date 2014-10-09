@@ -69,11 +69,11 @@ class Qdk2ToQbuild(object):
                        'icons',
                        'package_routines',
                        'qpkg_cfg',
-                       'conffiles',
                        'list',
+                       'conffiles',
                        'fixperms',
                        'signature',
-                       'md5sum',
+                       'md5sums',
                        )
 
             cook = Cook(package, self._env)

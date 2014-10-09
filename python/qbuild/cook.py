@@ -1,19 +1,22 @@
 #!/usr/bin/env python
 
-from os import symlink, makedirs, chmod, walk
+from os import symlink, makedirs, chmod, walk, unlink
 from os.path import (exists as pexists,
                      join as pjoin,
                      basename as pbasename,
                      dirname as pdirname,
                      isfile,
+                     islink,
                      )
 from shutil import copy
 from collections import defaultdict
+from glob import glob
 import subprocess as sp
 import os
 import stat
+import hashlib
 
-from log import info, debug, warning
+from log import debug, warning
 from settings import Settings
 from exception import FileSyntaxError, BuildingError
 
@@ -62,16 +65,22 @@ class Cook(object):
                     lineno += 1
                     src, dst = line.strip().split(' ', 1)
                     dst = dst.strip()
-                    if not pexists(src):
-                        raise FileSyntaxError(src_install,
-                                              lineno,
-                                              '`{}` not found'.format(src))
                     if dst.startswith('/'):
                         dst = '.' + dst
                     dst = pjoin(self._env['QPKG_DEST_DATA'], dst)
                     if not pexists(dst):
                         makedirs(dst)
-                    copy(src, dst)
+                    src_files = glob(src)
+                    if not src_files:
+                        raise FileSyntaxError(src_install,
+                                              lineno,
+                                              '`{}` not found'.format(src))
+                    for fn in glob(src):
+                        try:
+                            sp.check_call(['cp', '-a', fn, dst])
+                        except sp.CalledProcessError as e:
+                            warning('Error in copy files: {}'.format(e))
+                            return -1
         except ValueError:
             raise FileSyntaxError(src_install, lineno, line)
 
@@ -254,17 +263,28 @@ class Cook(object):
                         'qpkg.cfg'), 'w+') as f:
             f.write(('\n'.join(content)).format(env))
 
-    def conffiles(self):
-        debug(self._label + 'conffiles')
-        # conffiles
-        pass
-
     def list(self):
         debug(self._label + 'list')
         # list
         #   links
         #   dirs
         pass
+
+    def conffiles(self):
+        debug(self._label + 'conffiles')
+        etc_path = pjoin(self._env['QPKG_DEST_DATA'], 'etc')
+        conffiles = pjoin(self._env['QPKG_DEST_CONTROL'], 'conffiles')
+        with open(conffiles, 'w+') as fout:
+            conf_list = []
+            for root, dirs, files in walk(etc_path):
+                for f in files:
+                    if isfile(pjoin(root, f)) and not islink(pjoin(root, f)):
+                        conf_list.append(
+                            pjoin(root[len(self._env['QPKG_DEST_DATA']):], f))
+            fout.writelines('\n'.join(conf_list))
+            filesize = fout.tell()
+        if filesize == 0:
+            unlink(conffiles)
 
     def fixperms(self):
         debug(self._label + 'fixperms')
@@ -297,12 +317,26 @@ class Cook(object):
             f.write(Settings.QPKG_VERSION)
         pass
 
-    def md5sum(self):
-        info(self._label + 'md5sum')
-        # md5sum
-        # hashlib.md5(
-        # open("/tmp/lp-fish-tools_1.22.1.tar.gz").read()).hexdigest()
-        pass
+    def md5sums(self):
+        debug(self._label + 'md5sum')
+        data_root = self._env['QPKG_DEST_DATA']
+        md5sums = pjoin(self._env['QPKG_DEST_CONTROL'], 'md5sums')
+        md5_list = []
+        for root, dirs, files in walk(data_root):
+            if root.startswith(pjoin(data_root, 'etc')):
+                continue
+            for f in files:
+                fpath = pjoin(root, f)
+                if isfile(fpath) and not islink(fpath):
+                    md5_list.append('{}  {}'.format(
+                        hashlib.md5(open(fpath).read()).hexdigest(),
+                        fpath[len(data_root) + 1:]))
+
+        with open(md5sums, 'w+') as fout:
+            fout.writelines('\n'.join(md5_list))
+            filesize = fout.tell()
+        if filesize == 0:
+            unlink(md5sums)
 
     def __exec(self, cmd):
         try:
