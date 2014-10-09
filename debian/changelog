@@ -1,3 +1,9 @@
+qdk2 (0.9.1) UNRELEASED; urgency=medium
+
+  * Bump to v0.9.1
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Thu, 09 Oct 2014 13:14:55 +0800
+
 qdk2 (0.9) UNRELEASED; urgency=medium
 
   * Bump to v0.8-15-g077f133
