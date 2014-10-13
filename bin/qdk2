@@ -22,6 +22,7 @@ from qdk2.create import CommandCreate
 from qdk2.build import CommandBuild
 #from qdk2.clean import CommandClean
 from qdk2.info import CommandInfo
+from qdk2.edit import CommandEdit
 from qdk2.changelog import CommandChangelog
 from qdk2.extract import CommandExtract
 #from qdk2.doctor import CommandDoctor
@@ -35,6 +36,7 @@ Commands = (CommandImport,
             CommandBuild,
             #CommandClean,
             CommandInfo,
+            CommandEdit,
             CommandChangelog,
             CommandExtract,
             #CommandDoctor,

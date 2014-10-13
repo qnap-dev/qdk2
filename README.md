@@ -13,7 +13,7 @@ $ debuild -us -uc
 build source package
 
 ```
-$ make -f Makefile.debian 
+$ make -f Makefile.debian
 ```
 
 upload to PPA
@@ -95,8 +95,17 @@ qdk2 info
 qdk2 changelog
 ```
 
+**Edit QPKG control files**
+
+```
+qdk2 edit
+qdk2 edit rules
+qdk2 edit package1.init
+qdk2 edit package2.install
+```
+
 **Extract QNAP App (.qpkg) or firmware image (.img)**
-    
+
 * extract QNAP App package
 
 ```

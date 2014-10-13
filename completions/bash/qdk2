@@ -37,6 +37,11 @@ _qdk2_info()
 	return
 }
 
+_qdk2_edit()
+{
+	return
+}
+
 _qdk2_changelog()
 {
 	return
@@ -88,6 +93,7 @@ _qdk2()
 			build
 			clean
 			info
+			edit
 			changelog
 			extract
 			doctor
