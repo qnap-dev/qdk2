@@ -55,7 +55,7 @@ class CommandBuild(BaseCommand):
 
     def run(self, **kargs):
         if self.qpkg_dir is None:
-            error('Cannot find QNAP/changelog anywhere!')
+            error('Cannot find QNAP/control anywhere!')
             error('Are you in the source code tree?')
             return -1
 

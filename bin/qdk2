@@ -20,11 +20,11 @@ from settings import Settings
 from qdk2.imports import CommandImport
 from qdk2.create import CommandCreate
 from qdk2.build import CommandBuild
-from qdk2.clean import CommandClean
+#from qdk2.clean import CommandClean
 from qdk2.info import CommandInfo
 from qdk2.changelog import CommandChangelog
 from qdk2.extract import CommandExtract
-from qdk2.doctor import CommandDoctor
+#from qdk2.doctor import CommandDoctor
 from qdk2.version import CommandVersion
 # from lint import CommandLint
 
@@ -33,11 +33,11 @@ LoggingConfiguration.set(logging.DEBUG if Settings.DEBUG else logging.INFO)
 Commands = (CommandImport,
             CommandCreate,
             CommandBuild,
-            CommandClean,
+            #CommandClean,
             CommandInfo,
             CommandChangelog,
             CommandExtract,
-            CommandDoctor,
+            #CommandDoctor,
             CommandVersion,
             # CommandLint,
             )

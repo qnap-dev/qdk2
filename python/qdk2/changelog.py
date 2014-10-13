@@ -5,18 +5,15 @@ from os import getenv, getcwd
 from os.path import (join as pjoin,
                      exists as pexists,
                      abspath as pabspath,
-                     getmtime as pgetmtime
                      )
-from shutil import copy
-import tempfile
-import subprocess
 import os
 
 from basecommand import BaseCommand
-from log import error, info
+from log import info, warning, error
 from controlfiles import ControlFile, ChangelogFile
 from settings import Settings
 from configs import QDKrc
+from editor import Editor
 
 
 class CommandChangelog(BaseCommand):
@@ -76,7 +73,7 @@ class CommandChangelog(BaseCommand):
         kv['author'] = cfg_user['name'] if self.author is None else self.author
         kv['email'] = cfg_user['email'] if self.email is None else self.email
         if len(kv['author']) == 0 or len(kv['email']) == 0:
-            error('Environment variable QPKG_NAME or QPKG_EMAIL are empty')
+            warning('Environment variable QPKG_NAME or QPKG_EMAIL are empty')
             info('QPKG_NAME: ' + kv['author'])
             info('QPKG_EMAIL: ' + kv['email'])
             yn = raw_input('Continue? (Y/n) ')
@@ -85,19 +82,10 @@ class CommandChangelog(BaseCommand):
             kv['author'] = 'noname'
             kv['email'] = 'noname@local.host'
         entry = changelog.format(**kv)
-        fid, filename = tempfile.mkstemp()
-        os.close(fid)
-        fd = open(filename, "w")
-        fd.write(entry)
-        if pexists(changelog.filename):
-            with open(changelog.filename, 'r') as fread:
-                fd.writelines(fread)
-        fd.close()
 
-        last_mtime = pgetmtime(filename)
-        subprocess.check_call(['sensible-editor', filename])
-        if last_mtime != pgetmtime(filename):
-            copy(filename, changelog.filename)
+        editor = Editor()
+        editor.insert_content(entry)
+        editor.open(changelog.filename)
         return 0
 
 

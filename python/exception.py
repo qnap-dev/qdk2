@@ -31,6 +31,10 @@ class ChangelogFileSyntaxError(BaseStringException):
             filename, line, msg)
 
 
+class CommandExecError(BaseStringException):
+    pass
+
+
 class PackageNotFound(BaseStringException):
     pass
 

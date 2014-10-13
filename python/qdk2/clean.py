@@ -20,7 +20,7 @@ class CommandClean(BaseCommand):
 
     @classmethod
     def build_argparse(cls, subparser):
-        parser = subparser.add_parser(cls.key, help='modify QPKG changelog')
+        parser = subparser.add_parser(cls.key, help='clean QPKG')
         parser.add_argument('--' + cls.key, help=SUPPRESS)
 
     @property
@@ -36,7 +36,7 @@ class CommandClean(BaseCommand):
 
     def run(self):
         if self.qpkg_dir is None:
-            error('Cannot find QNAP/changelog anywhere!')
+            error('Cannot find QNAP/control anywhere!')
             error('Are you in the source code tree?')
             return -1
 
