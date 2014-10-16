@@ -3,7 +3,8 @@
 from os.path import join as pjoin
 import subprocess as sp
 
-from log import debug, warning
+from log import debug
+from exception import CommandExecError
 
 
 class Container(object):
@@ -24,11 +25,8 @@ class Container(object):
             self.__exec(cmd)
 
     def import_docker(self, img_id, directory):
-        cmds = [
-            ['docker', 'save', '-o', pjoin(directory, 'image.tar'), img_id]
-        ]
-        for cmd in cmds:
-            self.__exec(cmd)
+        cmd = ['docker', 'save', '-o', pjoin(directory, 'image.tar'), img_id]
+        self.__exec(cmd)
 
     def __exec(self, cmd):
         if self._use_sudo:
@@ -37,8 +35,7 @@ class Container(object):
             debug('command: ' + ' '.join(cmd))
             sp.check_call(cmd)
         except sp.CalledProcessError as e:
-            warning('Error in extracting: {}'.format(e))
-            return -1
+            raise CommandExecError(e)
         return 0
 
 

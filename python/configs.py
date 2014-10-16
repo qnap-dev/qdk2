@@ -9,8 +9,8 @@ from log import debug
 
 class QDKrc(object):
     def __init__(self):
-        self._sys_cfg = '/etc/qdkrc'
-        self._usr_cfg = pjoin(getenv("HOME"), '.qdkrc')
+        self._sys_cfg = '/etc/qdk2rc'
+        self._usr_cfg = pjoin(getenv("HOME"), '.qdk2rc')
         self._parsed = False
         self._config = {}
         self._field = {

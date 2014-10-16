@@ -8,11 +8,12 @@ from os.path import (exists as pexists,
                      dirname as pdirname,
                      isdir,
                      )
-from os import listdir, makedirs
-from shutil import copy, copytree, rmtree
+from os import listdir, makedirs, chmod
+from shutil import copytree, rmtree, move
 from glob import glob
 import subprocess as sp
 import tempfile
+import fileinput
 
 from basecommand import BaseCommand
 from settings import Settings
@@ -121,11 +122,35 @@ class CommandImport(BaseCommand):
         else:
             raise ContainerUnsupported(str(self._args.container))
 
-        # TODO: check container type and copy this type config file(s)
-        info('Copy container config files')
-        for fn in glob(pjoin(Settings.TEMPLATE_PATH, 'container', '*')):
-            dst = pjoin(self.directory, pbasename(fn))
-            copy(fn, dst)
+        # cook container.json
+        tpl_vars = [('@@IMAGE_ID@@', cid),
+                    ('@@NAME@@', self._args.project),
+                    ('@@TYPE@@', ctype)]
+        src = pjoin(Settings.TEMPLATE_PATH, 'container', 'container.json')
+        dst = pjoin(self.directory, 'container.json')
+        with open(src, 'r') as fin, open(dst, 'w') as fout:
+            for line in fin:
+                for k, v in tpl_vars:
+                    line = line.replace(k, v)
+                fout.write(line)
+        # cook QNAP control files
+        makedirs(pjoin(self._directory, Settings.CONTROL_PATH))
+        tpl_files = glob(pjoin(Settings.TEMPLATE_PATH, 'container',
+                               Settings.CONTROL_PATH, '*'))
+        for tpl in tpl_files:
+            fn = pbasename(tpl)
+            if fn.find('.') == -1:
+                dst = pjoin(self._directory, Settings.CONTROL_PATH, fn)
+            else:
+                dst = pjoin(self._directory, Settings.CONTROL_PATH,
+                            self._args.project + fn[fn.index('.'):])
+            with open(tpl, 'r') as fin, open(dst, 'w') as fout:
+                for line in fin:
+                    line = line.replace('@@PACKAGE@@', self._args.project)
+                    fout.write(line)
+                if pbasename(dst) != 'control':
+                    chmod(dst, 0755)
+        return 0
 
     def _import_sample(self, name, directory):
         sample_file = pjoin(Settings.SAMPLES_PATH,
@@ -133,8 +158,14 @@ class CommandImport(BaseCommand):
 
         archive = Archive()
         archive.decompress(sample_file, self.directory, 'tarball', strip=1)
+        return 0
 
-    def import_source(self):
+    def import_source(self, src_type, src_value):
+        info('Import {}: {}'.format(src_type, str(src_value)))
+        import_func = getattr(self, '_import_' + src_type)
+        return import_func(src_value, self.directory)
+
+    def probe_source_type(self):
         source_types = ('archive',
                         'folder',
                         'repository',
@@ -144,9 +175,7 @@ class CommandImport(BaseCommand):
         for src_type in source_types:
             src_value = getattr(self._args, src_type)
             if src_value is not None:
-                info('Import {}: {}'.format(src_type, str(src_value)))
-                import_func = getattr(self, '_import_' + src_type)
-                return import_func(src_value, self.directory)
+                return src_type, str(src_value)
 
     def run(self):
         if not pexists(self.directory):
@@ -160,7 +189,40 @@ class CommandImport(BaseCommand):
                 error('This is not directory: ' + self.directory)
                 return -1
 
-        return self.import_source()
+        try:
+            src_type, src_value = self.probe_source_type()
+            if self.import_source(src_type, src_value) != 0:
+                error('Import failed')
+
+            if pexists(pjoin(self._directory, Settings.CONTROL_PATH)):
+                info('{} folder exists!'.format(Settings.CONTROL_PATH))
+                return 0
+
+            # copy template control files
+            info('Copy default CONTROL files to {}'.format(
+                pjoin(self.directory, Settings.CONTROL_PATH)))
+            copytree(pjoin(Settings.TEMPLATE_PATH, Settings.CONTROL_PATH),
+                     pjoin(self.directory, Settings.CONTROL_PATH), True)
+
+            info('Modify package name to ' + self._args.project)
+            # sed control, rules, *.init, *.conf
+            files_check = ('control', 'rules', 'foobar.init', 'foobar.conf')
+            for fn in files_check:
+                fp = pjoin(self.directory, Settings.CONTROL_PATH, fn)
+                for line in fileinput.input(fp, inplace=True):
+                    print line.replace(Settings.DEFAULT_PACKAGE,
+                                       self._args.project),
+
+            # mv foobar.* to self._args.project.*
+            for fn in glob(pjoin(self.directory, Settings.CONTROL_PATH,
+                                 Settings.DEFAULT_PACKAGE + '.*')):
+                dest = pjoin(pdirname(fn),
+                             self._args.project + fn[fn.index('.'):])
+                move(fn, dest)
+        except Exception as e:
+            error(e)
+            return -1
+        return 0
 
     @property
     def directory(self):

@@ -1,0 +1,25 @@
+#!/bin/sh -e
+#postinst configure most-recently-configured-version
+#old-postinst abort-upgrade new-version
+#postinst abort-remove
+
+set -e
+source /etc/profile
+QPKG_NAME=@@PACKAGE@@
+CONF=/etc/config/qpkg.conf
+QPKG_DIR=${QPKG_DIR:-$(/sbin/getcfg $QPKG_NAME Install_Path -d "" -f $CONF)}
+
+case "$1" in
+  configure)
+    capp load ${QPKG_DIR}/container.json
+    capp create ${QPKG_DIR}/container.json
+    ;;
+  abort-upgrade|abort-remove)
+    ;;
+  *)
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

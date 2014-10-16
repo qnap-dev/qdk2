@@ -1,0 +1,13 @@
+Source: @@PACKAGE@@
+Section: devel
+Homepage: http://www.qnap.com
+Priority: extra
+Build-Depends: qdk2
+Maintainer: Developer <developer@qnap.com>
+
+Package: @@PACKAGE@@
+Architecture: all
+Q-AppName: Sample Contailer
+Q-WEB_PORT: 2368
+Description: Container Application
+ QPKG Long Description

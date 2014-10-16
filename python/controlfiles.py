@@ -20,6 +20,10 @@ class File(object):
 
 
 class ControlFile(File):
+    source_mandatory = ['Source', 'Maintainer']
+    package_mandatory = ['Package', 'Q-AppName', 'Maintainer', 'Description',
+                         'Architecture']
+
     def __init__(self, qpkg_dir='.'):
         self._filename = pjoin(qpkg_dir, Settings.CONTROL_PATH, 'control')
         self._parsed = False
@@ -38,11 +42,13 @@ class ControlFile(File):
             if package_name in self._packages:
                 raise ControlFileSyntaxError('duplicate package name ' +
                                              package_name)
+            section['description'] = section['description'].strip(' ')
             self._packages[package_name] = section.copy()
         else:
             raise ControlFileSyntaxError(
                 'Package and source section not found')
 
+    # https://www.debian.org/doc/debian-policy/ch-controlfields.html
     def parse(self):
         if self._parsed:
             return
@@ -72,8 +78,19 @@ class ControlFile(File):
                 if len(fields) == 2:
                     v = fields[1].strip()
                 k = fields[0].lower()
-                section[k] = v
+                # Description: <single line synopsis>
+                #  <extended description over several lines>
+                if k == 'Description'.lower():
+                    section['synopsis'] = v
+                    v = ''
+                else:
+                    section[k] = v
             self.new_package(section)
+
+    def check(self):
+        self.parse()
+        # TODO: check 'source_mandatory' and 'package_mandatory'
+        pass
 
     @property
     def source(self):
