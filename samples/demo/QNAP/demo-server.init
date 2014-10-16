@@ -1,5 +1,5 @@
 #!/bin/sh
-QPKG_NAME=dummy
+QPKG_NAME=demo-server
 CONF=/etc/config/qpkg.conf
 QPKG_DIR=${QPKG_DIR:-$(/sbin/getcfg $QPKG_NAME Install_Path -d "" -f $CONF)}
 export PATH=$PATH:${QPKG_DIR}/bin:${QPKG_DIR}/usr/bin:/usr/sbin:/sbin
@@ -16,11 +16,11 @@ case "$1" in
         echo "$QPKG_NAME is disabled."
         exit 1
     fi
-    : ADD START ACTIONS HERE
+    demo-server -p 19999 -r $QPKG_DIR/usr/share/www &
     ;;
 
   stop)
-    : ADD STOP ACTIONS HERE
+    killall -9 demo-server
     ;;
 
   restart)

@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+binary:
+
+build: build-indep build-arch
+
+build-indep:
+
+build-arch:
+	@make
+
+clean:
+	@make clean
+
+get-orig-source:
+

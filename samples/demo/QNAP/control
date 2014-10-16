@@ -1,0 +1,20 @@
+Source: demo
+Section: devel
+Homepage: http://www.qnap.com
+Priority: extra
+Maintainer: Developer <developer@qnap.com>
+
+Package: demo-server
+Architecture: all
+Q-AppName: Demo Server
+Q-WebUI: /api/
+Q-Web-Port: 19999
+Description: Demo Server
+ This is demo server.
+
+Package: demo-webui
+Architecture: all
+Q-AppName: Demo WebUI
+Q-Web-Port: 19999
+Description: Demo WebUI
+ This is demo WebUI.
