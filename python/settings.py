@@ -16,14 +16,14 @@ else:
     QDK_BINARY = 'QDK_2.2'
 
 
-VERSION = 'v0.10'
+VERSION = 'v0.10-1-g04d7ce1'
 
 
 class Settings(object):
     DEBUG = False if getenv('DEBUG') is None else True
     QPKG_VERSION = '2.2'
     CONTROL_PATH = 'QNAP'
-    SUPPORT_TEMPLATES = ('c_cpp', 'custom-webserver', 'php', 'python', 'webapp')
+    SUPPORT_TEMPLATES = ('c-cpp')
     DEFAULT_PROJECT = 'new_project'
     DEFAULT_PACKAGE = 'foobar'
     SAMPLES_PATH = pjoin(PREFIX, 'samples')
