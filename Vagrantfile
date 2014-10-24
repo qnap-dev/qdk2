@@ -24,7 +24,7 @@ apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8
 
 apt-get update
 apt-get install -y lxc lxc-docker
-apt-get install -y qdk2 devscripts fish zsh
+apt-get install -y qdk2 debhelper devscripts fish zsh
 apt-get upgrade
 apt-get clean
 

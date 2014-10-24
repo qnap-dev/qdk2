@@ -13,10 +13,10 @@ if sys.argv[0].startswith('/usr'):
     QDK_BINARY = 'QDK'
 else:
     PREFIX = pdirname(pdirname(pabspath(sys.argv[0])))
-    QDK_BINARY = 'QDK_2.2_amd64'
+    QDK_BINARY = 'QDK_2.2'
 
 
-VERSION = 'v0.9.1-5-g3e88329'
+VERSION = 'v0.10'
 
 
 class Settings(object):

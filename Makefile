@@ -1,4 +1,4 @@
-DIRS = qpkg samples
+DIRS = src samples
 
 .PHONY: all clean
 

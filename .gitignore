@@ -1,5 +1,10 @@
 python/*.pyc
 python/qdk2/*.pyc
 python/qbuild/*.pyc
-qpkg/qpkg_encrypt
+
+src/qpkg_encrypt
+
 samples/*.tar.gz
+
+tests/*.pyc
+tests/__pycache__/*

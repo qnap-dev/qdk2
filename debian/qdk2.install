@@ -1,10 +1,10 @@
+bin/* usr/bin/
 completions/bash/qdk2 etc/bash_completion.d/
 completions/fish/qdk2.fish usr/share/fish/completions/
 completions/zsh/_qdk2 usr/share/zsh/vendor-completions/
-bin/* usr/bin/
-qpkg/qpkg_encrypt usr/bin/
-QDK_2.2_amd64/* usr/share/qdk2/QDK/
-xz_1404_*.tgz usr/share/qdk2/QDK/
-samples/*.tar.gz usr/share/qdk2/samples/
-template usr/share/qdk2/
 python/* usr/share/qdk2/python/
+QDK_2.2/* usr/share/qdk2/QDK/
+samples/*.tar.gz usr/share/qdk2/samples/
+src/qpkg_encrypt usr/bin/
+template usr/share/qdk2/
+tools/xz_1404_*.tgz usr/share/qdk2/QDK/
