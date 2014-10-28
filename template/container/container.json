@@ -1,4 +1,5 @@
 {
+    "app": "@@NAME@@",
     "containers": [
         {
             "image": "@@IMAGE_ID@@",
