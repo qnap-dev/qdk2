@@ -1,3 +1,9 @@
+qdk2 (0.11) UNRELEASED; urgency=medium
+
+  * Fix no tailer package name
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Thu, 23 Jul 2015 02:03:40 +0800
+
 qdk2 (0.10) UNRELEASED; urgency=medium
 
   * Bump to v0.9.1-6-ge3f1636

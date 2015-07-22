@@ -708,7 +708,8 @@ add_qpkg_tail(){
 
 	verbose_msg "Adding tail data..."
 
-	local max_qpkg_name_len=40
+	local max_qpkg_name_len=20
+    local QPKG_NAME_SHORTER=$QPKG_NAME
 	if (( $max_qpkg_name_len < ${#QPKG_NAME} )); then
 		warn_msg "QPKG_NAME: the length of $QPKG_NAME must be less than or equal to $max_qpkg_name_len; name truncated."
 		QPKG_NAME_SHORTER=$(/usr/bin/expr substr "$QPKG_NAME" 1 $max_qpkg_name_len)
