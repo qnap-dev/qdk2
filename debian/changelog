@@ -1,3 +1,9 @@
+qdk2 (0.13) UNRELEASED; urgency=medium
+
+  * Fix shell escaping char
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Mon, 10 Aug 2015 11:49:01 +0800
+
 qdk2 (0.12) trusty; urgency=medium
 
   * QDK2 supports HDD as temp dir
