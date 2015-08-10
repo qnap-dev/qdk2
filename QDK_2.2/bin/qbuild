@@ -524,7 +524,7 @@ add_qpkg_header(){
 	# Return value 0 to keep the QPKG package after installation
 	# Return value 10 to remove QPKG package after installation
 	local retval=10
-	local extract_dir="/mnt/HDA_ROOT/update_pkg/tmp"
+	local extract_dir="\$QPKG_INSTALL_PATH/.tmp"
 	local wrong_arch="Wrong architecture: $QPKG_NAME $QPKG_VER is built for $arch"
 	local log_tool="/sbin/log_tool -t2 -uSystem -p127.0.0.1 -mlocalhost -a"
 
@@ -548,6 +548,35 @@ add_qpkg_header(){
 	esac
 
 	echo "#!/bin/sh" > $QDK_QPKG_FILE
+    /bin/cat >>$QDK_QPKG_CONFIG <<-EOF
+    find_base(){
+            BASE_GROUP="/share/HDA_DATA /share/HDB_DATA /share/HDC_DATA /share/HDD_DATA /share/HDE_DATA /share/HDF_DATA /share/HDG_DATA /share/HDH_DATA /share/HDI_DATA /share/HDJ_DATA /share/HDK_DATA /share/HDL_DATA /share/MD0_DATA /share/MD1_DATA /share/MD2_DATA /share/MD3_DATA"
+            publicdir=`/sbin/getcfg Public path -f /etc/config/smb.conf`
+            if [ ! -z $publicdir ] && [ -d $publicdir ];then
+                    publicdirp1=`/bin/echo $publicdir | /bin/cut -d "/" -f 2`
+                    publicdirp2=`/bin/echo $publicdir | /bin/cut -d "/" -f 3`
+                    publicdirp3=`/bin/echo $publicdir | /bin/cut -d "/" -f 4`
+                    if [ ! -z $publicdirp1 ] && [ ! -z $publicdirp2 ] && [ ! -z $publicdirp3 ]; then
+                            [ -d "/${publicdirp1}/${publicdirp2}/Public" ] && QPKG_BASE="/${publicdirp1}/${publicdirp2}"
+                    fi
+            fi
+
+            # Determine BASE installation location by checking where the Public folder is.
+            if [ -z $QPKG_BASE ]; then
+                    for datadirtest in $BASE_GROUP; do
+                    [ -d $datadirtest/Public ] && QPKG_BASE="/${publicdirp1}/${publicdirp2}"
+                    done
+            fi
+            if [ -z $QPKG_BASE ] ; then
+                    echo "The Public share not found."
+                    return 1
+            fi
+            QPKG_INSTALL_PATH="${QPKG_BASE}/.qpkg"
+            QPKG_DIR="${QPKG_INSTALL_PATH}/${QPKG_NAME}"
+            return 0
+    }
+    EOF
+
 	if [ -n "$cpu_arch" ]; then
 		/bin/cat >>$QDK_QPKG_FILE <<-EOF
 		wrong_arch(){

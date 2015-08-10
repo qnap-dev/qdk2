@@ -1,3 +1,9 @@
+qdk2 (0.12) trusty; urgency=medium
+
+  * QDK2 supports HDD as temp dir
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Mon, 10 Aug 2015 09:24:16 +0800
+
 qdk2 (0.11) UNRELEASED; urgency=medium
 
   * Fix no tailer package name
