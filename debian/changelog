@@ -1,3 +1,9 @@
+qdk2 (0.14) trusty; urgency=medium
+
+  * Support volume select
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Mon, 23 Nov 2015 15:34:59 +0800
+
 qdk2 (0.13) UNRELEASED; urgency=medium
 
   * Fix shell escaping char

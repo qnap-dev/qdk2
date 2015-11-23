@@ -84,6 +84,7 @@ SYS_QPKG_CONF_FIELD_INSTALL_PATH="Install_Path"
 SYS_QPKG_CONF_FIELD_CONFIG_PATH="Config_Path"
 SYS_QPKG_CONF_FIELD_WEBUI="WebUI"
 SYS_QPKG_CONF_FIELD_WEBPORT="Web_Port"
+SYS_QPKG_CONF_FIELD_VOLUME_SELECT="Volume_Select"
 SYS_QPKG_CONF_FIELD_DESKTOP="Desktop"
 SYS_QPKG_CONF_FIELD_SERVICEPORT="Service_Port"
 SYS_QPKG_CONF_FIELD_SERVICE_PIDFILE="Pid_File"
@@ -368,29 +369,7 @@ init_share_settings(){
 # Determine BASE installation location and assign to SYS_QPKG_DIR
 ##################################################################
 assign_base(){
-	local base=""
-	if [ -n "$SYS_PUBLIC_PATH" ] && [ -d "$SYS_PUBLIC_PATH" ]; then
-		local dirp1=$($CMD_ECHO $SYS_PUBLIC_PATH | $CMD_CUT -d "/" -f 2)
-		local dirp2=$($CMD_ECHO $SYS_PUBLIC_PATH | $CMD_CUT -d "/" -f 3)
-		local dirp3=$($CMD_ECHO $SYS_PUBLIC_PATH | $CMD_CUT -d "/" -f 4)
-		[ -n "$dirp1" ] && [ -n "$dirp2" ] && [ -n "$dirp3" ] &&
-			[ -d "/$dirp1/$dirp2/$SYS_PUBLIC_SHARE" ] && base="/$dirp1/$dirp2"
-	fi
-	
-	# Determine BASE location by checking where the directory is.
-	if [ -z "$base" ]; then
-		for datadirtest in /share/HDA_DATA /share/HDB_DATA /share/HDC_DATA \
-				   /share/HDD_DATA /share/HDE_DATA /share/HDF_DATA \
-				   /share/HDG_DATA /share/HDH_DATA /share/MD0_DATA \
-				   /share/MD1_DATA /share/MD2_DATA /share/MD3_DATA
-		do
-			[ -d "$datadirtest/$SYS_PUBLIC_SHARE" ] && base="$datadirtest"
-		done
-	fi
-	if [ -z "$base" ] ; then
-		err_log "$SYS_MSG_PUBLIC_NOT_FOUND"
-	fi
-	SYS_QPKG_BASE="$base"
+	SYS_QPKG_BASE="${PWD}/../.."
 	SYS_QPKG_INSTALL_PATH="$SYS_QPKG_BASE/.qpkg"
 	SYS_QPKG_DIR="$SYS_QPKG_INSTALL_PATH/$QPKG_NAME"
 }
@@ -519,6 +498,11 @@ set_qpkg_web_port(){
 		[ -n "$QPKG_WEBUI" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_WEBUI "/"
 	fi
 }
+set_qpkg_volume_select(){
+	if [ -n "$QPKG_VOLUME_SELECT" ]; then
+		set_qpkg_field $SYS_QPKG_CONF_FIELD_VOLUME_SELECT "$QPKG_VOLUME_SELECT"
+	fi
+}
 set_qpkg_desktop(){
 	[ -n "$QPKG_DESKTOP" ] && set_qpkg_field $SYS_QPKG_CONF_FIELD_DESKTOP "$QPKG_DESKTOP"
 }
@@ -576,6 +560,7 @@ register_qpkg(){
 	set_qpkg_config_path
 	set_qpkg_web_url
 	set_qpkg_web_port
+	set_qpkg_volume_select
 	set_qpkg_rc_number
 	set_qpkg_desktop
     set_qpkg_container
