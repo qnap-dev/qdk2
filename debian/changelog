@@ -1,3 +1,9 @@
+qdk2 (0.14.1) trusty; urgency=medium
+
+  * Fix bug: volume select
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Mon, 23 Nov 2015 21:49:03 +0800
+
 qdk2 (0.14) trusty; urgency=medium
 
   * Support volume select

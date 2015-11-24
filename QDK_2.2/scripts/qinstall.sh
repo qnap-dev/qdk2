@@ -369,8 +369,7 @@ init_share_settings(){
 # Determine BASE installation location and assign to SYS_QPKG_DIR
 ##################################################################
 assign_base(){
-	SYS_QPKG_BASE="${PWD}/../.."
-	SYS_QPKG_INSTALL_PATH="$SYS_QPKG_BASE/.qpkg"
+    SYS_QPKG_INSTALL_PATH="$(dirname ${PWD})"
 	SYS_QPKG_DIR="$SYS_QPKG_INSTALL_PATH/$QPKG_NAME"
 }
 
