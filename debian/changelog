@@ -1,3 +1,9 @@
+qdk2 (0.15) trusty; urgency=medium
+
+  * Upgrade QPKG to call "stop upgrade"
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Fri, 25 Dec 2015 00:19:21 +0800
+
 qdk2 (0.14.1) trusty; urgency=medium
 
   * Fix bug: volume select

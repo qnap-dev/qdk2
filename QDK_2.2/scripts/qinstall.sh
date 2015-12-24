@@ -431,7 +431,9 @@ start_service(){
 }
 stop_service(){
 	if [ -x $SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM ]; then
-		$SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM stop
+		# Call old service program
+		#$SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM stop
+		$SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM stop upgrade
 		$CMD_SLEEP 5
 		$CMD_SYNC
 	fi
