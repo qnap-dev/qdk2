@@ -617,6 +617,7 @@ add_qpkg_header(){
 	/bin/dd if=\${0} bs=\$script_len skip=1 | /bin/tar -xO | /bin/tar -xzv -C \$_EXTRACT_DIR || exit 1
 	offset=\$(/usr/bin/expr \$script_len + $ctrl_len)
 	/bin/dd if=\${0} bs=\$offset skip=1 | /bin/cat | /bin/dd bs=1024 count=$((($data_len + 1023) / 1024)) of=\$_EXTRACT_DIR/$QDK_COMPRESS_FILE || exit 1
+	[ -f /usr/local/bin/python ] && /usr/local/bin/python -c "with open('$QDK_COMPRESS_FILE', 'rw+') as f: f.seek($data_len); f.truncate()”
 	offset=\$(/usr/bin/expr \$offset + $data_len)
 	EOF
 
