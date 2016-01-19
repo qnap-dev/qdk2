@@ -1,3 +1,13 @@
+qdk2 (0.16) trusty; urgency=medium
+
+  [ Walker Lee ]
+  * Truncate data.tar.XX file
+
+  [ Doro Wu ]
+  * Update debian/control Vcs location
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Tue, 19 Jan 2016 17:56:22 +0800
+
 qdk2 (0.15) trusty; urgency=medium
 
   * Upgrade QPKG to call "stop upgrade"
