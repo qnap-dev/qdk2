@@ -1,6 +1,6 @@
 Source: qdk2
 Section: python
-Vcs-Bzr: https://github.com/fcwu/qdk2
+Vcs-Git: https://github.com/qnap-dev/qdk2.git
 Priority: extra
 Build-Depends: debhelper (>= 6),
     python-support (>= 0.90)
