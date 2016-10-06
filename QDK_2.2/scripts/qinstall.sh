@@ -58,6 +58,7 @@ CMD_WLOG="/sbin/write_log"
 CMD_XARGS="/usr/bin/xargs"
 CMD_7Z="/usr/local/sbin/7z"
 
+
 ##### System definitions #####
 SYS_EXTRACT_DIR="$(pwd)"
 SYS_CONFIG_DIR="/etc/config"
@@ -71,11 +72,13 @@ SYS_QPKG_DATA_FILE_7ZIP="./data.tar.7z"
 SYS_QPKG_DATA_FILE_XZ="./data.tar.xz"
 SYS_QPKG_DATA_CONFIG_FILE="./conf.tar.gz"
 SYS_QPKG_DATA_MD5SUM_FILE="./md5sum"
+SYS_QPKG_DATA_BUILTVER_FILE="./built_version"
+SYS_QPKG_DATA_BUILTINFO_FILE="./built_info"
 SYS_QPKG_DATA_PACKAGES_FILE="./Packages.gz"
 SYS_QPKG_CONFIG_FILE="$SYS_CONFIG_DIR/qpkg.conf"
 SYS_QPKG_CONF_FIELD_QPKGFILE="QPKG_File"
 SYS_QPKG_CONF_FIELD_NAME="Name"
-SYS_QPKG_CONF_FIELD_DISPLAYNAME="Display_Name"
+SYS_QPKG_CONF_FIELD_DISPLAY_NAME="Display_Name"
 SYS_QPKG_CONF_FIELD_VERSION="Version"
 SYS_QPKG_CONF_FIELD_ENABLE="Enable"
 SYS_QPKG_CONF_FIELD_DATE="Date"
@@ -84,12 +87,20 @@ SYS_QPKG_CONF_FIELD_INSTALL_PATH="Install_Path"
 SYS_QPKG_CONF_FIELD_CONFIG_PATH="Config_Path"
 SYS_QPKG_CONF_FIELD_WEBUI="WebUI"
 SYS_QPKG_CONF_FIELD_WEBPORT="Web_Port"
-SYS_QPKG_CONF_FIELD_VOLUME_SELECT="Volume_Select"
-SYS_QPKG_CONF_FIELD_DESKTOP="Desktop"
+SYS_QPKG_CONF_FIELD_WEB_SSL_PORT="Web_SSL_Port"
 SYS_QPKG_CONF_FIELD_SERVICEPORT="Service_Port"
 SYS_QPKG_CONF_FIELD_SERVICE_PIDFILE="Pid_File"
 SYS_QPKG_CONF_FIELD_AUTHOR="Author"
+SYS_QPKG_CONF_FIELD_SYSAPP="Sys_App"
 SYS_QPKG_CONF_FIELD_RC_NUMBER="RC_Number"
+SYS_QPKG_CONF_FIELD_VOLUME_SELECT="Volume_Select"
+SYS_QPKG_CONF_FIELD_DESKTOPAPP="Desktop"
+SYS_QPKG_CONF_FIELD_DESKTOPAPP_WIN_WIDTH="Win_Width"
+SYS_QPKG_CONF_FIELD_DESKTOPAPP_WIN_HEIGHT="Win_Height"
+SYS_QPKG_CONF_FIELD_USE_PROXY="Use_Proxy"
+SYS_QPKG_CONF_FIELD_PROXY_PATH="Proxy_Path"
+SYS_QPKG_CONF_FIELD_TIMEOUT="Timeout"
+SYS_QPKG_CONF_FIELD_VISIBLE="Visible"
 SYS_QPKG_CONF_FIELD_CONTAINER="Container"
 SYS_QPKG_CONF_FIELD_EXEC_FILES="Exec_Files"
 # The following variables are assigned values at run-time.
@@ -274,6 +285,39 @@ store_config(){
 	$CMD_SED -i "/\[$QPKG_NAME\]/,/^\[/{/^^cfg:/d}" $SYS_QPKG_CONFIG_FILE 2>/dev/null
 }
 
+############################
+# Store built version
+############################
+store_built_version(){
+	# Tag buildVer for later removal.
+	$CMD_SED -i "/\[$QPKG_NAME\]/,/^\[/s/^buildVer:/^&/" $SYS_QPKG_CONFIG_FILE 2>/dev/null
+
+	local built_time=
+	local built_svn=
+
+	if [ -f $SYS_QPKG_DATA_BUILTVER_FILE ]; then
+		built_time=$($CMD_GETCFG "" "time" -f $SYS_QPKG_DATA_BUILTVER_FILE)
+		set_qpkg_field "buildVer:time" "$built_time"
+		built_svn=$($CMD_GETCFG "" "svn" -f $SYS_QPKG_DATA_BUILTVER_FILE)
+		set_qpkg_field "buildVer:svn" "$built_svn"
+	fi
+
+	# Remove obsolete buildVer.
+	$CMD_SED -i "/\[$QPKG_NAME\]/,/^\[/{/^^buildVer:/d}" $SYS_QPKG_CONFIG_FILE 2>/dev/null
+}
+
+############################
+# Store built information
+############################
+store_built_information(){
+	local built_time=
+
+	if [ -f $SYS_QPKG_DATA_BUILTINFO_FILE ]; then
+		built_time=$($CMD_GETCFG "" "time" -f $SYS_QPKG_DATA_BUILTINFO_FILE)
+		set_qpkg_field "Build" "$built_time"
+	fi
+}
+
 #####################################################################
 # Add given configuration file and md5sum to SYS_QPKG_CONFIG_FILE if
 # not already added.
@@ -304,6 +348,22 @@ remove_file_and_empty_dir(){
 		$CMD_RM -f "$file"
 	elif [ -d "$file" ]; then
 		$CMD_RMDIR "$file" 2>/dev/null
+	fi
+}
+
+#############################
+# Check QTS minimum version.
+#############################
+check_qts_version(){
+	NOW_VERSION=`/sbin/getcfg System Version -f /etc/config/uLinux.conf|cut -c 1,3,5`
+    MINI_VERSION=`echo "$QTS_MINI_VERSION"|cut -c 1,3,5`
+	MAX_VERSION=`echo "$QTS_MAX_VERSION"|cut -c 1,3,5`
+	if [ ${MINI_VERSION} -gt ${NOW_VERSION} ]; then
+		err_log "Error Firmware version, please upgrade to QTS ${QTS_MINI_VERSION} or newer version."
+	elif [ ${MAX_VERSION} -lt ${NOW_VERSION} ]; then
+		err_log "Error Firmware version, please downgrade to QTS ${QTS_MAX_VERSION} or older version."
+	else
+	    echo "Firmware check is fine."
 	fi
 }
 
@@ -369,7 +429,7 @@ init_share_settings(){
 # Determine BASE installation location and assign to SYS_QPKG_DIR
 ##################################################################
 assign_base(){
-    SYS_QPKG_INSTALL_PATH="$(dirname ${PWD})"
+	SYS_QPKG_INSTALL_PATH="$(dirname ${PWD})"
 	SYS_QPKG_DIR="$SYS_QPKG_INSTALL_PATH/$QPKG_NAME"
 }
 
@@ -459,9 +519,7 @@ disable_qpkg(){
 }
 set_qpkg_name(){
 	set_qpkg_field $SYS_QPKG_CONF_FIELD_NAME "$QPKG_NAME"
-}
-set_qpkg_displayname(){
-	set_qpkg_field $SYS_QPKG_CONF_FIELD_DISPLAYNAME "$QPKG_DISPLAYNAME"
+	[ -z "$QPKG_DISPLAY_NAME" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_DISPLAY_NAME "$QPKG_DISPLAY_NAME"
 }
 set_qpkg_version(){
 	set_qpkg_field $SYS_QPKG_CONF_FIELD_VERSION "$QPKG_VER"
@@ -504,8 +562,11 @@ set_qpkg_volume_select(){
 		set_qpkg_field $SYS_QPKG_CONF_FIELD_VOLUME_SELECT "$QPKG_VOLUME_SELECT"
 	fi
 }
-set_qpkg_desktop(){
-	[ -n "$QPKG_DESKTOP" ] && set_qpkg_field $SYS_QPKG_CONF_FIELD_DESKTOP "$QPKG_DESKTOP"
+set_qpkg_web_ssl_port(){
+        if [ -n "$QPKG_WEB_SSL_PORT" ]; then
+                set_qpkg_field $SYS_QPKG_CONF_FIELD_WEB_SSL_PORT "$QPKG_WEB_SSL_PORT"
+                [ -n "$QPKG_WEBUI" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_WEBUI "/"
+        fi
 }
 set_qpkg_status(){
 	if [ "$SYS_QPKG_SERVICE_ENABLED" = "TRUE" ]; then
@@ -522,6 +583,11 @@ set_qpkg_config(){
 
 	set_qpkg_field "cfg:$file" "$md5sum"
 }
+set_qpkg_sys_app(){
+	if [ -n "$QPKG_SYS_APP" ]; then
+		set_qpkg_field $SYS_QPKG_CONF_FIELD_SYSAPP "$QPKG_SYS_APP"
+	fi
+}
 set_qpkg_rc_number(){
 	[ -z "$QPKG_RC_NUM" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_RC_NUMBER "$QPKG_RC_NUM"
 }
@@ -531,6 +597,38 @@ set_qpkg_container(){
 set_qpkg_exec_file(){
 	set_qpkg_field $SYS_QPKG_CONF_FIELD_EXEC_FILES "$QPKG_EXEC_FILES"
 }
+set_qpkg_desktop_app(){
+	if [ -n "$QPKG_DESKTOP_APP" ]; then
+		set_qpkg_field $SYS_QPKG_CONF_FIELD_DESKTOPAPP "$QPKG_DESKTOP_APP"
+	fi
+	if [ -n "$QPKG_DESKTOP_APP_WIN_WIDTH" ]; then
+		set_qpkg_field $SYS_QPKG_CONF_FIELD_DESKTOPAPP_WIN_WIDTH "$QPKG_DESKTOP_APP_WIN_WIDTH"
+	fi
+	if [ -n "$QPKG_DESKTOP_APP_WIN_HEIGHT" ]; then
+		set_qpkg_field $SYS_QPKG_CONF_FIELD_DESKTOPAPP_WIN_HEIGHT "$QPKG_DESKTOP_APP_WIN_HEIGHT"
+	fi
+}
+set_qpkg_use_proxy(){
+	if [ -n "$QPKG_USE_PROXY" ]; then
+		set_qpkg_field $SYS_QPKG_CONF_FIELD_USE_PROXY "$QPKG_USE_PROXY"
+	fi
+}
+set_qpkg_proxy_path(){
+	if [ -n "$QPKG_PROXY_PATH" ]; then
+		set_qpkg_field $SYS_QPKG_CONF_FIELD_PROXY_PATH "$QPKG_PROXY_PATH"
+	fi
+}
+set_qpkg_timeout(){
+	if [ -n "$QPKG_TIMEOUT" ]; then
+		set_qpkg_field $SYS_QPKG_CONF_FIELD_TIMEOUT "$QPKG_TIMEOUT"
+	fi
+}
+set_qpkg_visible(){
+	if [ -n "$QPKG_VISIBLE" ]; then
+		set_qpkg_field $SYS_QPKG_CONF_FIELD_VISIBLE "$QPKG_VISIBLE"
+	fi
+}
+
 
 ############################################################
 # Store the current status of the QPKG to be able to
@@ -548,7 +646,6 @@ register_qpkg(){
 	[ -f $SYS_QPKG_CONFIG_FILE ] || $CMD_TOUCH $SYS_QPKG_CONFIG_FILE
 
 	set_qpkg_name
-	set_qpkg_displayname
 	set_qpkg_version
 	set_qpkg_author
 
@@ -556,14 +653,20 @@ register_qpkg(){
 	set_qpkg_install_date
 	set_qpkg_service_path
 	set_qpkg_service_port
+	set_qpkg_volume_select
 	set_qpkg_service_pid
 	set_qpkg_install_path
 	set_qpkg_config_path
 	set_qpkg_web_url
 	set_qpkg_web_port
-	set_qpkg_volume_select
+	set_qpkg_web_ssl_port
 	set_qpkg_rc_number
-	set_qpkg_desktop
+	set_qpkg_sys_app
+	set_qpkg_desktop_app
+	set_qpkg_use_proxy
+	set_qpkg_proxy_path
+	set_qpkg_timeout
+	set_qpkg_visible
     set_qpkg_container
     set_qpkg_exec_file
 }
