@@ -1,3 +1,9 @@
+qdk2 (0.16.4) UNRELEASED; urgency=medium
+
+  * Support Ubuntu Xenial
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Thu, 06 Oct 2016 13:55:03 +0800
+
 qdk2 (0.16.3) trusty; urgency=medium
 
   * Better processing for building package as QDK1

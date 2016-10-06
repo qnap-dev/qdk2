@@ -1,10 +1,10 @@
-SERIES = precise trusty
+SERIES = trusty xenial
 
 .PYONY: ${SERIES}
 
 all: ${SERIES}
 
-${SERIES}:
+trusty:
 	-rm -rf debuild/$@
 	mkdir -p debuild/$@
 	find . -maxdepth 1 ! -name "." ! -name "debuild" -exec cp -r {} debuild/$@ \;
@@ -13,6 +13,20 @@ ${SERIES}:
 		&& git clean -xdf \
 		&& rm -rf .git \
 		&& find QDK_2.2/template/ -name .gitkeep -exec rm -f {} \; \
+		&& dch -i -D $@ "auto build" \
+		&& sed -i '1 s/(\(.*\))/(\1~$@)/' debian/changelog \
+		&& debuild -S
+
+xenial:
+	-rm -rf debuild/$@
+	mkdir -p debuild/$@
+	find . -maxdepth 1 ! -name "." ! -name "debuild" -exec cp -r {} debuild/$@ \;
+	cd debuild/$@ \
+		&& git reset --hard HEAD \
+		&& git clean -xdf \
+		&& rm -rf .git \
+		&& find QDK_2.2/template/ -name .gitkeep -exec rm -f {} \; \
+		&& cp debian/control.xenial debian/control \
 		&& dch -i -D $@ "auto build" \
 		&& sed -i '1 s/(\(.*\))/(\1~$@)/' debian/changelog \
 		&& debuild -S
