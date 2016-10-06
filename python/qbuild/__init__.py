@@ -12,7 +12,7 @@ import subprocess
 import os
 
 from settings import Settings
-from log import debug
+from log import info
 from qbuild.rules import Rules
 from qbuild.cook import Cook
 from exception import BuildingError
@@ -33,7 +33,7 @@ class QbuildToQpkg(object):
                 cmd.append('-q')
             for extra in args._extra_args:
                 cmd.append(extra)
-            debug(cmd)
+            info(cmd)
             subprocess.check_call(cmd)
         finally:
             chdir(cwd)

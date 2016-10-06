@@ -31,7 +31,7 @@ class CommandBuild(BaseCommand):
                             default='../build-area',
                             help='folder to store building stuff'
                                  ' (default: %(default)s)')
-        parser.add_argument('--as-qdk1', action='store_true',
+        parser.add_argument('--qdk1', action='store_true',
                             default=False,
                             help='source package is QDK 1 format')
 
@@ -54,22 +54,18 @@ class CommandBuild(BaseCommand):
         return self._build_dir
 
     def run(self, **kargs):
+        # Act as QDK1
+        if self._args.qdk1:
+            # TODO: build as qdk1 flow
+            q = self._args.qpkg_dir
+            result = QbuildToQpkg(q).build(self)
+            info('Package is ready in ' + result)
+            return 0
+
         if self.qpkg_dir is None:
             error('Cannot find QNAP/control anywhere!')
             error('Are you in the source code tree?')
             return -1
-
-        # Act as QDK1
-        if self._args.as_qdk1:
-            # TODO: build as qdk1 flow
-            q = self._args.qpkg_dir
-            result = QbuildToQpkg(q).build(self)
-            arch = '_i386'
-            dest = pjoin(self.build_dir,
-                         pbasename(result)[:-5] + arch + '.qpkg')
-            move(result, dest)
-            info('Package is ready: ' + dest)
-            return 0
 
         # Act as QDK2
         try:
