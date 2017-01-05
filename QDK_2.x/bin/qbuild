@@ -913,7 +913,10 @@ add_qpkg_tail(){
 # Add encryption.
 add_qpkg_encryption(){
 	verbose_msg "Adding QPKG checksum: $QDK_QPKG_FILE"
-	/usr/bin/qpkg_encrypt $QDK_QPKG_FILE
+	local fs=$(/usr/bin/stat --printf="%s" $QDK_QPKG_FILE)
+	local sig=$(/usr/bin/expr $fs \* 3589 + 1000000000)
+	sig=${sig:0:10}
+	echo $sig | /bin/dd of=$QDK_QPKG_FILE bs=1 seek=$(/usr/bin/expr $fs - 60) count=10 conv=notrunc 2>/dev/null
 }
 
 create_qpkg(){
