@@ -1265,7 +1265,21 @@ main(){
 
 	$CMD_SYNC
 
-	log "$QPKG_NAME $QPKG_VER has been installed in $SYS_QPKG_DIR."
+	##system popup log when QPKG has installed 
+
+	if [ -n "$QPKG_DISPLAY_NAME" ]; then
+		log "[App Center] ${QPKG_DISPLAY_NAME} ${QPKG_VER} has been installed in $SYS_QPKG_DIR successfully."   
+	else
+		log "[App Center] $QPKG_NAME ${QPKG_VER} has been installed in $SYS_QPKG_DIR successfully."
+	fi
+
+	##system pop up log after QPKG has installed and app was enable
+
+	if [ -n "$QPKG_DISPLAY_NAME" ]; then
+		log "[App Center] $QPKG_DISPLAY_NAME enabled."   
+	else
+		log "[App Center] $QPKG_NAME enabled."
+	fi
 	set_progress_end
 }
 
