@@ -519,7 +519,7 @@ disable_qpkg(){
 }
 set_qpkg_name(){
 	set_qpkg_field $SYS_QPKG_CONF_FIELD_NAME "$QPKG_NAME"
-	[ -z "$QPKG_DISPLAY_NAME" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_DISPLAY_NAME "$QPKG_DISPLAY_NAME"
+	[ -z "$QPKG_DISPLAYNAME" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_DISPLAY_NAME "$QPKG_DISPLAYNAME"
 }
 set_qpkg_version(){
 	set_qpkg_field $SYS_QPKG_CONF_FIELD_VERSION "$QPKG_VER"
@@ -600,6 +600,9 @@ set_qpkg_exec_file(){
 set_qpkg_desktop_app(){
 	if [ -n "$QPKG_DESKTOP_APP" ]; then
 		set_qpkg_field $SYS_QPKG_CONF_FIELD_DESKTOPAPP "$QPKG_DESKTOP_APP"
+	fi
+	if [ -n "$QPKG_DESKTOP" ]; then
+		set_qpkg_field $SYS_QPKG_CONF_FIELD_DESKTOPAPP "$QPKG_DESKTOP"
 	fi
 	if [ -n "$QPKG_DESKTOP_APP_WIN_WIDTH" ]; then
 		set_qpkg_field $SYS_QPKG_CONF_FIELD_DESKTOPAPP_WIN_WIDTH "$QPKG_DESKTOP_APP_WIN_WIDTH"
@@ -1267,16 +1270,16 @@ main(){
 
 	##system popup log when QPKG has installed 
 
-	if [ -n "$QPKG_DISPLAY_NAME" ]; then
-		log "[App Center] ${QPKG_DISPLAY_NAME} ${QPKG_VER} has been installed in $SYS_QPKG_DIR successfully."   
+	if [ -n "$QPKG_DISPLAYNAME" ]; then
+		log "[App Center] ${QPKG_DISPLAYNAME} ${QPKG_VER} has been installed in $SYS_QPKG_DIR successfully."   
 	else
 		log "[App Center] $QPKG_NAME ${QPKG_VER} has been installed in $SYS_QPKG_DIR successfully."
 	fi
 
 	##system pop up log after QPKG has installed and app was enable
 
-	if [ -n "$QPKG_DISPLAY_NAME" ]; then
-		log "[App Center] $QPKG_DISPLAY_NAME enabled."   
+	if [ -n "$QPKG_DISPLAYNAME" ]; then
+		log "[App Center] $QPKG_DISPLAYNAME enabled."   
 	else
 		log "[App Center] $QPKG_NAME enabled."
 	fi
