@@ -1,8 +1,9 @@
-qdk2 (0.18.2) trusty; urgency=medium
+qdk2 (0.18.3) trusty; urgency=medium
 
   * Fix Display_Name and Desktop not to set in qpkg.conf
+  * Fix show QPKG enabled if start failed (bug#104177)
 
- -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Sun, 30 Apr 2017 22:03:05 +0800
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Thu, 15 Jun 2017 12:13:22 +0800
 
 qdk2 (0.18) trusty; urgency=medium
 
