@@ -1124,7 +1124,7 @@ create_uninstall_script(){
     # Package specific routines as defined in package_routines.
     $PKG_POST_REMOVE
 
-    EOF
+EOF
 
     # Restore stdout and close fd 5.
     exec 1>&5 5>&-

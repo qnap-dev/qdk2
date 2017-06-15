@@ -1,4 +1,4 @@
-qdk2 (0.18.3) trusty; urgency=medium
+qdk2 (0.18.4) trusty; urgency=medium
 
   * Fix Display_Name and Desktop not to set in qpkg.conf
   * Fix show QPKG enabled if start failed (bug#104177)
