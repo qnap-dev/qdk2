@@ -59,6 +59,11 @@ check_deprecated_definitions(){
            QDK_SRC_X41=
            warn_msg "QDK_SRC_X41: deprecated definition"
         fi
+    if [ -n "$QDK_SRC_ARM_64" ]; then
+        [ -z "$QDK_DATA_DIR_ARM_64" ] && QDK_DATA_DIR_ARM_64="$QDK_SRC_ARM_64"
+        QDK_SRC_X41=
+        warn_msg "QDK_SRC_X41: deprecated definition"
+    fi
 	if [ -n "$QDK_SRC_X86" ]; then
 		[ -z "$QDK_DATA_DIR_X86" ] && QDK_DATA_DIR_X86="$QDK_SRC_X86"
 		QDK_SRC_X86=
@@ -614,9 +619,13 @@ add_qpkg_header(){
 			reject_platform="ARM_AL"
 			;;
 		arm-x41)
-            		cpu_arch="armv7l"
+			cpu_arch="armv7l"
 			reject_platform="ARM_MS"
-            ;;
+			;;
+		arm_64)
+			cpu_arch="aarch64"
+			reject_platform=
+			;;
 		x86)
 			cpu_arch="i.86\|x86_64"
 			reject_platform="X86_EVANSPORT"
@@ -1064,6 +1073,7 @@ assign_defaults(){
 		is_empty_dir "${QDK_DATA_DIR_X19:-arm-x19}" || add_arch "arm-x19"
 		is_empty_dir "${QDK_DATA_DIR_X31:-arm-x31}" || add_arch "arm-x31"
 		is_empty_dir "${QDK_DATA_DIR_X41:-arm-x41}" || add_arch "arm-x41"
+		is_empty_dir "${QDK_DATA_DIR_ARM_64:-arm_64}" || add_arch "arm_64"
 		is_empty_dir "${QDK_DATA_DIR_X86:-x86}" || add_arch "x86"
 		is_empty_dir "${QDK_DATA_DIR_X86_64:-x86_64}" || add_arch "x86_64"
 		is_empty_dir "${QDK_DATA_DIR_X86_CE53XX:-x86_ce53xx}" || add_arch "x86_ce53xx"
@@ -1109,7 +1119,10 @@ traverse_and_build(){
 				;;
 			arm-x41)
 				arch_dir="${QDK_DATA_DIR_X41:-arm-x41}"
-                ;;
+				;;
+			arm_64)
+				arch_dir="${QDK_DATA_DIR_ARM_64:-arm_64}"
+				;;
 			x86)
 				arch_dir="${QDK_DATA_DIR_X86:-x86}"
 				;;
@@ -1430,7 +1443,7 @@ usage: $(/usr/bin/basename $0) [--extract QPKG [DIR]] [--create-env NAME] [-s|--
 --build-model MODEL
 	Include check for given model in the QPKG package.
 --build-arch ARCH
-	Build QPKG for specified ARCH (supported values: arm-x09, arm-x19, arm-x31, arm-x41, x86, x86_ce53xx,
+	Build QPKG for specified ARCH (supported values: arm-x09, arm-x19, arm-x31, arm-x41, arm_64, x86, x86_ce53xx,
 	and x86_64). Only one architecture per option, but you can repeat the
 	option on the command line to add multiple architectures.
 --build-dir BUILD_DIR
@@ -1445,13 +1458,13 @@ usage: $(/usr/bin/basename $0) [--extract QPKG [DIR]] [--create-env NAME] [-s|--
 --pre-build SCRIPT
 	Run specified script before the build process is started. Called before
 	each and every build. First argument contains the architecture (one of
-	arm-x09, arm-x19, arm-x31, arm-x41,x86, x86_ce53xx, and x86_64) and the second argument contains the
+	arm-x09, arm-x19, arm-x31, arm-x41, arm_64, x86, x86_ce53xx, and x86_64) and the second argument contains the
 	location of the architecture specific code. For the generic build the
 	arguments are empty.
 --post-build SCRIPT
 	Run specified script after the build process is finished. Called after
 	each and every build. First argument contains the architecture (one of
-	arm-x09, arm-x19, arm-x31, arm-x41, x86, x86_ce53xx, and x86_64) and the second argument contains the
+	arm-x09, arm-x19, arm-x31, arm-x41, arm_64, x86, x86_ce53xx, and x86_64) and the second argument contains the
 	location of the architecture specific code. For the generic build the
 	arguments are empty.
 --create-env NAME
