@@ -1,3 +1,9 @@
+qdk2 (0.19.1) trusty; urgency=medium
+
+  * Fix xz on arm_64
+
+ -- Fan-Cheng Wu (Doro Wu) <fcwu.tw@gmail.com>  Thu, 26 Oct 2017 15:36:02 +0800
+
 qdk2 (0.19) trusty; urgency=medium
 
   * Add new platform arm_64
