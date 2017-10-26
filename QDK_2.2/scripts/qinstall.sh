@@ -210,6 +210,11 @@ extract_data(){
     [ -n "$1" ] || return 1
     local archive="$1"
     local root_dir="${2:-$SYS_QPKG_DIR}"
+    local xz_ld_wrapper='lib/ld-2.19.so'
+    if [ x"$SYS_CPU_ARCH" == x"arm_64" ]; then
+        xz_ld_wrapper=''
+    fi
+
     case "$archive" in
     *.gz|*.bz2)
         $CMD_TAR xvf "$archive" -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || err_log "$SYS_MSG_FILE_ERROR"
@@ -219,7 +224,7 @@ extract_data(){
         ;;
     *.xz)
         $CMD_TAR xf "./xz.tgz"
-        LD_LIBRARY_PATH=${PWD}/lib lib/ld-2.19.so bin/xzcat "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || err_log "$SYS_MSG_FILE_ERROR"
+        LD_LIBRARY_PATH=${PWD}/lib $xz_ld_wrapper bin/xzcat "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || err_log "$SYS_MSG_FILE_ERROR"
         ;;
     *)
         err_log "$SYS_MSG_FILE_ERROR"
