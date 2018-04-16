@@ -26,6 +26,9 @@
 #
 ##############################################################################
 
+##### System definitions #####
+PREFIX="App Center"
+
 # Cleanup any temporary directories and files at termination.
 trap 'cleanup_all' INT TERM
 
@@ -601,7 +604,7 @@ add_qpkg_header(){
 	# Return value 10 to remove QPKG package after installation
 	local retval=10
 	local extract_dir="\$QPKG_INSTALL_PATH/.tmp"
-	local wrong_arch="Wrong architecture: $QPKG_NAME $QPKG_VER is built for $arch"
+	local wrong_arch="[$PREFIX] Failed to install $QPKG_NAME $QPKG_VER. Installation package is incompatible. Use the correct package."
 	local log_tool="/sbin/log_tool -t2 -uSystem -p127.0.0.1 -mlocalhost -a"
 
 	local cpu_arch=
@@ -680,13 +683,25 @@ add_qpkg_header(){
                 	QPKG_INSTALL_PATH="\${QINSTALL_PATH}"
                 	QPKG_DIR="\${QINSTALL_PATH}/\${QPKG_NAME}"
 		else
-			$log_tool "QTS application install volume not found."
+			if [ -x "/usr/local/sbin/notify" ]; then
+				/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 1 "[{0}] {1} install failed due to QTS application install volume not found." "$PREFIX" "$QPKG_NAME"
+				set_progress_fail
+				exit 1
+			else
+				$log_tool "[$PREFIX] Failed to install $QPKG_NAME. The selected installation volume is missing."
+			fi
 			exit
 		fi
              fi
 	        return 0
 	else
-		$log_tool "QTS system volume not found."
+		if [ -x "/usr/local/sbin/notify" ]; then
+			/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 1 "[{0}] {1} install failed due to QTS application instalal volume not found." "$PREFIX" "$QPKG_NAME"
+			set_progress_fail
+			exit 1
+		else
+			$log_tool "[$PREFIX] Failed to install $QPKG_NAME. The selected installation volume is missing."
+		fi
 		exit
 	fi
 	}
@@ -695,10 +710,16 @@ add_qpkg_header(){
 	if [ -n "$cpu_arch" ]; then
         /bin/cat >>$QDK_QPKG_FILE <<-EOF
 		wrong_arch(){
-			 local wrong_arch_msg="$wrong_arch"
-			 echo "Installation Abort." && echo "\$wrong_arch_msg"
-			 $log_tool "\$wrong_arch_msg"
-			 echo -1 > /tmp/update_process && exit 1
+			if [ -x "/usr/local/sbin/notify" ]; then
+			 	/usr/local/sbin/notify send -A A039 -C C001 -M 51 -l error -t 1 "[{0}] {1} {2} install failed due to the platform is imcompatable. Please use correct package for installation." "$PREFIX" "$QPKG_NAME" "$QPKG_VER"
+				set_progress_fail
+				exit 1
+			else
+				local wrong_arch_msg="$wrong_arch"
+				echo "Installation Abort." && echo "\$wrong_arch_msg"
+				$log_tool "[$PREFIX] Failed to install "$QPKG_NAME" $QPKG_VER. Installation package is incompatible. Use the correct package."
+				echo -1 > /tmp/update_process && exit 1
+			fi
 		}
 		arch_ok(){
 			 local cpu_arch=\$(/bin/uname -m)
