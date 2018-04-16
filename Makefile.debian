@@ -12,7 +12,7 @@ trusty:
 		&& git reset --hard HEAD \
 		&& git clean -xdf \
 		&& rm -rf .git \
-		&& find QDK_2.2/template/ -name .gitkeep -exec rm -f {} \; \
+		&& find QDK_2.x/template/ -name .gitkeep -exec rm -f {} \; \
 		&& dch -i -D $@ "auto build" \
 		&& sed -i '1 s/(\(.*\))/(\1~$@)/' debian/changelog \
 		&& debuild -S
@@ -25,7 +25,7 @@ xenial:
 		&& git reset --hard HEAD \
 		&& git clean -xdf \
 		&& rm -rf .git \
-		&& find QDK_2.2/template/ -name .gitkeep -exec rm -f {} \; \
+		&& find QDK_2.x/template/ -name .gitkeep -exec rm -f {} \; \
 		&& cp debian/control.xenial debian/control \
 		&& dch -i -D $@ "auto build" \
 		&& sed -i '1 s/(\(.*\))/(\1~$@)/' debian/changelog \

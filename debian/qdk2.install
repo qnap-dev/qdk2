@@ -3,7 +3,7 @@ completions/bash/qdk2 etc/bash_completion.d/
 completions/fish/qdk2.fish usr/share/fish/completions/
 completions/zsh/_qdk2 usr/share/zsh/vendor-completions/
 python/* usr/share/qdk2/python/
-QDK_2.2/* usr/share/qdk2/QDK/
+QDK_2.x/* usr/share/qdk2/QDK/
 samples/*.tar.gz usr/share/qdk2/samples/
 src/qpkg_encrypt usr/bin/
 template usr/share/qdk2/
