@@ -1,3 +1,9 @@
+qdk2 (0.20) trusty; urgency=medium
+
+  * Support Notification Center
+
+ -- Walker Lee <walkerlee.tw@gmail.com>  Mon, 16 Apr 2018 17:31:00 +0800
+
 qdk2 (0.19.1) trusty; urgency=medium
 
   * Fix xz on arm_64
