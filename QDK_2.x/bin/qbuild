@@ -52,21 +52,21 @@ check_deprecated_definitions(){
 		QDK_SRC_X19=
 		warn_msg "QDK_SRC_X19: deprecated definition"
 	fi
-        if [ -n "$QDK_SRC_X31" ]; then
-	   [ -z "$QDK_DATA_DIR_X31" ] && QDK_DATA_DIR_X31="$QDK_SRC_X31"
-	   QDK_SRC_X31=
-	   warn_msg "QDK_SRC_X31: deprecated definition"
+	if [ -n "$QDK_SRC_X31" ]; then
+		[ -z "$QDK_DATA_DIR_X31" ] && QDK_DATA_DIR_X31="$QDK_SRC_X31"
+		QDK_SRC_X31=
+		warn_msg "QDK_SRC_X31: deprecated definition"
 	fi
 	if [ -n "$QDK_SRC_X41" ]; then
-           [ -z "$QDK_DATA_DIR_X41" ] && QDK_DATA_DIR_X41="$QDK_SRC_X41"
-           QDK_SRC_X41=
-           warn_msg "QDK_SRC_X41: deprecated definition"
-        fi
-    if [ -n "$QDK_SRC_ARM_64" ]; then
-        [ -z "$QDK_DATA_DIR_ARM_64" ] && QDK_DATA_DIR_ARM_64="$QDK_SRC_ARM_64"
-        QDK_SRC_X41=
-        warn_msg "QDK_SRC_X41: deprecated definition"
-    fi
+		[ -z "$QDK_DATA_DIR_X41" ] && QDK_DATA_DIR_X41="$QDK_SRC_X41"
+		QDK_SRC_X41=
+		warn_msg "QDK_SRC_X41: deprecated definition"
+	fi
+	if [ -n "$QDK_SRC_ARM_64" ]; then
+		[ -z "$QDK_DATA_DIR_ARM_64" ] && QDK_DATA_DIR_ARM_64="$QDK_SRC_ARM_64"
+		QDK_SRC_X41=
+		warn_msg "QDK_SRC_X41: deprecated definition"
+	fi
 	if [ -n "$QDK_SRC_X86" ]; then
 		[ -z "$QDK_DATA_DIR_X86" ] && QDK_DATA_DIR_X86="$QDK_SRC_X86"
 		QDK_SRC_X86=
@@ -474,8 +474,8 @@ perform_data_package_adaptor(){
 create_data_package(){
 	local arch_msg="${1:+ for $1}"
 	local arch_dir="$2"
-    local BUILD_DIR=build.$$
-    local TMP_DIR=tmp.$$
+	local BUILD_DIR=build.$$
+	local TMP_DIR=tmp.$$
 
 	msg "Creating archive with data files${arch_msg}..."
 
@@ -498,32 +498,32 @@ create_data_package(){
 
 	verbose_msg "Creating compressed tar archive..."
 	case "$QDK_COMPRESS_METHOD" in
-	gzip)
-		QDK_COMPRESS_FILE=data.tar.gz
-		debug_msg "[$QDK_COMPRESS_FILE]"
-        local SIZE=$(du -sb "${BUILD_DIR}" | grep -o '^[0-9]\+')
-        debug_msg "$(tar cf - -C ${BUILD_DIR} . | pv -s $SIZE -N tar | gzip > ${TMP_DIR}/data.tar.gz)"
-		;;
-	bzip2)
-		QDK_COMPRESS_FILE=data.tar.bz2
-		debug_msg "[$QDK_COMPRESS_FILE]"
-		debug_msg "$(/bin/tar -cvjf tmp.$$/data.tar.bz2 -C build.$$ .)"
-		;;
-	7zip)
-		QDK_COMPRESS_FILE=data.tar.7z
-		local tar_verbose=
-		is_debug && tar_verbose="-v"
-		debug_msg "[$QDK_COMPRESS_FILE]"
-		debug_msg "$(/bin/tar $tar_verbose -cf - -C build.$$ . | /usr/local/sbin/7z a -si tmp.$$/data.tar.7z)"
-		;;
-	xz)
-		QDK_COMPRESS_FILE=data.tar.xz
-		debug_msg "[$QDK_COMPRESS_FILE]"
-        local SIZE=$(du -sb "${BUILD_DIR}" | grep -o '^[0-9]\+')
-        debug_msg "$(tar cf - -C ${BUILD_DIR} . | pv -s $SIZE -N tar | xz > ${TMP_DIR}/${QDK_COMPRESS_FILE})"
-		;;
-	*)
-		err_msg "$QDK_COMPRESS_METHOD: unknown compression format"
+		gzip)
+			QDK_COMPRESS_FILE=data.tar.gz
+			debug_msg "[$QDK_COMPRESS_FILE]"
+			local SIZE=$(du -sb "${BUILD_DIR}" | grep -o '^[0-9]\+')
+			debug_msg "$(tar cf - -C ${BUILD_DIR} . | pv -s $SIZE -N tar | gzip > ${TMP_DIR}/data.tar.gz)"
+			;;
+		bzip2)
+			QDK_COMPRESS_FILE=data.tar.bz2
+			debug_msg "[$QDK_COMPRESS_FILE]"
+			debug_msg "$(/bin/tar -cvjf tmp.$$/data.tar.bz2 -C build.$$ .)"
+			;;
+		7zip)
+			QDK_COMPRESS_FILE=data.tar.7z
+			local tar_verbose=
+			is_debug && tar_verbose="-v"
+			debug_msg "[$QDK_COMPRESS_FILE]"
+			debug_msg "$(/bin/tar $tar_verbose -cf - -C build.$$ . | /usr/local/sbin/7z a -si tmp.$$/data.tar.7z)"
+			;;
+		xz)
+			QDK_COMPRESS_FILE=data.tar.xz
+			debug_msg "[$QDK_COMPRESS_FILE]"
+			local SIZE=$(du -sb "${BUILD_DIR}" | grep -o '^[0-9]\+')
+			debug_msg "$(tar cf - -C ${BUILD_DIR} . | pv -s $SIZE -N tar | xz > ${TMP_DIR}/${QDK_COMPRESS_FILE})"
+			;;
+		*)
+			err_msg "$QDK_COMPRESS_METHOD: unknown compression format"
 	esac
 	/bin/rm -fr build.$$
 }
@@ -538,10 +538,10 @@ create_control_package(){
 	/bin/cp -p "$QDK_INSTALL_SCRIPT" build.$$/
 	/bin/cp -p "$QDK_PACKAGE_ROUTINES" build.$$/package_routines
 	/bin/cp -p "$QDK_QPKG_CONFIG" build.$$/qpkg.cfg
-    # xz utility
-    if [ "$QDK_COMPRESS_METHOD" == "xz" ]; then
-        /bin/cp $(dirname $(dirname $(realpath $0)))/xz_1404_${QDK_XZ_ARCH}.tgz build.$$/xz.tgz
-    fi
+	# xz utility
+	if [ "$QDK_COMPRESS_METHOD" == "xz" ]; then
+		/bin/cp $(dirname $(dirname $(realpath $0)))/xz_1404_${QDK_XZ_ARCH}.tgz build.$$/xz.tgz
+	fi
 
 	[ -f tmp.$$/md5sum ] && /bin/cp -p tmp.$$/md5sum build.$$/
 	[ -f tmp.$$/built_version ] && /bin/cp -p tmp.$$/built_version build.$$/
@@ -655,48 +655,48 @@ add_qpkg_header(){
 
 	if [ -e "\$HDD_MOUNT" ]; then
 		if [ -z "\$QINSTALL_PATH" ]; then
-	        	BASE_GROUP="/share/HDA_DATA /share/HDB_DATA /share/HDC_DATA /share/HDD_DATA /share/HDE_DATA /share/HDF_DATA /share/HDG_DATA /share/HDH_DATA /share/HDI_DATA /share/HDJ_DATA /share/HDK_DATA /share/HDL_DATA /share/MD0_DATA /share/MD1_DATA /share/MD2_DATA /share/MD3_DATA"
-	        	publicdir=\`/sbin/getcfg Public path -f /etc/config/smb.conf\`
-	        	if [ ! -z \$publicdir ] && [ -d \$publicdir ];then
-	                publicdirp1=\`/bin/echo \$publicdir | /bin/cut -d "/" -f 2\`
-	                publicdirp2=\`/bin/echo \$publicdir | /bin/cut -d "/" -f 3\`
-	                publicdirp3=\`/bin/echo \$publicdir | /bin/cut -d "/" -f 4\`
-	                if [ ! -z \$publicdirp1 ] && [ ! -z \$publicdirp2 ] && [ ! -z \$publicdirp3 ]; then
-	                        [ -d "/\${publicdirp1}/\${publicdirp2}/Public" ] && QPKG_BASE="/\${publicdirp1}/\${publicdirp2}"
-	                fi
-	        fi
-	
-	        # Determine BASE installation location by checking where the Public folder is.
-	        if [ -z \$QPKG_BASE ]; then
-	                for datadirtest in \$BASE_GROUP; do
-	                [ -d \$datadirtest/Public ] && QPKG_BASE="/\${publicdirp1}/\${publicdirp2}"
-	                done
-	        fi
-	        if [ -z \$QPKG_BASE ] ; then
-	                echo "The Public share not found."
-	                return 1
-	        fi
-	        	QPKG_INSTALL_PATH="\${QPKG_BASE}/.qpkg"
-	        	QPKG_DIR="\${QPKG_INSTALL_PATH}/\${QPKG_NAME}"
-		else
-		if [ -e "\$QINSTALL_PATH" ]; then
-                	QPKG_INSTALL_PATH="\${QINSTALL_PATH}"
-                	QPKG_DIR="\${QINSTALL_PATH}/\${QPKG_NAME}"
-		else
-			if [ -x "/usr/local/sbin/notify" ]; then
-				/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 1 "[{0}] {1} install failed due to QTS application install volume not found." "$PREFIX" "$QPKG_NAME"
-				set_progress_fail
-				exit 1
-			else
-				$log_tool "[$PREFIX] Failed to install $QPKG_NAME. The selected installation volume is missing."
+			BASE_GROUP="/share/HDA_DATA /share/HDB_DATA /share/HDC_DATA /share/HDD_DATA /share/HDE_DATA /share/HDF_DATA /share/HDG_DATA /share/HDH_DATA /share/HDI_DATA /share/HDJ_DATA /share/HDK_DATA /share/HDL_DATA /share/MD0_DATA /share/MD1_DATA /share/MD2_DATA /share/MD3_DATA"
+			publicdir=\`/sbin/getcfg Public path -f /etc/config/smb.conf\`
+			if [ ! -z \$publicdir ] && [ -d \$publicdir ];then
+				publicdirp1=\`/bin/echo \$publicdir | /bin/cut -d "/" -f 2\`
+				publicdirp2=\`/bin/echo \$publicdir | /bin/cut -d "/" -f 3\`
+				publicdirp3=\`/bin/echo \$publicdir | /bin/cut -d "/" -f 4\`
+				if [ ! -z \$publicdirp1 ] && [ ! -z \$publicdirp2 ] && [ ! -z \$publicdirp3 ]; then
+					[ -d "/\${publicdirp1}/\${publicdirp2}/Public" ] && QPKG_BASE="/\${publicdirp1}/\${publicdirp2}"
+				fi
 			fi
-			exit
+
+			# Determine BASE installation location by checking where the Public folder is.
+			if [ -z \$QPKG_BASE ]; then
+				for datadirtest in \$BASE_GROUP; do
+					[ -d \$datadirtest/Public ] && QPKG_BASE="/\${publicdirp1}/\${publicdirp2}"
+				done
+			fi
+			if [ -z \$QPKG_BASE ] ; then
+				echo "The Public share not found."
+				return 1
+			fi
+			QPKG_INSTALL_PATH="\${QPKG_BASE}/.qpkg"
+			QPKG_DIR="\${QPKG_INSTALL_PATH}/\${QPKG_NAME}"
+		else
+			if [ -e "\$QINSTALL_PATH" ]; then
+				QPKG_INSTALL_PATH="\${QINSTALL_PATH}"
+				QPKG_DIR="\${QINSTALL_PATH}/\${QPKG_NAME}"
+			else
+				if [ -x "/usr/local/sbin/notify" ]; then
+					/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 3 "[{0}] {1} install failed due to QTS application install volume not found." "$PREFIX" "$QPKG_NAME"
+					set_progress_fail
+					exit 1
+				else
+					$log_tool "[$PREFIX] Failed to install $QPKG_NAME. The selected installation volume is missing."
+				fi
+				exit
+			fi
 		fi
-             fi
-	        return 0
+		return 0
 	else
 		if [ -x "/usr/local/sbin/notify" ]; then
-			/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 1 "[{0}] {1} install failed due to QTS application instalal volume not found." "$PREFIX" "$QPKG_NAME"
+			/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 3 "[{0}] {1} install failed due to QTS application install volume not found." "$PREFIX" "$QPKG_NAME"
 			set_progress_fail
 			exit 1
 		else
@@ -708,10 +708,10 @@ add_qpkg_header(){
 	EOF
 
 	if [ -n "$cpu_arch" ]; then
-        /bin/cat >>$QDK_QPKG_FILE <<-EOF
+		/bin/cat >>$QDK_QPKG_FILE <<-EOF
 		wrong_arch(){
 			if [ -x "/usr/local/sbin/notify" ]; then
-			 	/usr/local/sbin/notify send -A A039 -C C001 -M 51 -l error -t 1 "[{0}] {1} {2} install failed due to the platform is imcompatable. Please use correct package for installation." "$PREFIX" "$QPKG_NAME" "$QPKG_VER"
+				/usr/local/sbin/notify send -A A039 -C C001 -M 51 -l error -t 3 "[{0}] {1} {2} install failed due to the platform is imcompatable. Please use correct package for installation." "$PREFIX" "$QPKG_NAME" "$QPKG_VER"
 				set_progress_fail
 				exit 1
 			else
@@ -722,11 +722,12 @@ add_qpkg_header(){
 			fi
 		}
 		arch_ok(){
-			 local cpu_arch=\$(/bin/uname -m)
-			 local reject_platform=\$(/sbin/getcfg "" Platform -f /etc/platform.conf) 
+			local cpu_arch=\$(/bin/uname -m)
+			local reject_platform=\$(/sbin/getcfg "" Platform -f /etc/platform.conf)
 			if [ \$(/usr/bin/expr match "\$reject_platform" "$reject_platform") == 0 ]; then
 				[ \$(/usr/bin/expr match "\$cpu_arch" "$cpu_arch") -ne 0 ] || return 1
-			else return 1
+			else
+				return 1
 			fi
 		}
 		EOF
@@ -745,7 +746,7 @@ add_qpkg_header(){
 	[ -f tmp.$$/extra.tar ] && local extra_len=$(/bin/ls -l tmp.$$/extra.tar | awk '{ print $5 }')
 
 	/bin/cat >>$QDK_QPKG_FILE <<-EOF
-    find_base
+	find_base
 	_EXTRACT_DIR="$extract_dir"
 	/bin/mkdir -p \$_EXTRACT_DIR || exit 1
 	script_len=SCRIPT_LEN
@@ -851,23 +852,23 @@ add_qpkg_signature(){
 		verbose_msg "Adding signature..."
 
 		case "$QDK_SIGNATURE" in
-		gpg)
-			local gpg_options="--detach-sign -o-" 
-			[ -n "$QDK_GPG_NAME" ] && gpg_options="$gpg_options -u $QDK_GPG_NAME"
-			is_quiet && gpg_options="$gpg_options --no-tty"
-			debug_msg "$QDK_GPG_APP $gpg_options $QDK_QPKG_FILE >> ${QDK_QPKG_FILE}.sig"
-			if $QDK_GPG_APP $gpg_options $QDK_QPKG_FILE >> ${QDK_QPKG_FILE}.sig; then
-				add_qdk_area_begin
-				add_qdk_area_signature ${QDK_QPKG_FILE}.sig
-				add_qdk_area_end
-				/bin/rm ${QDK_QPKG_FILE}.sig
-			else
-				warn_msg "$QDK_QPKG_FILE: no signature added"
-			fi
-			;;
-		*)
-			err_msg "$QDK_SIGNATURE: not supported signature type"
-			;;
+			gpg)
+				local gpg_options="--detach-sign -o-"
+				[ -n "$QDK_GPG_NAME" ] && gpg_options="$gpg_options -u $QDK_GPG_NAME"
+				is_quiet && gpg_options="$gpg_options --no-tty"
+				debug_msg "$QDK_GPG_APP $gpg_options $QDK_QPKG_FILE >> ${QDK_QPKG_FILE}.sig"
+				if $QDK_GPG_APP $gpg_options $QDK_QPKG_FILE >> ${QDK_QPKG_FILE}.sig; then
+					add_qdk_area_begin
+					add_qdk_area_signature ${QDK_QPKG_FILE}.sig
+					add_qdk_area_end
+					/bin/rm ${QDK_QPKG_FILE}.sig
+				else
+					warn_msg "$QDK_QPKG_FILE: no signature added"
+				fi
+				;;
+			*)
+				err_msg "$QDK_SIGNATURE: not supported signature type"
+				;;
 		esac
 	fi
 }
@@ -881,7 +882,7 @@ add_qpkg_tail(){
 	verbose_msg "Adding tail data..."
 
 	local max_qpkg_name_len=20
-    local QPKG_NAME_SHORTER=$QPKG_NAME
+	local QPKG_NAME_SHORTER=$QPKG_NAME
 	if (( $max_qpkg_name_len < ${#QPKG_NAME} )); then
 		warn_msg "QPKG_NAME: the length of $QPKG_NAME must be less than or equal to $max_qpkg_name_len; name truncated."
 		QPKG_NAME_SHORTER=$(/usr/bin/expr substr "$QPKG_NAME" 1 $max_qpkg_name_len)
@@ -898,8 +899,8 @@ add_qpkg_tail(){
 
 # Add encryption.
 add_qpkg_encryption(){
-    verbose_msg "Adding QPKG checksum: $QDK_QPKG_FILE"
-    /usr/bin/qpkg_encrypt $QDK_QPKG_FILE
+	verbose_msg "Adding QPKG checksum: $QDK_QPKG_FILE"
+	/usr/bin/qpkg_encrypt $QDK_QPKG_FILE
 }
 
 create_qpkg(){
@@ -949,27 +950,27 @@ build(){
 
 	/bin/mkdir -m 755 tmp.$$ || err_msg "failed to create directory for tar archives"
 
-	if [ -f "$QDK_DATA_FILE" ]; then 
+	if [ -f "$QDK_DATA_FILE" ]; then
 		verbose_msg "Using pre-packaged data archive: $QDK_DATA_FILE"
 		case "$QDK_DATA_FILE" in
-		*.tgz|*.tar.gz)
-			debug_msg "Checking gzip compressed archive...."
-			/bin/gunzip -c "$QDK_DATA_FILE" 2>/dev/null | /bin/tar t &>/dev/null || err_msg "$QDK_DATA_FILE: this does not look like a gzip compressed tar archive"
-			QDK_COMPRESS_FILE="data.tar.gz"
-			;;
-		*.tbz2|*.tar.bz2)
-			debug_msg "Checking bzip2 compressed archive...."
-			/usr/bin/bunzip2 -c "$QDK_DATA_FILE" 2>/dev/null | /bin/tar t &>/dev/null || err_msg "$QDK_DATA_FILE: this does not look like a bzip2 compressed tar archive"
-			QDK_COMPRESS_FILE="data.tar.bz2"
-			;;
-		*.tar.7z)
-			debug_msg "Checking 7-zip compressed archive...."
-			/usr/local/sbin/7z x -t7z -so "$QDK_DATA_FILE" 2>/dev/null | /bin/tar t &>/dev/null || err_msg "$QDK_DATA_FILE: this does not look like a 7-zip compressed tar archive"
-			QDK_COMPRESS_FILE="data.tar.7z"
-			;;
-		*)
-			err_msg "$QDK_DATA_FILE: this does not look like a compressed tar archive"
-			;;
+			*.tgz|*.tar.gz)
+				debug_msg "Checking gzip compressed archive...."
+				/bin/gunzip -c "$QDK_DATA_FILE" 2>/dev/null | /bin/tar t &>/dev/null || err_msg "$QDK_DATA_FILE: this does not look like a gzip compressed tar archive"
+				QDK_COMPRESS_FILE="data.tar.gz"
+				;;
+			*.tbz2|*.tar.bz2)
+				debug_msg "Checking bzip2 compressed archive...."
+				/usr/bin/bunzip2 -c "$QDK_DATA_FILE" 2>/dev/null | /bin/tar t &>/dev/null || err_msg "$QDK_DATA_FILE: this does not look like a bzip2 compressed tar archive"
+				QDK_COMPRESS_FILE="data.tar.bz2"
+				;;
+			*.tar.7z)
+				debug_msg "Checking 7-zip compressed archive...."
+				/usr/local/sbin/7z x -t7z -so "$QDK_DATA_FILE" 2>/dev/null | /bin/tar t &>/dev/null || err_msg "$QDK_DATA_FILE: this does not look like a 7-zip compressed tar archive"
+				QDK_COMPRESS_FILE="data.tar.7z"
+				;;
+			*)
+				err_msg "$QDK_DATA_FILE: this does not look like a compressed tar archive"
+				;;
 		esac
 		debug_msg "$QDK_DATA_FILE renamed to $QDK_COMPRESS_FILE"
 		/bin/cp "$QDK_DATA_FILE" tmp.$$/$QDK_COMPRESS_FILE
@@ -1067,7 +1068,7 @@ truncate_qpkg_name(){
 		warn_msg "QPKG_NAME: the length of $QPKG_NAME must be less than or equal to $max_qpkg_name_len; name truncated."
 		QPKG_NAME=$(/usr/bin/expr substr "$QPKG_NAME" 1 $max_qpkg_name_len)
 		edit_qpkg_config QPKG_NAME "$QPKG_NAME"
-		
+
 	fi
 }
 
@@ -1100,8 +1101,7 @@ assign_defaults(){
 		is_empty_dir "${QDK_DATA_DIR_X86_CE53XX:-x86_ce53xx}" || add_arch "x86_ce53xx"
 	fi
 	if [ -z "$QDK_BUILD_ARCH" ]; then
-		if [ -f "$QDK_DATA_FILE" ] ||
-		   ! is_empty_dir "${QDK_DATA_DIR_SHARED:-shared}"; then
+		if [ -f "$QDK_DATA_FILE" ] || ! is_empty_dir "${QDK_DATA_DIR_SHARED:-shared}"; then
 			QDK_BUILD_ARCH="generic"
 		fi
 	fi
@@ -1249,7 +1249,7 @@ query_qpkg(){
 	local option="$1"
 	local qpkg="$2"
 	[ -f $qpkg ] || err_msg "$qpkg: no such file"
- 	
+
 	local dd_quiet=
 	is_debug || dd_quiet="2>/dev/null"
 	local output=
@@ -1272,38 +1272,38 @@ s/^script_len.*/&;/p
 		debug_msg "$dd_command"
 		output="$(eval $dd_command | /bin/sed -n -e '/^QPKG_/p' -e '/^QDK_/p')"
 	fi
- 	
+
 	case $option in
-	dump)
-		echo "$output"
-		;;
-	info)
-		eval "$output"
-		echo "Name     : $QPKG_NAME"
-		echo "Version  : $QPKG_VER"
-		echo "Packager : $QPKG_AUTHOR"
-		echo "License  : ${QPKG_LICENSE:-Unknown}"
-		echo "Summary  : $QPKG_SUMMARY"
-		;;
-	config)
-		local qpkg_config=$(echo "$output" | /bin/sed -n '/^QPKG_CONFIG/s/QPKG_CONFIG="\(.*\)"/\1/p')
-		[ -n "$qpkg_config" ] && echo "$qpkg_config"
-		qpkg_config=$(echo "$output" | /bin/sed -n '/^QPKG_CONFIG_DIR/s/QPKG_CONFIG_DIR="\(.*\)"/\1/p')
-		[ -n "$qpkg_config" ] && echo "$qpkg_config (using obsolete QPKG_CONFIG_DIR)"
-		;;
-	funcs)
-		echo "$output"
-		;;
-	require)
-		eval "$output"
-		[ -z "$QPKG_REQUIRE" ] || echo "$QPKG_REQUIRE" | /bin/sed 's/ *, */\n/g'
-		;;
-	conflict)
-		eval "$output"
-		[ -z "$QPKG_CONFLICT" ] || echo "$QPKG_CONFLICT" | /bin/sed 's/ *, */\n/g'
-		;;
-	*)
-		;;
+		dump)
+			echo "$output"
+			;;
+		info)
+			eval "$output"
+			echo "Name     : $QPKG_NAME"
+			echo "Version  : $QPKG_VER"
+			echo "Packager : $QPKG_AUTHOR"
+			echo "License  : ${QPKG_LICENSE:-Unknown}"
+			echo "Summary  : $QPKG_SUMMARY"
+			;;
+		config)
+			local qpkg_config=$(echo "$output" | /bin/sed -n '/^QPKG_CONFIG/s/QPKG_CONFIG="\(.*\)"/\1/p')
+			[ -n "$qpkg_config" ] && echo "$qpkg_config"
+			qpkg_config=$(echo "$output" | /bin/sed -n '/^QPKG_CONFIG_DIR/s/QPKG_CONFIG_DIR="\(.*\)"/\1/p')
+			[ -n "$qpkg_config" ] && echo "$qpkg_config (using obsolete QPKG_CONFIG_DIR)"
+			;;
+		funcs)
+			echo "$output"
+			;;
+		require)
+			eval "$output"
+			[ -z "$QPKG_REQUIRE" ] || echo "$QPKG_REQUIRE" | /bin/sed 's/ *, */\n/g'
+			;;
+		conflict)
+			eval "$output"
+			[ -z "$QPKG_CONFLICT" ] || echo "$QPKG_CONFLICT" | /bin/sed 's/ *, */\n/g'
+			;;
+		*)
+			;;
 	esac
 }
 
@@ -1340,45 +1340,45 @@ add_sign_qpkg(){
 	[ -f $qpkg ] || err_msg "$qpkg: no such file"
 
 	case "$QDK_SIGNATURE" in
-	gpg)
-		verbose_msg "Find and remove any existing signature..."
+		gpg)
+			verbose_msg "Find and remove any existing signature..."
 
-		local data_size=
-		if data_size=$(get_content_size $qpkg); then
-			local sign_pos=
-			if sign_pos=$(get_signature_pos $qpkg); then
-				local sign_len=$(get_signature_len $qpkg)
-				debug_msg "Signature located at position $sign_pos with size $sign_len"
-				verbose_msg "Existing signature removed"
+			local data_size=
+			if data_size=$(get_content_size $qpkg); then
+				local sign_pos=
+				if sign_pos=$(get_signature_pos $qpkg); then
+					local sign_len=$(get_signature_len $qpkg)
+					debug_msg "Signature located at position $sign_pos with size $sign_len"
+					verbose_msg "Existing signature removed"
+				fi
 			fi
-		fi
-		[ -n "$data_size" ] || err_msg "$qpkg: not QDK 2.0 or later"
+			[ -n "$data_size" ] || err_msg "$qpkg: not QDK 2.0 or later"
 
-		dd_cmd="/bin/dd if=$qpkg bs=$data_size count=1 2>/dev/null > ${qpkg}.$$"
-		debug_msg "$dd_cmd"
-		eval "$dd_cmd"
+			dd_cmd="/bin/dd if=$qpkg bs=$data_size count=1 2>/dev/null > ${qpkg}.$$"
+			debug_msg "$dd_cmd"
+			eval "$dd_cmd"
 
-		verbose_msg "Generate and add new signature..."
-		local gpg_options="--detach-sign -o-" 
-		[ -n "$QDK_GPG_NAME" ] && gpg_options="$gpg_options -u $QDK_GPG_NAME"
-		is_quiet && gpg_options="$gpg_options --no-tty"
-		gpg_cmd="$QDK_GPG_APP $gpg_options ${qpkg}.$$ >> ${qpkg}.sig"
-		debug_msg "$gpg_cmd"
-		eval $gpg_cmd || warn_msg "${qpkg##*/}: no signature added"
+			verbose_msg "Generate and add new signature..."
+			local gpg_options="--detach-sign -o-"
+			[ -n "$QDK_GPG_NAME" ] && gpg_options="$gpg_options -u $QDK_GPG_NAME"
+			is_quiet && gpg_options="$gpg_options --no-tty"
+			gpg_cmd="$QDK_GPG_APP $gpg_options ${qpkg}.$$ >> ${qpkg}.sig"
+			debug_msg "$gpg_cmd"
+			eval $gpg_cmd || warn_msg "${qpkg##*/}: no signature added"
 
-		add_qdk_area_begin ${qpkg}.$$
-		add_qdk_area_signature ${qpkg}.sig ${qpkg}.$$
-		add_qdk_area_end ${qpkg}.$$
+			add_qdk_area_begin ${qpkg}.$$
+			add_qdk_area_signature ${qpkg}.sig ${qpkg}.$$
+			add_qdk_area_end ${qpkg}.$$
 
-		verbose_msg "Add tail data..."
-		printf "$(/usr/bin/tail -c$TAIL_DATA_LEN $qpkg)" >> ${qpkg}.$$
-		verbose_msg "Adding QPKG checksum: $(/sbin/qpkg --encrypt ${qpkg}.$$)"
-		/bin/rm ${qpkg}.sig
-		/bin/mv ${qpkg}.$$ $qpkg
-		;;
-	*)
-		err_msg "$QDK_SIGNATURE: not supported signature type"
-		;;
+			verbose_msg "Add tail data..."
+			printf "$(/usr/bin/tail -c$TAIL_DATA_LEN $qpkg)" >> ${qpkg}.$$
+			verbose_msg "Adding QPKG checksum: $(/sbin/qpkg --encrypt ${qpkg}.$$)"
+			/bin/rm ${qpkg}.sig
+			/bin/mv ${qpkg}.$$ $qpkg
+			;;
+		*)
+			err_msg "$QDK_SIGNATURE: not supported signature type"
+			;;
 	esac
 }
 
@@ -1595,57 +1595,57 @@ main(){
 	while  [ $# -gt 0 ]
 	do
 		case "$1" in
-		--usage)	qbuild_usage=TRUE ;;
-		--help|-h|-\?)	qbuild_help=TRUE ;;
-		--version|-V)	qbuild_version=TRUE ;;
-		--quiet|-q)	qbuild_quiet=TRUE ;;
-		--verbose|-v)	QDK_VERBOSE=$(($QDK_VERBOSE + 1));;
-		--strict)	QDK_STRICT=TRUE ;;
-		--force-config)	QDK_FORCE_CONFIG=TRUE ;;
-		--7zip)		QDK_COMPRESS_METHOD="7zip"
+			--usage)	qbuild_usage=TRUE ;;
+			--help|-h|-\?)	qbuild_help=TRUE ;;
+			--version|-V)	qbuild_version=TRUE ;;
+			--quiet|-q)	qbuild_quiet=TRUE ;;
+			--verbose|-v)	QDK_VERBOSE=$(($QDK_VERBOSE + 1));;
+			--strict)	QDK_STRICT=TRUE ;;
+			--force-config)	QDK_FORCE_CONFIG=TRUE ;;
+			--7zip)		QDK_COMPRESS_METHOD="7zip"
 				;;
-		--gzip)		QDK_COMPRESS_METHOD="gzip"
+			--gzip)		QDK_COMPRESS_METHOD="gzip"
 				;;
-		--bzip2)	QDK_COMPRESS_METHOD="bzip2"
+			--bzip2)	QDK_COMPRESS_METHOD="bzip2"
 				;;
-		--xz)	QDK_COMPRESS_METHOD="xz"
+			--xz)	QDK_COMPRESS_METHOD="xz"
 				[ -n "$QDK_COMPRESS_METHOD" ] || err_msg "--xz: no arch"
-                QDK_XZ_ARCH=$2
+				QDK_XZ_ARCH=$2
 				shift
 				;;
-		--create-env)	qbuild_qpkg_name="$2"
+			--create-env)	qbuild_qpkg_name="$2"
 				[ -n "$qbuild_qpkg_name" ] || err_msg "--create-env: no name"
 				shift
 				;;
-		--setup)	QDK_SETUP="$2"
+			--setup)	QDK_SETUP="$2"
 				[ -n "$QDK_SETUP" ] || err_msg "--setup: no script"
 				shift
 				;;
-		--teardown)	QDK_TEARDOWN="$2"
+			--teardown)	QDK_TEARDOWN="$2"
 				[ -n "$QDK_TEARDOWN" ] || err_msg "--teardown: no script"
 				shift
 				;;
-		--pre-build)	QDK_PRE_BUILD="$2"
+			--pre-build)	QDK_PRE_BUILD="$2"
 				[ -n "$QDK_PRE_BUILD" ] || err_msg "--pre-build: no script"
 				shift
 				;;
-		--post-build)	QDK_POST_BUILD="$2"
+			--post-build)	QDK_POST_BUILD="$2"
 				[ -n "$QDK_POST_BUILD" ] || err_msg "--post-build: no script"
 				shift
 				;;
-		--build-dir) 	QDK_BUILD_DIR="$2"
+			--build-dir) 	QDK_BUILD_DIR="$2"
 				[ -n "$QDK_BUILD_DIR" ] || err_msg "--build-dir: no directory"
 				shift
 				;;
-		--build-version) QDK_BUILD_VERSION="$2"
+			--build-version) QDK_BUILD_VERSION="$2"
 				[ -n "$QDK_BUILD_VERSION" ] || err_msg "--build-version: no version"
 				shift
 				;;
-		--build-number) QDK_BUILD_RELEASE="$2"
+			--build-number) QDK_BUILD_RELEASE="$2"
 				[ -n "$QDK_BUILD_RELEASE" ] || err_msg "--build-number: no number"
 				shift
 				;;
-		--build-arch)	local arch="$2"
+			--build-arch)	local arch="$2"
 				[ -n "$arch" ] || err_msg "--build-arch: no architecture"
 				add_arch "$arch"
 				shift
@@ -1653,64 +1653,64 @@ main(){
 					cp -af qinstall-$arch.sh qinstall.sh
 				fi
 				;;
-		--build-model)	QDK_BUILD_MODEL="$2"
+			--build-model)	QDK_BUILD_MODEL="$2"
 				[ -n "$QDK_BUILD_MODEL" ] || err_msg "--build-model: no model"
 				shift
 				;;
-		--root)		QDK_ROOT_DIR="$2"
+			--root)		QDK_ROOT_DIR="$2"
 				[ -n "$QDK_ROOT_DIR" ] || err_msg "--root: no directory"
 				shift
 				;;
-		--extract)	qbuild_extract_file="$2"
+			--extract)	qbuild_extract_file="$2"
 				qbuild_extract_dir="$3"
 				[ -n "$qbuild_extract_file" ] || err_msg "--extract: no file"
 				shift
 				;;
-		--exclude)	local rsync_pattern="$2"
+			--exclude)	local rsync_pattern="$2"
 				[ -n "$rsync_pattern" ] || err_msg "--exclude: no pattern"
 				QDK_RSYNC_EXCLUDE="$QDK_RSYNC_EXCLUDE --exclude=$rsync_pattern"
 				shift
 				;;
-		--exclude-from)	local rsync_file="$2"
+			--exclude-from)	local rsync_file="$2"
 				[ -n "$rsync_file" ] || err_msg "--exclude-from: no file"
 				QDK_RSYNC_EXCLUDE_FROM="--exclude-from=$rsync_file"
 				shift
 				;;
-		--section|-s)	local section="$2"
+			--section|-s)	local section="$2"
 				[ -n "$section" ] || err_msg "--section: no section"
 				add_qdk_definitions "$section"
 				shift
 				;;
-		--sign)		qbuild_sign=TRUE ;;
-		--gpg-name)	QDK_GPG_NAME="$2"
+			--sign)		qbuild_sign=TRUE ;;
+			--gpg-name)	QDK_GPG_NAME="$2"
 				[ -n "$QDK_GPG_NAME" ] || err_msg "--gpg-name: no name"
 				QDK_SIGNATURE="gpg"
 				QDK_SIGN="TRUE"
 				shift
 				;;
-		--verify)	qbuild_verify_file="$2"
+			--verify)	qbuild_verify_file="$2"
 				[ -n "$qbuild_verify_file" ] || err_msg "--verify: no file"
 				shift
 				;;
-		--add-sign)	qbuild_add_sign_file="$2"
+			--add-sign)	qbuild_add_sign_file="$2"
 				[ -n "$qbuild_add_sign_file" ] || err_msg "$1: no file"
 				shift
 				;;
-		--import-key)	qbuild_import_key="$2"
+			--import-key)	qbuild_import_key="$2"
 				[ -n "$qbuild_import_key" ] || err_msg "--import-key: no file"
 				shift
 				;;
-		--remove-key)	qbuild_remove_key="$2"
+			--remove-key)	qbuild_remove_key="$2"
 				[ -n "$qbuild_remove_key" ] || err_msg "--remove-key: no name"
 				shift
 				;;
-		--list-keys)	qbuild_list_keys=TRUE ;;
-		--query)	qbuild_query_option="$2"
+			--list-keys)	qbuild_list_keys=TRUE ;;
+			--query)	qbuild_query_option="$2"
 				qbuild_query_qpkg="$3"
 				[ -n "$qbuild_query_qpkg" ] || err_msg "--query: missing argument"
 				shift
 				;;
-		-*)		qbuild_usage=TRUE ;;
+			-*)		qbuild_usage=TRUE ;;
 		esac
 		shift
 	done
@@ -1729,12 +1729,12 @@ main(){
 	if [ -n "$qbuild_sign" ]; then
 		[ -n "$QDK_SIGNATURE" ] || err_msg "--sign: QDK_SIGNATURE must be defined"
 		case "$QDK_SIGNATURE" in
-		gpg)
-			QDK_SIGN="TRUE"
-			;;
-		*)
-			err_msg "$QDK_SIGNATURE: not supported signature type"
-			;;
+			gpg)
+				QDK_SIGN="TRUE"
+				;;
+			*)
+				err_msg "$QDK_SIGNATURE: not supported signature type"
+				;;
 		esac
 	fi
 	if [ "$QDK_SIGN" = "TRUE" ] || [ -n "$qbuild_verify_file" ] ||
@@ -1744,19 +1744,19 @@ main(){
 		[ -x "$QDK_GPG_APP" ] || err_msg "${QDK_GPG_APP:-gpg2}: command not found"
 	fi
 
-	if [ -n "$qbuild_qpkg_name" ]; then 
+	if [ -n "$qbuild_qpkg_name" ]; then
 		create_env "$qbuild_qpkg_name"
-	elif [ -n "$qbuild_extract_file" ]; then 
+	elif [ -n "$qbuild_extract_file" ]; then
 		extract_qpkg "$qbuild_extract_file" "$qbuild_extract_dir"
-	elif [ -n "$qbuild_verify_file" ]; then 
+	elif [ -n "$qbuild_verify_file" ]; then
 		verify_qpkg "$qbuild_verify_file"
-	elif [ -n "$qbuild_add_sign_file" ]; then 
+	elif [ -n "$qbuild_add_sign_file" ]; then
 		add_sign_qpkg "$qbuild_add_sign_file"
-	elif [ -n "$qbuild_import_key" ]; then 
+	elif [ -n "$qbuild_import_key" ]; then
 		import_key "$qbuild_import_key"
-	elif [ -n "$qbuild_remove_key" ]; then 
+	elif [ -n "$qbuild_remove_key" ]; then
 		remove_key "$qbuild_remove_key"
-	elif [ -n "$qbuild_list_keys" ]; then 
+	elif [ -n "$qbuild_list_keys" ]; then
 		list_keys
 	elif [ -n "$qbuild_query_qpkg" ]; then
 		query_qpkg "$qbuild_query_option" "$qbuild_query_qpkg"
