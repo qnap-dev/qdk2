@@ -29,6 +29,9 @@
 ##### System definitions #####
 PREFIX="App Center"
 
+##### Command definitions #####
+CMD_AWK="${CMD_AWK:-$(command -v awk)}"
+
 # Cleanup any temporary directories and files at termination.
 trap 'cleanup_all' INT TERM
 
@@ -196,22 +199,22 @@ get_qdk_area_data_pos(){
 	[ -f $qpkg ] || err_msg "$qpkg: no such file"
 	local qdk_area=
 	qdk_area="$(get_qdk_area_pos $qpkg)" || return 1
-	qdk_area=$(($qdk_area + $QDK_AREA_TAG_LEN))
+	qdk_area="$(($qdk_area + $QDK_AREA_TAG_LEN))"
 
 	# Traverse QDK area looking for specified data type. Stop if reaching the end
 	# of the QDK area either by finding the QDK_AREA_EOF tag or by reaching the
 	# tail data.
-	local qdk_area_end=$(($(/bin/ls -l $qpkg | awk '{ print $5 }') - $TAIL_DATA_LEN))
+	local qdk_area_end="$(($(/bin/ls -l $qpkg | $CMD_AWK '{ print $5 }') - $TAIL_DATA_LEN))"
 	local qdk_size=
 	local qdk_pos=$qdk_area
-	local qdk_type=$(/usr/bin/hexdump -s $qdk_area -n $QDK_AREA_DATA_TYPE_LEN -e '1/1 "%d"' $qpkg)
+	local qdk_type="$(/usr/bin/hexdump -s $qdk_area -n $QDK_AREA_DATA_TYPE_LEN -e '1/1 "%d"' $qpkg)"
 	while [ $qdk_type -ne $data_type ] && [ $qdk_type -ne $QDK_AREA_EOF ] && (( $qdk_area <= $qdk_area_end ))
 	do
-		qdk_area=$(($qdk_area + $QDK_AREA_DATA_TYPE_LEN))
-		qdk_size=$(network_order_32bit $qdk_area $qpkg)
-		qdk_area=$(($qdk_area + $qdk_size + $QDK_AREA_DATA_SIZE_LEN))
+		qdk_area="$(($qdk_area + $QDK_AREA_DATA_TYPE_LEN))"
+		qdk_size="$(network_order_32bit $qdk_area $qpkg)"
+		qdk_area="$(($qdk_area + $qdk_size + $QDK_AREA_DATA_SIZE_LEN))"
 		qdk_pos=$qdk_area
-		qdk_type=$(/usr/bin/hexdump -s $qdk_area -n $QDK_AREA_DATA_TYPE_LEN -e '1/1 "%d"' $qpkg)
+		qdk_type="$(/usr/bin/hexdump -s $qdk_area -n $QDK_AREA_DATA_TYPE_LEN -e '1/1 "%d"' $qpkg)"
 	done
 	if [ $qdk_type -eq $data_type ]; then
 		echo "$qdk_pos"
@@ -239,7 +242,7 @@ get_signature_len(){
 	[ -f $qpkg ] || err_msg "$qpkg: no such file"
 	local qdk_pos=
 	qdk_pos="$(get_qdk_area_data_pos $QDK_AREA_SIGNATURE $qpkg)" || return 1
-	qdk_pos=$(($qdk_pos + $QDK_AREA_DATA_TYPE_LEN))
+	qdk_pos="$(($qdk_pos + $QDK_AREA_DATA_TYPE_LEN))"
 
 	echo "$(network_order_32bit $qdk_pos $qpkg)"
 }
@@ -302,7 +305,9 @@ debug_msg(){
 
 # Return 0 if given directory is empty, otherwise return 1
 is_empty_dir(){
-	[ -z "$(/bin/ls -A "$1" 2>/dev/null)" ]
+	if [ -d "$1" ]; then
+		[ -z "$(/bin/ls -A "$1" 2>/dev/null |grep -v "^.svn" 2>/dev/null)" ]
+	fi
 }
 
 # Set the specified field to given value and write it to the QPKG
@@ -348,7 +353,7 @@ sanity_check_qdk_environment(){
 sync_files(){
 	local opts="$1"
 	local dir="$2"
-	local copy_cmd="/usr/bin/rsync $opts ${dir}/. build.$$/ 2>/dev/null"
+	local copy_cmd="/usr/bin/rsync --exclude=.svn $opts ${dir}/. build.$$/ 2>/dev/null"
 	debug_msg "$copy_cmd"
 	eval $copy_cmd
 }
@@ -400,6 +405,9 @@ add_icons(){
 		[ -f "${dist_icons}/${QPKG_NAME}.gif" ] && copy_icons "${QPKG_NAME}.gif" .qpkg_icon.gif
 		[ -f "${dist_icons}/${QPKG_NAME}_80.gif" ] && copy_icons "${QPKG_NAME}_80.gif" .qpkg_icon_80.gif
 		[ -f "${dist_icons}/${QPKG_NAME}_gray.gif" ] && copy_icons "${QPKG_NAME}_gray.gif" .qpkg_icon_gray.gif
+		[ -f "${dist_icons}/${QPKG_NAME}.png" ] && copy_icons "${QPKG_NAME}.png" .qpkg_icon.gif
+		[ -f "${dist_icons}/${QPKG_NAME}_80.png" ] && copy_icons "${QPKG_NAME}_80.png" .qpkg_icon_80.gif
+		[ -f "${dist_icons}/${QPKG_NAME}_gray.png" ] && copy_icons "${QPKG_NAME}_gray.png" .qpkg_icon_gray.gif
 	fi
 }
 
@@ -447,7 +455,7 @@ add_built_version(){
 		echo -n "time = " > tmp.$$/built_version
 		date "+%Y-%m-%d %H:%M:%S" >> tmp.$$/built_version
 		echo -n "svn = " >> tmp.$$/built_version
-		svn info . | grep Revision | awk '{print $2}' >> tmp.$$/built_version
+		svn info . | grep Revision | $CMD_AWK '{print $2}' >> tmp.$$/built_version
 	fi
 }
 
@@ -566,8 +574,8 @@ create_packages_file(){
 		[ -f $file ] || err_msg "$file: no such file"
 		/bin/tar -xOf $file ./control.tar.gz | /bin/tar xzO ./control | /bin/sed -e '/Priority.*/d' -e '/.*: $/d' >> tmp.$$/Packages || warn_msg "$file: missing control file"
 		echo "Filename: ${file##*/} " >> tmp.$$/Packages
-		echo "MD5Sum: $($QDK_MD5SUM_APP $file | awk '{ print $1 }')" >> tmp.$$/Packages
-		echo "Size: $(/bin/ls -l $file | awk '{ print $5 }')" >> tmp.$$/Packages
+		echo "MD5Sum: $($QDK_MD5SUM_APP $file | $CMD_AWK '{ print $1 }')" >> tmp.$$/Packages
+		echo "Size: $(/bin/ls -l $file | $CMD_AWK '{ print $5 }')" >> tmp.$$/Packages
 		printf "\n\n" >> tmp.$$/Packages
 	done
 	if [ -f tmp.$$/Packages ]; then
@@ -741,25 +749,25 @@ add_qpkg_header(){
 		echo "arch_ok || wrong_arch" >>$QDK_QPKG_FILE
 	fi
 
-	local ctrl_len=$(/bin/ls -l tmp.$$/$QDK_CONTROL_FILE | awk '{ print $5 }')
-	local data_len=$(/bin/ls -l tmp.$$/$QDK_COMPRESS_FILE | awk '{ print $5 }')
-	[ -f tmp.$$/extra.tar ] && local extra_len=$(/bin/ls -l tmp.$$/extra.tar | awk '{ print $5 }')
+	local ctrl_len=$(/bin/ls -l tmp.$$/$QDK_CONTROL_FILE | $CMD_AWK '{ print $5 }')
+	local data_len=$(/bin/ls -l tmp.$$/$QDK_COMPRESS_FILE | $CMD_AWK '{ print $5 }')
+	[ -f tmp.$$/extra.tar ] && local extra_len=$(/bin/ls -l tmp.$$/extra.tar | $CMD_AWK '{ print $5 }')
 
 	/bin/cat >>$QDK_QPKG_FILE <<-EOF
 	find_base
 	_EXTRACT_DIR="$extract_dir"
 	/bin/mkdir -p \$_EXTRACT_DIR || exit 1
 	script_len=SCRIPT_LEN
-	/bin/dd if=\${0} bs=\$script_len skip=1 | /bin/tar -xO | /bin/tar -xzv -C \$_EXTRACT_DIR || exit 1
+	/bin/dd if="\${0}" bs=\$script_len skip=1 | /bin/tar -xO | /bin/tar -xzv -C \$_EXTRACT_DIR || exit 1
 	offset=\$(/usr/bin/expr \$script_len + $ctrl_len)
-	/bin/dd if=\${0} bs=\$offset skip=1 | /bin/cat | /bin/dd bs=1024 count=$((($data_len + 1023) / 1024)) of=\$_EXTRACT_DIR/$QDK_COMPRESS_FILE || exit 1
+	/bin/dd if="\${0}" bs=\$offset skip=1 | /bin/cat | /bin/dd bs=1024 count=$((($data_len + 1023) / 1024)) of=\$_EXTRACT_DIR/$QDK_COMPRESS_FILE || exit 1
 	[ -f /usr/local/bin/python ] && /usr/local/bin/python -c "with open('\$_EXTRACT_DIR/$QDK_COMPRESS_FILE', 'rw+') as f: f.seek($data_len); f.truncate()"
 	offset=\$(/usr/bin/expr \$offset + $data_len)
 	EOF
 
 	# Extract any optional extra data packages.
 	if /bin/grep -q '^QDK_EXTRA_FILE\|^QDK_EXTRA_SRC_FILE' $QDK_QPKG_CONFIG; then
-		echo "/bin/dd if=\${0} bs=\$offset skip=1 | /bin/tar -xv -C \$_EXTRACT_DIR || exit 1" >>$QDK_QPKG_FILE
+		echo "/bin/dd if="\${0}" bs=\$offset skip=1 | /bin/tar -xv -C \$_EXTRACT_DIR || exit 1" >>$QDK_QPKG_FILE
 		echo "offset=\$(/usr/bin/expr \$offset + $extra_len)" >> $QDK_QPKG_FILE
 	fi
 
@@ -772,7 +780,7 @@ add_qpkg_header(){
 	# Calculate header size (add 1 if number of digits in length will
 	# increase the total size).
 	# -10 is for the length of the placeholder, SCRIPT_LEN
-	local script_len=$(($(/bin/ls -l $QDK_QPKG_FILE | awk '{ print $5 }') - 10))
+	local script_len=$(($(/bin/ls -l $QDK_QPKG_FILE | $CMD_AWK '{ print $5 }') - 10))
 	local num_of_digits_in_script_len=${#script_len}
 	script_len=$(($script_len + ${#script_len}))
 	if (( $num_of_digits_in_script_len < ${#script_len} )); then
@@ -833,7 +841,7 @@ add_qdk_area_signature(){
 	[ -n "$1" ] || err_msg "internal error: add_qdk_area_signature called with no argument"
 	local data="$1"
 	local qpkg="${2:-$QDK_QPKG_FILE}"
-	local size="$(/bin/ls -l $data | awk '{ print $5 }')"
+	local size="$(/bin/ls -l $data | $CMD_AWK '{ print $5 }')"
 	add_qdk_area_data_type $QDK_AREA_SIGNATURE $qpkg
 	add_qdk_area_data_size $size $qpkg
 	debug_msg "Data: $data"
@@ -1068,7 +1076,6 @@ truncate_qpkg_name(){
 		warn_msg "QPKG_NAME: the length of $QPKG_NAME must be less than or equal to $max_qpkg_name_len; name truncated."
 		QPKG_NAME=$(/usr/bin/expr substr "$QPKG_NAME" 1 $max_qpkg_name_len)
 		edit_qpkg_config QPKG_NAME "$QPKG_NAME"
-
 	fi
 }
 
