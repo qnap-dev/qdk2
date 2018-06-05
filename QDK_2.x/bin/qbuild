@@ -546,6 +546,10 @@ create_control_package(){
 	/bin/cp -p "$QDK_INSTALL_SCRIPT" build.$$/
 	/bin/cp -p "$QDK_PACKAGE_ROUTINES" build.$$/package_routines
 	/bin/cp -p "$QDK_QPKG_CONFIG" build.$$/qpkg.cfg
+	# cp .nc folder
+	if [ -d "${QDK_DATA_DIR_SHARED:-shared}/.nc" ]; then
+		/bin/cp -fa "${QDK_DATA_DIR_SHARED:-shared}/.nc" build.$$/.nc
+	fi
 	# xz utility
 	if [ "$QDK_COMPRESS_METHOD" == "xz" ]; then
 		/bin/cp $(dirname $(dirname $(realpath $0)))/xz_1404_${QDK_XZ_ARCH}.tgz build.$$/xz.tgz
