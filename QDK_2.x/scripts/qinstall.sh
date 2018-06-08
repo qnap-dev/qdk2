@@ -140,6 +140,11 @@ CMD_PKG_TOOL=
 ###################
 . qpkg.cfg
 
+# Backward compatibility
+if [ -z "$QPKG_DISPLAY_NAME" ]; then
+	QPKG_DISPLAY_NAME=$QPKG_DISPLAYNAME
+fi
+
 ###########################################
 # System messages
 ###########################################
@@ -565,7 +570,7 @@ disable_qpkg(){
 }
 set_qpkg_name(){
 	set_qpkg_field $SYS_QPKG_CONF_FIELD_NAME "$QPKG_NAME"
-	[ -z "$QPKG_DISPLAYNAME" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_DISPLAY_NAME "$QPKG_DISPLAYNAME"
+	[ -z "$QPKG_DISPLAY_NAME" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_DISPLAY_NAME "$QPKG_DISPLAY_NAME"
 }
 set_qpkg_version(){
 	set_qpkg_field $SYS_QPKG_CONF_FIELD_VERSION "$QPKG_VER"
@@ -1278,7 +1283,7 @@ main(){
 
 	##system pop up log when QPKG has installed
 
-	if [ -n "$QPKG_DISPLAYNAME" ]; then
+	if [ -n "$QPKG_DISPLAY_NAME" ]; then
 		if [ -x "/usr/local/sbin/notify" ]; then
 			/usr/local/sbin/notify send -A A039 -C C001 -M 46 -l info -t 3 "[{0}] {1} {2} has been installed in {3} successfully." "$PREFIX" "$QPKG_DISPLAY_NAME" "$QPKG_VER" "$SYS_QPKG_DIR"
 		else
@@ -1298,7 +1303,7 @@ main(){
 	##system pop up log after QPKG has installed and app was enable
 
 	if is_qpkg_enabled "$QPKG_NAME"; then
-		if [ -n "$QPKG_DISPLAYNAME" ]; then
+		if [ -n "$QPKG_DISPLAY_NAME" ]; then
 			if [ -x "/usr/local/sbin/notify" ]; then
 				/usr/local/sbin/notify send -A A039 -C C001 -M 47 -l info -t 3 "[{0}] {1} enabled." "$PREFIX" "$QPKG_DISPLAY_NAME"
 			else
