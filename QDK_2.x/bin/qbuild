@@ -549,6 +549,7 @@ create_control_package(){
 	# cp .nc folder
 	if [ -d "${QDK_DATA_DIR_SHARED:-shared}/.nc" ]; then
 		/bin/cp -fa "${QDK_DATA_DIR_SHARED:-shared}/.nc" build.$$/.nc
+		add_icons
 	fi
 	# xz utility
 	if [ "$QDK_COMPRESS_METHOD" == "xz" ]; then
