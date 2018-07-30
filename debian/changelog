@@ -1,3 +1,9 @@
+qdk2 (0.22) trusty; urgency=medium
+
+  * support $QTS_MINI_VERSION / $QTS_MAX_VERSION variables
+
+ -- Walker Lee <walkerlee.tw@gmail.com>  Thu, 12 Jul 2018 14:39:00 +0800
+
 qdk2 (0.21) trusty; urgency=medium
 
   * Support Notification Center - Icons
