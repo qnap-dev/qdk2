@@ -278,17 +278,17 @@ readonly DEBUG=3
 
 # Set to no messages.
 is_quiet(){
-	(( $QDK_VERBOSE == $QUIET )) || return 1
+	[ $QDK_VERBOSE -eq $QUIET ] || return 1
 }
 
 # Set to verbose or debug messages.
 is_verbose(){
-	(( $VERBOSE <= $QDK_VERBOSE )) || return 1
+	[ $VERBOSE -le $QDK_VERBOSE ] || return 1
 }
 
 # Set to debug messages.
 is_debug(){
-	(( $DEBUG <= $QDK_VERBOSE )) || return 1
+	[ $DEBUG -le $QDK_VERBOSE ] || return 1
 }
 
 # Log messages are printed (to stdout) if verbose mode is greater or equal
@@ -615,7 +615,7 @@ add_qpkg_header(){
 	# Return value 10 to remove QPKG package after installation
 	local retval=10
 	local extract_dir="\$QPKG_INSTALL_PATH/.tmp"
-	local wrong_arch="[$PREFIX] Failed to install $QPKG_NAME $QPKG_VER. Installation package is incompatible. Use the correct package."
+	local wrong_arch="[$PREFIX] Failed to install $QPKG_DISPLAY_NAME $QPKG_VER. Installation package is incompatible. Use the correct package."
 	local log_tool="/sbin/log_tool -t2 -uSystem -p127.0.0.1 -mlocalhost -a"
 
 	local cpu_arch=
@@ -695,11 +695,12 @@ add_qpkg_header(){
 				QPKG_DIR="\${QINSTALL_PATH}/\${QPKG_NAME}"
 			else
 				if [ -x "/usr/local/sbin/notify" ]; then
-					/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 3 "[{0}] {1} install failed due to QTS application install volume not found." "$PREFIX" "$QPKG_NAME"
+					/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 3 "[{0}] {1} install failed due to QTS application install volume not found." "$PREFIX" "$QPKG_DISPLAY_NAME"
 					set_progress_fail
 					exit 1
 				else
-					$log_tool "[$PREFIX] Failed to install $QPKG_NAME. The selected installation volume is missing."
+					$log_tool "[$PREFIX] Failed to install $QPKG_DISPLAY_NAME. The selected installation volume is missing."
+					set_progress_fail
 				fi
 				exit
 			fi
@@ -707,11 +708,12 @@ add_qpkg_header(){
 		return 0
 	else
 		if [ -x "/usr/local/sbin/notify" ]; then
-			/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 3 "[{0}] {1} install failed due to QTS application install volume not found." "$PREFIX" "$QPKG_NAME"
+			/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 3 "[{0}] {1} install failed due to QTS application install volume not found." "$PREFIX" "$QPKG_DISPLAY_NAME"
 			set_progress_fail
 			exit 1
 		else
-			$log_tool "[$PREFIX] Failed to install $QPKG_NAME. The selected installation volume is missing."
+			$log_tool "[$PREFIX] Failed to install $QPKG_DISPLAY_NAME. The selected installation volume is missing."
+			set_progress_fail
 		fi
 		exit
 	fi
@@ -722,13 +724,14 @@ add_qpkg_header(){
 		/bin/cat >>$QDK_QPKG_FILE <<-EOF
 		wrong_arch(){
 			if [ -x "/usr/local/sbin/notify" ]; then
-				/usr/local/sbin/notify send -A A039 -C C001 -M 51 -l error -t 3 "[{0}] {1} {2} install failed due to the platform is imcompatable. Please use correct package for installation." "$PREFIX" "$QPKG_NAME" "$QPKG_VER"
+				/usr/local/sbin/notify send -A A039 -C C001 -M 51 -l error -t 3 "[{0}] {1} {2} install failed due to the platform is imcompatable. Please use correct package for installation." "$PREFIX" "$QPKG_DISPLAY_NAME" "$QPKG_VER"
 				set_progress_fail
 				exit 1
 			else
 				local wrong_arch_msg="$wrong_arch"
 				echo "Installation Abort." && echo "\$wrong_arch_msg"
-				$log_tool "[$PREFIX] Failed to install "$QPKG_NAME" $QPKG_VER. Installation package is incompatible. Use the correct package."
+				$log_tool "[$PREFIX] Failed to install $QPKG_DISPLAY_NAME $QPKG_VER. Installation package is incompatible. Use the correct package."
+				set_progress_fail
 				echo -1 > /tmp/update_process && exit 1
 			fi
 		}
@@ -786,7 +789,7 @@ add_qpkg_header(){
 	local script_len=$(($(/bin/ls -l $QDK_QPKG_FILE | $CMD_AWK '{ print $5 }') - 10))
 	local num_of_digits_in_script_len=${#script_len}
 	script_len=$(($script_len + ${#script_len}))
-	if (( $num_of_digits_in_script_len < ${#script_len} )); then
+	if [ $num_of_digits_in_script_len -lt ${#script_len} ]; then
 		script_len=$(($script_len + 1))
 	fi
 	/bin/sed -i "s/SCRIPT_LEN/$script_len/" $QDK_QPKG_FILE
@@ -958,7 +961,9 @@ create_qpkg(){
 build(){
 	local arch="$1"
 	local arch_dir="$2"
-
+	if [ -z "$QPKG_DISPLAY_NAME" ]; then
+		QPKG_DISPLAY_NAME=$QPKG_NAME
+	fi
 	/bin/mkdir -m 755 tmp.$$ || err_msg "failed to create directory for tar archives"
 
 	if [ -f "$QDK_DATA_FILE" ]; then
@@ -1090,7 +1095,7 @@ truncate_qpkg_version(){
 	fi
 
 	local max_qpkg_ver_len=10
-	if (( $max_qpkg_ver_len < ${#QPKG_VER} )); then
+	if [ $max_qpkg_ver_len -lt ${#QPKG_VER} ]; then
 		warn_msg "QPKG_VER: the length of $QPKG_VER must be less than or equal to $max_qpkg_ver_len; value truncated."
 		QPKG_VER=$(/usr/bin/expr substr "$QPKG_VER" 1 $max_qpkg_ver_len)
 		edit_qpkg_config QPKG_VER "$QPKG_VER"
@@ -1241,6 +1246,8 @@ extract_qpkg(){
 	is_quiet && tar_quiet=">/dev/null"
 	is_verbose || dd_quiet="2>/dev/null"
 	local extract_command="$(/bin/sed -n "1,/^exit 1/{
+s!if=\"\${0}\" \(.* -C\) .*!$dd_quiet if=$qpkg \1 $dir $tar_quiet;!p
+s!if=\"\${0}\" \(.* of.*\) ||.*!$dd_quiet if=$qpkg \1 $dd_quiet;!p
 s!if=\${0} \(.* -C\) .*!$dd_quiet if=$qpkg \1 $dir $tar_quiet;!p
 s!if=\${0} \(.* of.*\) ||.*!$dd_quiet if=$qpkg \1 $dd_quiet;!p
 s/^script_len.*/&;/p
@@ -1727,7 +1734,7 @@ main(){
 
 	[ -z "$qbuild_quiet" ] || QDK_VERBOSE=$QUIET
 	# Check for extra verbose debug messages.
-	(( $QDK_VERBOSE <= $DEBUG )) || set -x
+	[ $QDK_VERBOSE -le $DEBUG ] || set -x
 
 	[ -n "$qbuild_version" ] && version
 	[ -n "$qbuild_usage" ] && usage
