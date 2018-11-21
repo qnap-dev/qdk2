@@ -2,7 +2,7 @@ qdk2 (0.23) trusty; urgency=medium
 
   * Change $QPKG_NAME to $QPKG_DISPLAY_NAME in QTS log
 
- -- Walker Lee <walkerlee.tw@gmail.com>  Web, 21 Nov 2018 13:01:00 +0800
+ -- Walker Lee <walkerlee.tw@gmail.com>  Wed, 21 Nov 2018 13:01:00 +0800
  
 qdk2 (0.22) trusty; urgency=medium
 
