@@ -35,7 +35,7 @@ CMD_AWK="${CMD_AWK:-$(command -v awk)}"
 # Cleanup any temporary directories and files at termination.
 trap 'cleanup_all' INT TERM
 
-QDK_PATH=/usr/share/qdk2/QDK
+QDK_PATH="${QDK_PATH:-$(dirname "$(dirname "$(readlink -f "$0")")")}"
 
 # Check for deprecated definitions and replace them with new
 # definitions (when applicable).
@@ -334,8 +334,6 @@ cleanup_all(){
 
 # Sanity check of QDK environment.
 sanity_check_qdk_environment(){
-	[ -n "$QDK_PATH" ] || err_msg "no QDK_PATH specified in /etc/config/qdk.conf"
-
 	QDK_SCRIPTS_DIR="${QDK_SCRIPTS_DIR:-${QDK_PATH}/scripts}"
 	QDK_TEMPLATE_DIR="${QDK_TEMPLATE_DIR:-${QDK_PATH}/template}"
 
@@ -1778,7 +1776,16 @@ main(){
 }
 
 # System-wide definitions
-. /usr/share/qdk2/QDK/qdk.conf
+
+if [ -f "${QDK_PATH}/qdk.conf" ]; then
+    QDK_CONF_FILE="${QDK_PATH}/qdk.conf"
+elif [ -f "./qdk.conf" ]; then
+    QDK_CONF_FILE="./qdk.conf"
+else
+    err_msg "qdk.conf: not found"
+fi
+
+. ${QDK_CONF_FILE}
 
 # User definitions
 QDK_USER_CONFIG_FILE="${QDK_USER_CONFIG_FILE:-$HOME/.qdkrc}"
