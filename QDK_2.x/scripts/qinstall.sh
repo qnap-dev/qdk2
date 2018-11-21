@@ -143,6 +143,9 @@ CMD_PKG_TOOL=
 . qpkg.cfg
 
 # Backward compatibility
+if [ -z "$QPKG_DISPLAY_NAME" ]; then
+	QPKG_DISPLAY_NAME=$QPKG_DISPLAYNAME
+fi
 
 ###########################################
 # System messages
