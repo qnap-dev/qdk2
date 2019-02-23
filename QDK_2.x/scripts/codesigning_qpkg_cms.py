@@ -1,0 +1,89 @@
+import sys
+import os
+import logging
+import subprocess
+import shutil
+import codesigning_common
+
+def check_qpkg_conf(kwargs):
+    # Check if qpkg.cfg exists, and read paramaters from it
+
+    qpkg_conf = os.path.join(kwargs["cwd"],"qpkg.cfg")
+    if not os.path.isfile(qpkg_conf):
+        logging.error("Cannot find qpkg.cfg")
+        sys.exit(1)
+    commands = ["source %s" % qpkg_conf, "echo $QPKG_NAME"]
+    sp = subprocess.Popen("bash",stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+    for cmd in commands:
+        sp.stdin.write(cmd + "\n")
+    sp.stdin.close()
+    kwargs["qpkgname"] = sp.stdout.read().strip()
+
+    commands = ["source %s" % qpkg_conf, "echo $QPKG_VER"]
+    sp = subprocess.Popen("bash",stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+    for cmd in commands:
+        sp.stdin.write(cmd + "\n")
+    sp.stdin.close()
+    kwargs["version"] = sp.stdout.read().strip()
+
+    if kwargs["qpkgname"] == "":
+        logging.error("Cannot find QPKG_NAME in qpkg.cfg")
+        sys.exit(1)
+    if kwargs["version"] == "":
+        logging.error("Cannot find QPKG_VER in qpkg.cfg")
+        sys.exit(1)
+
+def sign_and_save_cms(kwargs):
+    # Send to server
+    kwargs["file"] = kwargs["in"]
+    response = codesigning_common.sign_cms(kwargs)
+    if response["error"] != 0:
+        logging.error("Error message from server when signing cms: %s" % response["msg"])
+        sys.exit(1)
+    signature = response["signature"]
+
+    # Save to file
+    signature_file_name = kwargs["out"]
+    signature_file = open(signature_file_name, "w")
+    signature_file.write(signature)
+    signature_file.close()
+
+def print_usage():
+    usage_string = """
+    Usage:
+      Sign a single file using openssl cms:
+        python codesigning_qpkg_cms.py server=x.x.x.x:port cwd=working_directory cert=certificate.pem
+          in=input_file out=output_file
+
+      working directory: the folder where developers run build.sh
+      cert: certificate of code signing server (optional)
+
+      Sign without cfg:
+        python codesigning_qpkg_cms.py server=x.x.x.x:port qpkgname=qpkg_name version=qpkg_version cert=certificate.pem
+          in=input_file out=output_file
+    """
+    print (usage_string)
+
+if __name__ == "__main__":
+    # Config logging
+    codesigning_common.config_logging()
+
+    try:
+        kwargs = dict(arg.split('=') for arg in sys.argv[1:])
+    except:
+        print_usage()
+        sys.exit(1)
+    codesigning_common.check_args(kwargs)
+    kwargs["token"] = codesigning_common.get_token()
+    kwargs["key_type"] = "qpkg"
+    if "cwd" in kwargs:
+        codesigning_common.check_cwd(kwargs)
+        check_qpkg_conf(kwargs)
+    else:
+        if kwargs["qpkgname"] == "":
+            logging.error("qpkgname not provided")
+            sys.exit(1)
+        if kwargs["version"] == "":
+            logging.error("version not provided")
+            sys.exit(1)
+    sign_and_save_cms(kwargs)
