@@ -8,7 +8,10 @@ import codesigning_common
 def check_qpkg_conf(kwargs):
     # Check if qpkg.cfg exists, and read paramaters from it
 
-    qpkg_conf = os.path.join(kwargs["cwd"],"qpkg.cfg")
+    if "cfgpath" in kwargs and kwargs["cfgpath"] != "":
+        qpkg_conf = os.path.join(kwargs["cwd"],kwargs["cfgpath"])
+    else:
+        qpkg_conf = os.path.join(kwargs["cwd"],"qpkg.cfg")
     if not os.path.isfile(qpkg_conf):
         logging.error("Cannot find qpkg.cfg")
         sys.exit(1)
@@ -57,6 +60,8 @@ def print_usage():
 
       working directory: the folder where developers run build.sh
       cert: certificate of code signing server (optional)
+      key_type: indicate if it is qpkg or qfix (optional, default is qpkg)
+      cfgpath: relative path of qpkg.cfg (optional, default is qpkg.cfg)
 
       Sign without cfg:
         python codesigning_qpkg_cms.py server=x.x.x.x:port qpkgname=qpkg_name version=qpkg_version cert=certificate.pem
@@ -71,6 +76,10 @@ if __name__ == "__main__":
     try:
         kwargs = dict(arg.split('=') for arg in sys.argv[1:])
     except:
+        print_usage()
+        sys.exit(1)
+    if "server" not in kwargs or "in" not in kwargs or "out" not in kwargs or \
+            (len(kwargs) != 4 and len(kwargs) != 5 and len(kwargs) != 6 and len(kwargs) != 7):
         print_usage()
         sys.exit(1)
     codesigning_common.check_args(kwargs)

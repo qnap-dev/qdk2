@@ -1310,7 +1310,7 @@ install(){
 	if [ -x "/sbin/cs_qdaemon" ] && [ "x${QNAP_CODE_SIGNING}" = "x1" ]; then
 		codesigning_extract_data "$SYS_QPKG_DATA_FILE"
 	else
-	extract_data "$SYS_QPKG_DATA_FILE"
+		extract_data "$SYS_QPKG_DATA_FILE"
 	fi
 	extract_config
 	restore_config

@@ -61,10 +61,18 @@ def check_args(kwargs):
     if "version" in kwargs and kwargs["version"] == "":
         logging.error("version number not provided")
         sys.exit(1)
+    if "key_type" not in kwargs:
+        kwargs["key_type"] = "qpkg"
 
 def check_cwd(kwargs):
     if not os.path.isdir(kwargs["cwd"]):
         logging.error("cwd %s is not a directory" % kwargs["cwd"])
+        sys.exit(1)
+
+def check_build(kwargs):
+    build_path = os.path.join(kwargs["cwd"],kwargs["buildpath"])
+    if not os.path.isdir(build_path):
+        logging.error("buildpath %s is not a directory" % kwargs["buildpath"])
         sys.exit(1)
 
 def create_db(db):
@@ -128,10 +136,19 @@ def read_csv(csv_file):
             for row in reader:
                 if len(row) < 3:
                     continue
-                package = unicode(row[0],"utf-8").strip()
-                relative_path = unicode(row[1],"utf-8").strip()
-                absolute_path = unicode(row[2],"utf-8").strip()
-                if package[0] == "#": # a line of comment
+                if (row[0] != "" and row[0] != "\xef\xbb\xbf"):
+                    package = unicode(row[0],"utf-8").strip()
+                else:
+                    package = ""
+                if (row[1] != "" and row[1] != "\xef\xbb\xbf"):
+                    relative_path = unicode(row[1],"utf-8").strip()
+                else:
+                    relative_path = ""
+                if (row[2] != "" and row[2] != "\xef\xbb\xbf"):
+                    absolute_path = unicode(row[2],"utf-8").strip()
+                else:
+                    absolute_path = ""
+                if package != "" and package[0] == "#": # a line of comment
                     continue
                 output.append([package,relative_path,absolute_path])
             return output
@@ -151,8 +168,14 @@ def update_packages(db, csv_file):
     conn = sqlite3.connect(db)
     cur = conn.cursor()
     for row in rows:
-        package = row[0]
-        absolute_path = row[2]
+        if (row[0] != ""):
+            package = row[0]
+        else:
+            package = "System"
+        if (row[2] != ""):
+            absolute_path = row[2]
+        else:
+            absolute_path = row[1]
         cur.execute(sql_insert_path, (absolute_path, package, absolute_path))
         if cur.rowcount == 0:
             # in case that path already exists in DB, update "Package" value
