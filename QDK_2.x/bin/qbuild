@@ -161,6 +161,9 @@ s/^offset.*/&;/p
 	echo "$(eval $offset_command)"
 }
 
+# Code signing server info
+readonly DEFAULT_QNAP_CODE_SIGNING_SERVER_IP="172.17.21.68"
+readonly DEFAULT_QNAP_CODE_SIGNING_SERVER_PORT="5000"
 # Supported data types in the QDK area.
 readonly QDK_AREA_SIGNATURE=1
 readonly QDK_AREA_CODE_SIGNING=254
@@ -359,6 +362,7 @@ cleanup_all(){
 
 # Sanity check of QDK environment.
 sanity_check_qdk_environment(){
+	[ -n "$QDK_PATH" ] || err_msg "no QDK_PATH specified in ${QDK_CONF_FILE}"
 	QDK_SCRIPTS_DIR="${QDK_SCRIPTS_DIR:-${QDK_PATH}/scripts}"
 	QDK_TEMPLATE_DIR="${QDK_TEMPLATE_DIR:-${QDK_PATH}/template}"
 
@@ -965,7 +969,7 @@ add_qpkg_tail(){
 
 	local max_qpkg_name_len=20
 	local QPKG_NAME_SHORTER=$QPKG_NAME
-	if (( $max_qpkg_name_len < ${#QPKG_NAME} )); then
+	if [ $max_qpkg_name_len -lt ${#QPKG_NAME} ]; then
 		warn_msg "QPKG_NAME: the length of $QPKG_NAME must be less than or equal to $max_qpkg_name_len; name truncated."
 		QPKG_NAME_SHORTER=$(/usr/bin/expr substr "$QPKG_NAME" 1 $max_qpkg_name_len)
 	fi
@@ -1156,7 +1160,7 @@ truncate_qpkg_name(){
 	fi
 
 	local max_qpkg_name_len=40
-	if (( $max_qpkg_name_len < ${#QPKG_NAME} )); then
+	if [ $max_qpkg_name_len -lt ${#QPKG_NAME} ]; then
 		warn_msg "QPKG_NAME: the length of $QPKG_NAME must be less than or equal to $max_qpkg_name_len; name truncated."
 		QPKG_NAME=$(/usr/bin/expr substr "$QPKG_NAME" 1 $max_qpkg_name_len)
 		edit_qpkg_config QPKG_NAME "$QPKG_NAME"
@@ -1631,13 +1635,13 @@ verify_code_signing(){
 	/bin/dd if=$qpkg bs=1 skip=$code_signing_pos count=$code_signing_len 2>/dev/null > $signature_file
 
 	# Verify using non-3rd party CA
-	openssl cms -verify -text -in $signature_file -CAfile $ca_cert_file 2>/dev/null > $verify_dgst_file
+	openssl cms -verify -in $signature_file -CAfile $ca_cert_file 2>/dev/null > $verify_dgst_file
 	/bin/cmp $dgst_file $verify_dgst_file 2>/dev/null
 	if [ $? -eq 0 ]; then
 		msg "Verification successful"
 	else
 		# Verify using 3rd party CA
-		openssl cms -verify -text -in $signature_file -CAfile $ca_cert3_file 2>/dev/null > $verify_dgst_file
+		openssl cms -verify -in $signature_file -CAfile $ca_cert3_file 2>/dev/null > $verify_dgst_file
 		/bin/cmp $dgst_file $verify_dgst_file 2>/dev/null
 		if [ $? -eq 0 ]; then
 			msg "Verification successful (3rd party qpkg)"
