@@ -31,6 +31,7 @@ PREFIX="App Center"
 
 ##### Command definitions #####
 CMD_AWK="${CMD_AWK:-$(command -v awk)}"
+CMD_CMP="${CMD_CMP:-$(command -v cmp)}"
 
 # Cleanup any temporary directories and files at termination.
 trap 'cleanup_all' INT TERM
@@ -211,14 +212,14 @@ get_qdk_area_data_pos(){
 	local qdk_area_end="$(($(/bin/ls -l $qpkg | $CMD_AWK '{ print $5 }') - $TAIL_DATA_LEN))"
 	local qdk_size=
 	local qdk_pos=$qdk_area
-	local qdk_type="$(/usr/bin/hexdump -s $qdk_area -n $QDK_AREA_DATA_TYPE_LEN -e '1/1 "%d"' $qpkg)"
+	local qdk_type="$(/usr/bin/hexdump -s $qdk_area -n $QDK_AREA_DATA_TYPE_LEN -e '1/1 "%u"' $qpkg)"
 	while [ $qdk_type -ne $data_type ] && [ $qdk_type -ne $QDK_AREA_EOF ] && (( $qdk_area <= $qdk_area_end ))
 	do
 		qdk_area="$(($qdk_area + $QDK_AREA_DATA_TYPE_LEN))"
 		qdk_size="$(network_order_32bit $qdk_area $qpkg)"
 		qdk_area="$(($qdk_area + $qdk_size + $QDK_AREA_DATA_SIZE_LEN))"
 		qdk_pos=$qdk_area
-		qdk_type="$(/usr/bin/hexdump -s $qdk_area -n $QDK_AREA_DATA_TYPE_LEN -e '1/1 "%d"' $qpkg)"
+		qdk_type="$(/usr/bin/hexdump -s $qdk_area -n $QDK_AREA_DATA_TYPE_LEN -e '1/1 "%u"' $qpkg)"
 	done
 	if [ $qdk_type -eq $data_type ]; then
 		echo "$qdk_pos"
@@ -1636,13 +1637,13 @@ verify_code_signing(){
 
 	# Verify using non-3rd party CA
 	openssl cms -verify -in $signature_file -CAfile $ca_cert_file 2>/dev/null > $verify_dgst_file
-	/bin/cmp $dgst_file $verify_dgst_file 2>/dev/null
+	$CMD_CMP $dgst_file $verify_dgst_file 2>/dev/null
 	if [ $? -eq 0 ]; then
 		msg "Verification successful"
 	else
 		# Verify using 3rd party CA
 		openssl cms -verify -in $signature_file -CAfile $ca_cert3_file 2>/dev/null > $verify_dgst_file
-		/bin/cmp $dgst_file $verify_dgst_file 2>/dev/null
+		$CMD_CMP $dgst_file $verify_dgst_file 2>/dev/null
 		if [ $? -eq 0 ]; then
 			msg "Verification successful (3rd party qpkg)"
 		else
