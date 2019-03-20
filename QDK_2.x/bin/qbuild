@@ -1310,7 +1310,7 @@ create_env(){
 	edit_qpkg_config QPKG_SERVICE_PROGRAM "${qpkg_name}.sh" "$qpkg_cfg"
 
 	[ -z "$QDK_BUILD_VERSION" ] || edit_qpkg_config QPKG_VER "$QDK_BUILD_VERSION" "$qpkg_cfg"
-
+	/bin/echo "/${qpkg_name}.sh," > ${qpkg_name}/build_sign.csv
 	verbose_msg "Template QPKG build environment created in $qpkg_name directory"
 }
 
