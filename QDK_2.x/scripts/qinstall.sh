@@ -83,6 +83,7 @@ SYS_QPKG_CONF_FIELD_VERSION="Version"
 SYS_QPKG_CONF_FIELD_ENABLE="Enable"
 SYS_QPKG_CONF_FIELD_DATE="Date"
 SYS_QPKG_CONF_FIELD_SHELL="Shell"
+SYS_QPKG_CONF_FIELD_SHELL_DISABLE_UI_NO_OFF="Alt_Shell"
 SYS_QPKG_CONF_FIELD_INSTALL_PATH="Install_Path"
 SYS_QPKG_CONF_FIELD_CONFIG_PATH="Config_Path"
 SYS_QPKG_CONF_FIELD_WEBUI="WebUI"
@@ -143,6 +144,7 @@ CMD_PKG_TOOL=
 . qpkg.cfg
 
 # Backward compatibility
+
 if [ -z "$QPKG_DISPLAY_NAME" ]; then
 	QPKG_DISPLAY_NAME=$QPKG_DISPLAYNAME
 fi
@@ -211,6 +213,71 @@ err_log(){
 	exit 1
 }
 
+handle_extract_error(){
+	if [ -x "/usr/local/sbin/notify" ]; then
+		/usr/local/sbin/notify send -A A039 -C C001 -M 35 -l error -t 3 "[{0}] {1} install failed du to data file error." "$PREFIX" "$QPKG_DISPLAY_NAME"
+		set_progress_fail
+		exit 1
+	else
+		err_log "$SYS_MSG_FILE_ERROR"
+	fi
+}
+TOKEN=""
+codesigning_preinstall(){
+	local ret="$($CMD_ECHO -n "$QPKG_NAME:$SYS_QPKG_DIR" | qsh -0e cs_qdaemon.verify_qpkg)"
+	local status=`$CMD_ECHO $ret | awk -F':' '{print $1}'`
+	TOKEN=`$CMD_ECHO $ret | awk -F':' '{print $2}'`
+	echo "verify_qpkg return: $ret, status: $status, token: $TOKEN"
+	if [ "x$status" != "xsuccess" ] || [ "x$TOKEN" = "x" ]; then
+		handle_extract_error
+	fi
+}
+codesigning_postinstall(){
+	echo "codesigning_postinstall token: $TOKEN"
+	if [ "x$TOKEN" != "x" ]; then
+		local ret="$($CMD_ECHO -n "$QPKG_NAME:$TOKEN" | qsh -0e cs_qdaemon.qpkg_finish)"
+		echo "finish return: $ret"
+	else
+		handle_extract_error
+	fi
+}
+codesigning_extract_data(){
+	[ -n "$1" ] || return 1
+	local archive="$1"
+	local root_dir="${2:-$SYS_QPKG_DIR}"
+	local codesigning_dir=".qcodesigning"
+	local ret=1
+	case "$archive" in
+		*.gz|*.bz2)
+			$CMD_TAR xf "$archive" "./$codesigning_dir" 2>/dev/null
+			if [ $? = 0 ]; then
+				$CMD_MV "$codesigning_dir" "$root_dir/$codesigning_dir"
+				codesigning_preinstall
+				$CMD_TAR xvf "$archive" --exclude="$codesigning_dir" -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
+				ret=$?
+				codesigning_postinstall
+				[ $ret = 0 ] || handle_extract_error
+			else
+				$CMD_TAR xvf "$archive" -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || handle_extract_error
+			fi
+			;;
+		*.7z)
+			$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR x "./$codesigning_dir" 2>/dev/null
+			if [ $? = 0 ]; then
+				$CMD_MV "$codesigning_dir" "$root_dir/$codesigning_dir"
+				codesigning_preinstall
+				$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" --exclude="$codesigning_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
+				ret=$?
+				codesigning_postinstall
+				[ $ret = 0 ] || handle_extract_error
+			else
+				$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || handle_extract_error
+			fi
+			;;
+		*)
+			handle_extract_error
+	esac
+}
 ####################
 # Extract data file
 ####################
@@ -593,7 +660,12 @@ set_qpkg_config_path(){
 	[ -z "$QPKG_CONFIG_PATH" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_CONFIG_PATH "$QPKG_CONFIG_PATH"
 }
 set_qpkg_service_path(){
+	[ -z $QPKG_DISABLE_APPCENTER_UI_SERVICE ] && QPKG_DISABLE_APPCENTER_UI_SERVICE=0
+	if [ $QPKG_DISABLE_APPCENTER_UI_SERVICE -eq "1" ]; then
+		[ -z "$QPKG_SERVICE_PROGRAM" ] || set_qpkg_field "$SYS_QPKG_CONF_FIELD_SHELL_DISABLE_UI_NO_OFF" "$SYS_QPKG_DIR/$QPKG_SERVICE_PROGRAM"
+	else
 	[ -z "$QPKG_SERVICE_PROGRAM" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_SHELL "$SYS_QPKG_DIR/$QPKG_SERVICE_PROGRAM"
+	fi
 }
 set_qpkg_service_port(){
 	[ -z "$QPKG_SERVICE_PORT" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_SERVICEPORT "$QPKG_SERVICE_PORT"
@@ -1235,7 +1307,11 @@ pre_install(){
 # Install routines
 ##################################
 install(){
-	extract_data "$SYS_QPKG_DATA_FILE"
+	if [ -x "/sbin/cs_qdaemon" ] && [ "x${QNAP_CODE_SIGNING}" = "x1" ]; then
+		codesigning_extract_data "$SYS_QPKG_DATA_FILE"
+	else
+		extract_data "$SYS_QPKG_DATA_FILE"
+	fi
 	extract_config
 	restore_config
 
