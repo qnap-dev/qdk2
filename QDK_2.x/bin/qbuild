@@ -742,7 +742,7 @@ add_qpkg_header(){
 				if [ -x "/usr/local/sbin/notify" ]; then
 					/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 3 "[{0}] {1} install failed due to QTS application install volume not found." "$PREFIX" "$QPKG_DISPLAY_NAME"
 					set_progress_fail
-					exit 1
+					exit 
 				else
 					$log_tool "[$PREFIX] Failed to install $QPKG_DISPLAY_NAME. The selected installation volume is missing."
 					set_progress_fail
@@ -755,7 +755,7 @@ add_qpkg_header(){
 		if [ -x "/usr/local/sbin/notify" ]; then
 			/usr/local/sbin/notify send -A A039 -C C001 -M 50 -l error -t 3 "[{0}] {1} install failed due to QTS application install volume not found." "$PREFIX" "$QPKG_DISPLAY_NAME"
 			set_progress_fail
-			exit 1
+			exit 
 		else
 			$log_tool "[$PREFIX] Failed to install $QPKG_DISPLAY_NAME. The selected installation volume is missing."
 			set_progress_fail
@@ -771,13 +771,13 @@ add_qpkg_header(){
 			if [ -x "/usr/local/sbin/notify" ]; then
 				/usr/local/sbin/notify send -A A039 -C C001 -M 51 -l error -t 3 "[{0}] {1} {2} install failed due to the platform is imcompatable. Please use correct package for installation." "$PREFIX" "$QPKG_DISPLAY_NAME" "$QPKG_VER"
 				set_progress_fail
-				exit 1
+				exit 
 			else
 				local wrong_arch_msg="$wrong_arch"
 				echo "Installation Abort." && echo "\$wrong_arch_msg"
 				$log_tool "[$PREFIX] Failed to install $QPKG_DISPLAY_NAME $QPKG_VER. Installation package is incompatible. Use the correct package."
 				set_progress_fail
-				echo -1 > /tmp/update_process && exit 1
+				echo -1 > /tmp/update_process && exit 
 			fi
 		}
 		arch_ok(){
