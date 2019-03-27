@@ -247,6 +247,11 @@ codesigning_extract_data(){
 	local root_dir="${2:-$SYS_QPKG_DIR}"
 	local codesigning_dir=".qcodesigning"
 	local ret=1
+	local xz_ld_wrapper='lib/ld-2.19.so'
+	if [ x"$SYS_CPU_ARCH" == x"arm_64" ]; then
+		xz_ld_wrapper=''
+	fi
+
 	case "$archive" in
 		*.gz|*.bz2)
 			$CMD_TAR xf "$archive" "./$codesigning_dir" 2>/dev/null
@@ -272,6 +277,21 @@ codesigning_extract_data(){
 				[ $ret = 0 ] || handle_extract_error
 			else
 				$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || handle_extract_error
+			fi
+			;;
+		*.xz)
+			$CMD_TAR xf "./xz.tgz"
+			LD_LIBRARY_PATH=${PWD}/lib $xz_ld_wrapper bin/xzcat "$archive" 2>/dev/null | $CMD_TAR x "./$codesigning_dir" 2>/dev/null
+			if [ $? = 0 ]; then
+				$CMD_MV "$codesigning_dir" "$root_dir/$codesigning_dir"
+				codesigning_preinstall
+				$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" --exclude="$codesigning_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
+				ret=$?
+				codesigning_postinstall
+				[ $ret = 0 ] || handle_extract_error
+			else
+				$CMD_TAR xf "./xz.tgz"
+				LD_LIBRARY_PATH=${PWD}/lib $xz_ld_wrapper bin/xzcat "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list ||handle_extract_error
 			fi
 			;;
 		*)
