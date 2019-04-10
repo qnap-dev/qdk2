@@ -1,3 +1,9 @@
+qdk2 (0.25) trusty; urgency=medium
+
+  * Support Ubuntu bionic
+
+ -- Walker Lee <walkerlee.tw@gmail.com>  Wed, 10 Apr 2019 18:50:00 +0800
+
 qdk2 (0.24) trusty; urgency=medium
 
   * Support code signing and anti-tampering

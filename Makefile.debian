@@ -1,10 +1,10 @@
-SERIES = trusty xenial
+SERIES = trusty xenial bionic
 
-.PYONY: ${SERIES}
+.PHONY: all
+all: $(SERIES)
 
-all: ${SERIES}
-
-trusty:
+.PHONY: $(SERIES)
+$(SERIES):
 	-rm -rf debuild/$@
 	mkdir -p debuild/$@
 	find . -maxdepth 1 ! -name "." ! -name "debuild" -exec cp -r {} debuild/$@ \;
@@ -13,24 +13,14 @@ trusty:
 		&& git clean -xdf \
 		&& rm -rf .git \
 		&& find QDK_2.x/template/ -name .gitkeep -exec rm -f {} \; \
+		&& cp debian/control.$@ debian/control \
 		&& sed -i '1 s/(\(.*\))/(\1~$@)/' debian/changelog \
 		&& debuild -us -uc -d
 
-xenial:
-	-rm -rf debuild/$@
-	mkdir -p debuild/$@
-	find . -maxdepth 1 ! -name "." ! -name "debuild" -exec cp -r {} debuild/$@ \;
-	cd debuild/$@ \
-		&& git reset --hard HEAD \
-		&& git clean -xdf \
-		&& rm -rf .git \
-		&& find QDK_2.x/template/ -name .gitkeep -exec rm -f {} \; \
-		&& cp debian/control.xenial debian/control \
-		&& sed -i '1 s/(\(.*\))/(\1~$@)/' debian/changelog \
-		&& debuild -us -uc -d
-
+.PHONY: clean
 clean:
 	-rm -rf debuild
 
+.PHONY: dput
 dput:
 	dput ppa:fcwu-tw/ppa qdk2_*_source.changes
