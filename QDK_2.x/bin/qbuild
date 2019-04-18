@@ -32,6 +32,10 @@ PREFIX="App Center"
 ##### Command definitions #####
 CMD_AWK="${CMD_AWK:-$(command -v awk)}"
 CMD_CMP="${CMD_CMP:-$(command -v cmp)}"
+CS_PYTHON="${CS_PYTHON:-$(command -v python2)}"
+if [ ! -e "$CS_PYTHON" ]; then
+CS_PYTHON="$(command -v python)"
+fi
 
 # Cleanup any temporary directories and files at termination.
 trap 'cleanup_all' INT TERM
@@ -513,7 +517,7 @@ do_code_signing(){
 	[ -z "$QNAP_CODE_SIGNING_CSV" ] && QNAP_CODE_SIGNING_CSV="build_sign.csv"
 	[ -z "$QNAP_CODE_SIGNING_SERVER_IP" ] && QNAP_CODE_SIGNING_SERVER_IP=$DEFAULT_QNAP_CODE_SIGNING_SERVER_IP
 	[ -z "$QNAP_CODE_SIGNING_SERVER_PORT" ] && QNAP_CODE_SIGNING_SERVER_PORT=$DEFAULT_QNAP_CODE_SIGNING_SERVER_PORT
-	python "${QDK_SCRIPTS_DIR}/codesigning_qpkg.py" cert="${QDK_SCRIPTS_DIR}/codesigning_cert.pem" cwd="`pwd`" buildpath=$build_dir csv="${QNAP_CODE_SIGNING_CSV}" server=${QNAP_CODE_SIGNING_SERVER_IP}:${QNAP_CODE_SIGNING_SERVER_PORT}  2>&1 | tee -a code_signing.log
+	$CS_PYTHON "${QDK_SCRIPTS_DIR}/codesigning_qpkg.py" cert="${QDK_SCRIPTS_DIR}/codesigning_cert.pem" cwd="`pwd`" buildpath=$build_dir csv="${QNAP_CODE_SIGNING_CSV}" server=${QNAP_CODE_SIGNING_SERVER_IP}:${QNAP_CODE_SIGNING_SERVER_PORT}  2>&1 | tee -a code_signing.log
 }
 
 # Create data package for distribution.
@@ -924,12 +928,14 @@ add_qpkg_signature(){
 		[ -z "$QNAP_CODE_SIGNING_SERVER_IP" ] && QNAP_CODE_SIGNING_SERVER_IP=$DEFAULT_QNAP_CODE_SIGNING_SERVER_IP
 		[ -z "$QNAP_CODE_SIGNING_SERVER_PORT" ] && QNAP_CODE_SIGNING_SERVER_PORT=$DEFAULT_QNAP_CODE_SIGNING_SERVER_PORT
 		openssl dgst -sha1 -binary "${QDK_QPKG_FILE}" > "${QDK_QPKG_FILE}.sha"
-		python "${QDK_SCRIPTS_DIR}/codesigning_qpkg_cms.py" cert="${QDK_SCRIPTS_DIR}/codesigning_cert.pem" cwd="`pwd`" server=${QNAP_CODE_SIGNING_SERVER_IP}:${QNAP_CODE_SIGNING_SERVER_PORT} in="${QDK_QPKG_FILE}.sha" out="${QDK_QPKG_FILE}.msg" 2>&1 | tee -a code_signing.log
+		$CS_PYTHON "${QDK_SCRIPTS_DIR}/codesigning_qpkg_cms.py" cert="${QDK_SCRIPTS_DIR}/codesigning_cert.pem" cwd="`pwd`" server=${QNAP_CODE_SIGNING_SERVER_IP}:${QNAP_CODE_SIGNING_SERVER_PORT} in="${QDK_QPKG_FILE}.sha" out="${QDK_QPKG_FILE}.msg" 2>&1 | tee -a code_signing.log
 		/bin/rm ${QDK_QPKG_FILE}.sha
 		if [ -f "${QDK_QPKG_FILE}.msg" ]; then
 			add_qdk_area_begin
 			add_qdk_area_code_signing ${QDK_QPKG_FILE}.msg
 			add_qdk_area_end
+			SIG=`openssl cms -cmsout -in ${QDK_QPKG_FILE}.msg | tr -d '\n' | tail -c 32`
+			echo "${SIG}" > ${QDK_BUILD_DIR}/${QDK_QPKG_FILE}.codesigning
 			/bin/rm ${QDK_QPKG_FILE}.msg
 		else
 			warn_msg "$QDK_QPKG_FILE: no code signing data added"
@@ -1271,7 +1277,6 @@ cleanup_after_build(){
 	call_teardown
 }
 
-
 # Main build function.
 build_qpkg(){
 	# All build operation should be run in the QDK_ROOT_DIR directory (current
@@ -1310,7 +1315,7 @@ create_env(){
 	edit_qpkg_config QPKG_SERVICE_PROGRAM "${qpkg_name}.sh" "$qpkg_cfg"
 
 	[ -z "$QDK_BUILD_VERSION" ] || edit_qpkg_config QPKG_VER "$QDK_BUILD_VERSION" "$qpkg_cfg"
-	/bin/echo "/${qpkg_name}.sh," > ${qpkg_name}/build_sign.csv
+	/bin/echo ",/${qpkg_name}.sh," > ${qpkg_name}/build_sign.csv
 	verbose_msg "Template QPKG build environment created in $qpkg_name directory"
 }
 
@@ -1561,7 +1566,7 @@ add_code_signing(){
 
 	# Send qpkg digest to server
 	openssl dgst -sha1 -binary "${qpkg}.$$" > "${qpkg}.sha"
-	python "${QDK_SCRIPTS_DIR}/codesigning_qpkg_cms.py" cert="${QDK_SCRIPTS_DIR}/codesigning_cert.pem" server=${QNAP_CODE_SIGNING_SERVER_IP}:${QNAP_CODE_SIGNING_SERVER_PORT} qpkgname=${QPKG_NAME} version=${QPKG_VER} in="${qpkg}.sha" out="${qpkg}.msg" 2>&1 | tee -a code_signing.log
+	$CS_PYTHON "${QDK_SCRIPTS_DIR}/codesigning_qpkg_cms.py" cert="${QDK_SCRIPTS_DIR}/codesigning_cert.pem" server=${QNAP_CODE_SIGNING_SERVER_IP}:${QNAP_CODE_SIGNING_SERVER_PORT} qpkgname=${QPKG_NAME} version=${QPKG_VER} in="${qpkg}.sha" out="${qpkg}.msg" 2>&1 | tee -a code_signing.log
 	/bin/rm ${qpkg}.sha
 
 	# Add code signing data into qpkg
@@ -1569,6 +1574,8 @@ add_code_signing(){
 		add_qdk_area_begin ${qpkg}.$$
 		add_qdk_area_code_signing ${qpkg}.msg ${qpkg}.$$
 		add_qdk_area_end ${qpkg}.$$
+		SIG=`openssl cms -cmsout -in ${QDK_QPKG_FILE}.msg | tr -d '\n' | tail -c 32`
+		echo "${SIG}" > ${QDK_BUILD_DIR}/${QDK_QPKG_FILE}.codesigning
 		/bin/rm ${qpkg}.msg
 	else
 		/bin/rm ${qpkg}.$$
@@ -1606,12 +1613,12 @@ verify_code_signing(){
 		https://${QNAP_CODE_SIGNING_SERVER_IP}:${QNAP_CODE_SIGNING_SERVER_PORT}/keys/qnaproot \
 		2>/dev/null"
 	output="$(eval $curl_cmd)" || err_msg "failed to connect to code signing server"
-	server_err=$(echo $output | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["error"]')
+	server_err=$(echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["error"]')
 	if [ $server_err -ne 0 ]; then
-		server_msg=$(echo $output | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["msg"]')
+		server_msg=$(echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["msg"]')
 		err_msg "error from code signing server: $server_msg"
 	fi
-	echo $output | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["certificate"]["pem"]' > $ca_cert_file
+	echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["certificate"]["pem"]' > $ca_cert_file
 
 	# Get ca cert (3rd party)
 	ca_cert3_file="${qpkg}.ca3"
@@ -1619,12 +1626,12 @@ verify_code_signing(){
 		https://${QNAP_CODE_SIGNING_SERVER_IP}:${QNAP_CODE_SIGNING_SERVER_PORT}/keys/qnaproot \
 		2>/dev/null"
 	output="$(eval $curl_cmd)" || err_msg "failed to connect to code signing server"
-	server_err=$(echo $output | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["error"]')
+	server_err=$(echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["error"]')
 	if [ $server_err -ne 0 ]; then
-		server_msg=$(echo $output | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["msg"]')
+		server_msg=$(echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["msg"]')
 		err_msg "error from code signing server: $server_msg"
 	fi
-	echo $output | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["certificate"]["pem"]' > $ca_cert3_file
+	echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["certificate"]["pem"]' > $ca_cert3_file
 
 	# Verify
 	qpkg_data_file="${qpkg}.data"

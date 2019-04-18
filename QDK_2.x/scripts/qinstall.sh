@@ -57,7 +57,7 @@ CMD_WGET="/usr/bin/wget"
 CMD_WLOG="/sbin/write_log"
 CMD_XARGS="/usr/bin/xargs"
 CMD_7Z="/usr/local/sbin/7z"
-
+CMD_QSH="/usr/local/sbin/qsh"
 
 ##### System definitions #####
 SYS_EXTRACT_DIR="$(pwd)"
@@ -135,6 +135,7 @@ SYS_USB_SHARE=""
 SYS_USB_PATH=""
 SYS_WEB_SHARE=""
 SYS_WEB_PATH=""
+SYS_CODESIGNING_TOKEN=""
 # Path to ipkg or opkg package tool if installed.
 CMD_PKG_TOOL=
 
@@ -154,6 +155,7 @@ fi
 ###########################################
 SYS_MSG_FILE_NOT_FOUND="Data file not found."
 SYS_MSG_FILE_ERROR="[$PREFIX] Failed to install $QPKG_NAME due to data file error."
+SYS_MSG_CODESIGNING_ERROR="[$PREFIX] Failed to install $QPKG_NAME due to anti-tampering file error."
 SYS_MSG_PUBLIC_NOT_FOUND="Public share not found."
 SYS_MSG_FAILED_CONFIG_RESTORE="Failed to restore saved configuration data."
 
@@ -215,32 +217,47 @@ err_log(){
 
 handle_extract_error(){
 	if [ -x "/usr/local/sbin/notify" ]; then
-		/usr/local/sbin/notify send -A A039 -C C001 -M 35 -l error -t 3 "[{0}] {1} install failed du to data file error." "$PREFIX" "$QPKG_DISPLAY_NAME"
+		/usr/local/sbin/notify send -A A039 -C C001 -M 35 -l error -t 3 "[{0}] {1} install failed due to data file error." "$PREFIX" "$QPKG_DISPLAY_NAME"
 		set_progress_fail
 		exit 1
 	else
 		err_log "$SYS_MSG_FILE_ERROR"
 	fi
 }
-TOKEN=""
-codesigning_preinstall(){
-	local ret="$($CMD_ECHO -n "$QPKG_NAME:$SYS_QPKG_DIR" | qsh -0e cs_qdaemon.verify_qpkg)"
-	local status=`$CMD_ECHO $ret | awk -F':' '{print $1}'`
-	TOKEN=`$CMD_ECHO $ret | awk -F':' '{print $2}'`
-	echo "verify_qpkg return: $ret, status: $status, token: $TOKEN"
-	if [ "x$status" != "xsuccess" ] || [ "x$TOKEN" = "x" ]; then
-		handle_extract_error
-	fi
-}
-codesigning_postinstall(){
-	echo "codesigning_postinstall token: $TOKEN"
-	if [ "x$TOKEN" != "x" ]; then
-		local ret="$($CMD_ECHO -n "$QPKG_NAME:$TOKEN" | qsh -0e cs_qdaemon.qpkg_finish)"
-		echo "finish return: $ret"
+
+handle_codesigning_error(){
+	if [ -x "/usr/local/sbin/notify" ]; then
+		/usr/local/sbin/notify send -A A039 -C C001 -M 62 -l error -t 3 "[{0}] Failed to install {1} due to anti-tampering file error." "$PREFIX" "$QPKG_DISPLAY_NAME"
+		set_progress_fail
+		exit 1
 	else
-		handle_extract_error
+		err_log "$SYS_MSG_CODESIGNING_ERROR"
 	fi
 }
+
+codesigning_preinstall(){
+	local ret="$($CMD_ECHO -n "$QPKG_NAME:$SYS_QPKG_DIR" | $CMD_QSH -0e cs_qdaemon.verify_qpkg)"
+	local status=`$CMD_ECHO $ret | $CMD_AWK -F':' '{print $1}'`
+	SYS_CODESIGNING_TOKEN=`$CMD_ECHO $ret | $CMD_AWK -F':' '{print $2}'`
+	$CMD_ECHO "verify_qpkg return: $ret, status: $status, token: $SYS_CODESIGNING_TOKEN"
+	if [ "x$status" != "xsuccess" ] || [ "x$SYS_CODESIGNING_TOKEN" = "x" ]; then
+		## is it possible to be here after we have already checked cerficiate first?
+		handle_codesigning_error
+	fi
+}
+
+codesigning_postinstall(){
+	local err="${1:-0}"
+	$CMD_ECHO "codesigning_postinstall token: $SYS_CODESIGNING_TOKEN, err: $err"
+	if [ "x$SYS_CODESIGNING_TOKEN" != "x" ]; then
+		local ret="$($CMD_ECHO -n "$QPKG_NAME:$SYS_CODESIGNING_TOKEN:$err" | $CMD_QSH -0e cs_qdaemon.qpkg_finish)"
+		$CMD_ECHO "finish return: $ret"
+	else
+		## is it possible to be here after we have already checked cerficiate first?
+		handle_codesigning_error
+	fi
+}
+
 codesigning_extract_data(){
 	[ -n "$1" ] || return 1
 	local archive="$1"
@@ -256,11 +273,12 @@ codesigning_extract_data(){
 		*.gz|*.bz2)
 			$CMD_TAR xf "$archive" "./$codesigning_dir" 2>/dev/null
 			if [ $? = 0 ]; then
-				$CMD_MV "$codesigning_dir" "$root_dir/$codesigning_dir"
+				$CMD_CP -arf "$codesigning_dir" "$root_dir/"
 				codesigning_preinstall
 				$CMD_TAR xvf "$archive" --exclude="$codesigning_dir" -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
 				ret=$?
-				codesigning_postinstall
+				codesigning_postinstall $ret
+				$CMD_RM -rf "$codesigning_dir"
 				[ $ret = 0 ] || handle_extract_error
 			else
 				$CMD_TAR xvf "$archive" -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || handle_extract_error
@@ -269,11 +287,12 @@ codesigning_extract_data(){
 		*.7z)
 			$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR x "./$codesigning_dir" 2>/dev/null
 			if [ $? = 0 ]; then
-				$CMD_MV "$codesigning_dir" "$root_dir/$codesigning_dir"
+				$CMD_CP -arf "$codesigning_dir" "$root_dir/"
 				codesigning_preinstall
 				$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" --exclude="$codesigning_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
 				ret=$?
-				codesigning_postinstall
+				codesigning_postinstall $ret
+				$CMD_RM -rf "$codesigning_dir"
 				[ $ret = 0 ] || handle_extract_error
 			else
 				$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || handle_extract_error
@@ -283,11 +302,12 @@ codesigning_extract_data(){
 			$CMD_TAR xf "./xz.tgz"
 			LD_LIBRARY_PATH=${PWD}/lib $xz_ld_wrapper bin/xzcat "$archive" 2>/dev/null | $CMD_TAR x "./$codesigning_dir" 2>/dev/null
 			if [ $? = 0 ]; then
-				$CMD_MV "$codesigning_dir" "$root_dir/$codesigning_dir"
+				$CMD_CP -arf "$codesigning_dir" "$root_dir"
 				codesigning_preinstall
 				$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" --exclude="$codesigning_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
 				ret=$?
-				codesigning_postinstall
+				codesigning_postinstall $ret
+				$CMD_RM -rf "$codesigning_dir"
 				[ $ret = 0 ] || handle_extract_error
 			else
 				$CMD_TAR xf "./xz.tgz"
@@ -312,23 +332,17 @@ extract_data(){
 
 	case "$archive" in
 		*.gz|*.bz2)
-			$CMD_TAR xvf "$archive" -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || if [ -x "/usr/local/sbin/notify" ]; then /usr/local/sbin/notify send -A A039 -C C001 -M 35 -l error -t 3 "[{0}] {1} install failed du to data file error." "$PREFIX" "$QPKG_NAME";set_progress_fail;exit 1;else err_log "$SYS_MSG_FILE_ERROR";fi
+			$CMD_TAR xvf "$archive" -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || handle_extract_error
 			;;
 		*.7z)
-			$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || if [ -x "/usr/local/sbin/notify" ]; then /usr/local/sbin/notify send -A A039 -C C001 -M 35 -l error -t 3 "[{0}] {1} install failed du to data file error." "$PREFIX" "$QPKG_NAME";set_progress_fail;exit 1;else err_log "$SYS_MSG_FILE_ERROR";fi
+			$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || handle_extract_error
 			;;
 		*.xz)
 			$CMD_TAR xf "./xz.tgz"
-			LD_LIBRARY_PATH=${PWD}/lib $xz_ld_wrapper bin/xzcat "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || if [ -x "/usr/local/sbin/notify" ]; then /usr/local/sbin/notify send -A A039 -C C001 -M 35 -l error -t 3 "[{0}] {1} install failed du to data file error." "$PREFIX" "$QPKG_NAME";set_progress_fail;exit 1;else err_log "$SYS_MSG_FILE_ERROR";fi
+			LD_LIBRARY_PATH=${PWD}/lib $xz_ld_wrapper bin/xzcat "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list || handle_extract_error
 			;;
 		*)
-			if [ -x "/usr/local/sbin/notify" ]; then
-				/usr/local/sbin/notify send -A A039 -C C001 -M 35 -l error -t 3 "[{0}] {1} install failed du to data file error." "$PREFIX" "$QPKG_NAME"
-				set_progress_fail
-				exit 1
-			else
-				err_log "$SYS_MSG_FILE_ERROR"
-			fi
+			handle_extract_error
 	esac
 }
 
@@ -337,7 +351,7 @@ extract_data(){
 #############################
 extract_config(){
 	if [ -f $SYS_QPKG_DATA_CONFIG_FILE ]; then
-		$CMD_TAR xvf $SYS_QPKG_DATA_CONFIG_FILE -C / 2>/dev/null | $CMD_SED 's/\.//' 2>/dev/null >>$SYS_QPKG_DIR/.list || if [ -x "/usr/local/sbin/notify" ]; then /usr/local/sbin/notify send -A A039 -C C001 -M 35 -l error -t 3 "[{0}] {1} install failed du to data file error." "$PREFIX" "$QPKG_NAME";set_progress_fail;exit 1;else err_log "$SYS_MSG_FILE_ERROR";fi
+		$CMD_TAR xvf $SYS_QPKG_DATA_CONFIG_FILE -C / 2>/dev/null | $CMD_SED 's/\.//' 2>/dev/null >>$SYS_QPKG_DIR/.list || handle_extract_error
 	fi
 }
 
@@ -442,7 +456,7 @@ add_qpkg_config(){
 
 	$CMD_ECHO "$file" >>$SYS_QPKG_DIR/.list
 	$CMD_GETCFG "$QPKG_NAME" "cfg:$file" -f $SYS_QPKG_CONFIG_FILE >/dev/null || \
-		set_qpkg_config $file $md5sum
+	set_qpkg_config $file $md5sum
 }
 
 #################################################
@@ -482,7 +496,7 @@ check_qts_version(){
 
 	if [ ${MINI_VERSION} -gt ${NOW_VERSION} ]; then
 		if [ -x "/usr/local/sbin/notify" ]; then
-			/usr/local/sbin/notify send -A A039 -C C001 -M 40 -l error -t 3 "[{0}] {1} install failed du to the QTS firmware is not compatible, please upgrade QTS to {2} or newer version." "$PREFIX" "$QPKG_DISPLAY_NAME" "$QTS_MINI_VERSION"
+			/usr/local/sbin/notify send -A A039 -C C001 -M 40 -l error -t 3 "[{0}] {1} install failed due to the QTS firmware is not compatible, please upgrade QTS to {2} or newer version." "$PREFIX" "$QPKG_DISPLAY_NAME" "$QTS_MINI_VERSION"
 			set_progress_fail
 			exit 1
 		else
@@ -490,7 +504,7 @@ check_qts_version(){
 		fi
 	elif [ ${MAX_VERSION} -lt ${NOW_VERSION} ]; then
 		if [ -x "/usr/local/sbin/notify" ]; then
-			/usr/local/sbin/notify send -A A039 -C C001 -M 41 -l error -t 3 "[{0}] {1} install failed du to the QTS firmware is not compatible, please downgrade QTS to {2} or newer version." "$PREFIX" "$QPKG_DISPLAY_NAME" "$QTS_MAX_VERSION"
+			/usr/local/sbin/notify send -A A039 -C C001 -M 41 -l error -t 3 "[{0}] {1} install failed due to the QTS firmware is not compatible, please downgrade QTS to {2} or newer version." "$PREFIX" "$QPKG_DISPLAY_NAME" "$QTS_MAX_VERSION"
 			set_progress_fail
 			exit 1
 		else
@@ -631,9 +645,7 @@ start_service(){
 }
 stop_service(){
 	if [ -x $SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM ]; then
-		# Call old service program
-		#$SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM stop
-		$SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM stop upgrade
+		$SYS_INIT_DIR/$QPKG_SERVICE_PROGRAM stop
 		$CMD_SLEEP 5
 		$CMD_SYNC
 	fi
@@ -659,7 +671,7 @@ disable_qpkg(){
 }
 set_qpkg_name(){
 	[ -z "$QPKG_NAME" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_NAME "$QPKG_NAME"
-	[ -z "$QPKG_DISPLAY_NAME" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_DISPLAY_NAME "$QPKG_DISPLAY_NAME"
+   	[ -z "$QPKG_DISPLAY_NAME" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_DISPLAY_NAME "$QPKG_DISPLAY_NAME"
 }
 set_qpkg_version(){
 	[ -z "$QPKG_VER" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_VERSION "$QPKG_VER"
@@ -684,7 +696,7 @@ set_qpkg_service_path(){
 	if [ $QPKG_DISABLE_APPCENTER_UI_SERVICE -eq "1" ]; then
 		[ -z "$QPKG_SERVICE_PROGRAM" ] || set_qpkg_field "$SYS_QPKG_CONF_FIELD_SHELL_DISABLE_UI_NO_OFF" "$SYS_QPKG_DIR/$QPKG_SERVICE_PROGRAM"
 	else
-	[ -z "$QPKG_SERVICE_PROGRAM" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_SHELL "$SYS_QPKG_DIR/$QPKG_SERVICE_PROGRAM"
+		[ -z "$QPKG_SERVICE_PROGRAM" ] || set_qpkg_field $SYS_QPKG_CONF_FIELD_SHELL "$SYS_QPKG_DIR/$QPKG_SERVICE_PROGRAM"
 	fi
 }
 set_qpkg_service_port(){
@@ -1371,7 +1383,7 @@ main(){
 		SYS_QPKG_DATA_FILE=$SYS_QPKG_DATA_FILE_XZ
 	else
 		if [ -x "/usr/local/sbin/notify" ]; then
-			/usr/local/sbin/notify send -A A039 -C C001 -M 34 -l error -t 3 "[{0}] {1} install failed du to cannot find the data file." "$PREFIX" "$QPKG_DISPLAY_NAME"
+			/usr/local/sbin/notify send -A A039 -C C001 -M 34 -l error -t 3 "[{0}] {1} install failed due to cannot find the data file." "$PREFIX" "$QPKG_DISPLAY_NAME"
 			set_progress_fail
 			exit 1
 		else
