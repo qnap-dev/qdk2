@@ -5,8 +5,11 @@
 #
 # A QPKG installation script for QDK
 #
+# QDK V.2.3.9
+#
 # Copyright (C) 2009,2010 QNAP Systems, Inc.
 # Copyright (C) 2010,2011 Michael Nordstrom
+# Copyright (C) 2013,2018 QNAP Systems, Inc.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
