@@ -236,7 +236,7 @@ def sign_files(kwargs):
         url = url + "/" + kwargs["version"]
     elif key_type == "qpkg":
         url = url + "/" + kwargs["qpkgname"] + "/" + kwargs["version"]
-    command = "curl %s --connect-timeout 60 --max-time 600 -X POST -F token=%s -F file=@%s https://%s"
+    command = "curl %s --connect-timeout 60 --max-time 600 --retry 3 -X POST -F token=%s -F file=@%s https://%s"
     if "cert" in kwargs:
         if not os.path.isfile(kwargs["cert"]):
             logging.error("Cannot find certificate file %s" % kwargs["cert"])
@@ -268,7 +268,7 @@ def sign_cms(kwargs):
         url = url + "/" + kwargs["version"]
     elif key_type == "qpkg":
         url = url + "/" + kwargs["qpkgname"] + "/" + kwargs["version"]
-    command = "curl %s --connect-timeout 60 --max-time 600 -X POST -F token=%s -F file=@%s https://%s"
+    command = "curl %s --connect-timeout 60 --max-time 600 --retry 3 -X POST -F token=%s -F file=@%s https://%s"
     if "cert" in kwargs:
         if not os.path.isfile(kwargs["cert"]):
             logging.error("Cannot find certificate file %s" % kwargs["cert"])
