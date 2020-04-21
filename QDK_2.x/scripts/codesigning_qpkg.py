@@ -59,7 +59,6 @@ def update_db_by_csv(kwargs):
         cur.execute(sql_insert_path, (absolute_path, package))
     conn.commit()
     conn.close()
-    logging.info("Paths and Packages from csv updated to codesigning DB %s" % kwargs["db"])
 
 def create_tgz(kwargs):
     # Copy files into temp_folder and then create tgzs
@@ -77,19 +76,19 @@ def create_tgz(kwargs):
         else:
             absolute_path = row[2]
         src = os.path.join(kwargs["cwd"], kwargs["srcpath"])
-        src = src + relative_path
+        src = os.path.join(src,relative_path.lstrip('/'))
         if not os.path.isfile(src):
             if (kwargs["srcpath"] != kwargs["buildpath"]):
                 src1 = os.path.join(kwargs["cwd"], kwargs["srcpath"])
-                src1 = src1 + relative_path
+                src1 = os.path.join(src1,relative_path.lstrip('/'))
                 if not os.path.isfile(src1):
                     logging.warning("Cannot find file " + src)
                     logging.warning("Cannot find file " + src1)
                     continue
             else:
-                logging.warning("Cannot find file " + src)
+                logging.warning("Cannot find file " + relative_path)
                 continue
-        dst = temp_folder + absolute_path
+        dst = os.path.join(temp_folder,absolute_path.lstrip('/'))
         codesigning_common.copy_file(src, dst)
     codesigning_common.create_tgz(temp_folder,output_tgz_file)
 
@@ -137,6 +136,27 @@ def sign_and_save_db_signature(kwargs):
     signature_file.write(signature)
     signature_file.close()
 
+def verify_result(kwargs):
+    db = 0
+    db_sig = 0
+    cert = 0
+    dirs = os.listdir(kwargs["codesigning_folder"])
+    for file in dirs:
+        if os.path.isdir(file):
+            logging.error("folder %s should not exist, please check csv file and code_signing.log" % file)
+            sys.exit(1)
+        if (file == codesigning_common.DB_NAME):
+            db += 1
+        elif (file == codesigning_common.DB_SIG_NAME):
+            db_sig += 1
+        elif (file == codesigning_common.CERT_NAME):
+            cert += 1
+        else:
+            logging.error("file %s should not exist, please check csv file and code_signing.log" % file)
+            sys.exit(1)
+    if (db != 1) or (db_sig != 1) or (cert != 1):
+        logging.error("something goes wrong, please check csv file and code_signing.log")
+        sys.exit(1)
 def print_usage():
     usage_string = """
     Usage:
@@ -178,3 +198,4 @@ if __name__ == "__main__":
     sign_and_update_signature(kwargs)
     save_certificate(kwargs)
     sign_and_save_db_signature(kwargs)
+    verify_result(kwargs)

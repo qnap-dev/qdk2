@@ -139,6 +139,7 @@ SYS_USB_PATH=""
 SYS_WEB_SHARE=""
 SYS_WEB_PATH=""
 SYS_CODESIGNING_TOKEN=""
+SYS_DELAY_ANTITAMPER_POST=0
 # Path to ipkg or opkg package tool if installed.
 CMD_PKG_TOOL=
 
@@ -280,7 +281,11 @@ codesigning_extract_data(){
 				codesigning_preinstall
 				$CMD_TAR xvf "$archive" --exclude="$codesigning_dir" -C "$root_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
 				ret=$?
-				codesigning_postinstall $ret
+				if [ $ret = 0 ]; then
+					SYS_DELAY_ANTITAMPER_POST=1
+				else
+					codesigning_postinstall $ret
+				fi
 				$CMD_RM -rf "$codesigning_dir"
 				[ $ret = 0 ] || handle_extract_error
 			else
@@ -294,7 +299,11 @@ codesigning_extract_data(){
 				codesigning_preinstall
 				$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" --exclude="$codesigning_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
 				ret=$?
-				codesigning_postinstall $ret
+				if [ $ret = 0 ]; then
+					SYS_DELAY_ANTITAMPER_POST=1
+				else
+					codesigning_postinstall $ret
+				fi
 				$CMD_RM -rf "$codesigning_dir"
 				[ $ret = 0 ] || handle_extract_error
 			else
@@ -309,7 +318,11 @@ codesigning_extract_data(){
 				codesigning_preinstall
 				$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" --exclude="$codesigning_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
 				ret=$?
-				codesigning_postinstall $ret
+                                if [ $ret = 0 ]; then
+					SYS_DELAY_ANTITAMPER_POST=1
+				else
+					codesigning_postinstall $ret
+                                fi
 				$CMD_RM -rf "$codesigning_dir"
 				[ $ret = 0 ] || handle_extract_error
 			else
@@ -1419,6 +1432,9 @@ main(){
 	# This also starts the service program if the QPKG is enabled.
 	set_qpkg_status
 
+	if [ $SYS_DELAY_ANTITAMPER_POST = 1 ]; then
+		codesigning_postinstall 0
+	fi
 	##system pop up log after QPKG has installed and app was enable
 
 	if is_qpkg_enabled "$QPKG_NAME"; then

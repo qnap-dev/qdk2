@@ -15,7 +15,7 @@ CONNECT_ERROR = 3
 SERVER_ERROR = 4
 
 CONF_ERROR = 21
-FOLDER_ERROR = 22
+CSV_ERROR = 22
 
 DB_NAME = "nas_sign.db"
 DB_SIG_NAME = "nas_sign.sig"
@@ -50,8 +50,8 @@ def check_args(kwargs):
     if "db" in kwargs and os.path.isfile(kwargs["db"]):
         check_is_db(kwargs["db"])
     if "csv" in kwargs and not os.path.isfile(kwargs["csv"]):
-        logging.error("cannot find csv file")
-        sys.exit(1)
+        logging.warning("Cannot find csv file, ignore anti-tamper")
+        sys.exit(0)
     if "ca_cert" in kwargs and kwargs["ca_cert"] == "":
         logging.error("parameter ca_cert not provided")
         sys.exit(1)
@@ -134,23 +134,30 @@ def read_csv(csv_file):
             reader = csv.reader(f)
             output = []
             for row in reader:
-                if len(row) < 3:
-                    continue
-                if (row[0] != "" and row[0] != "\xef\xbb\xbf"):
-                    package = unicode(row[0],"utf-8").strip()
-                else:
-                    package = ""
-                if (row[1] != "" and row[1] != "\xef\xbb\xbf"):
-                    relative_path = unicode(row[1],"utf-8").strip()
-                else:
-                    relative_path = ""
-                if (row[2] != "" and row[2] != "\xef\xbb\xbf"):
-                    absolute_path = unicode(row[2],"utf-8").strip()
-                else:
-                    absolute_path = ""
-                if package != "" and package[0] == "#": # a line of comment
-                    continue
-                output.append([package,relative_path,absolute_path])
+                try:
+                    if len(row) == 0: # empty line
+                        continue
+                    if (row[0] != "" and row[0] != "\xef\xbb\xbf"):
+                        package = unicode(row[0],"utf-8").strip()
+                        if package != "" and package[0] == "#": # a line of comment
+                            continue
+                    else:
+                        package = ""
+                    if len(row) < 3: # less than 3 items, wrong format, treat it as error
+                        logging.error("Line '%s' in csv has less than 3 columns" % ','.join(row))
+                        sys.exit(CSV_ERROR)
+                    if (row[1] != "" and row[1] != "\xef\xbb\xbf"):
+                        relative_path = unicode(row[1],"utf-8").strip()
+                    else:
+                        relative_path = ""
+                    if (row[2] != "" and row[2] != "\xef\xbb\xbf"):
+                        absolute_path = unicode(row[2],"utf-8").strip()
+                    else:
+                        absolute_path = ""
+                    output.append([package,relative_path,absolute_path])
+                except UnicodeDecodeError as decode_error:
+                    logging.error(str(decode_error) + " when decoding line")
+                    sys.exit(CSV_ERROR)
             return output
     except Exception as e:
         logging.error(str(e) + " when processing csv")
@@ -182,7 +189,6 @@ def update_packages(db, csv_file):
             cur.execute(sql_update_package, (package, absolute_path))
     conn.commit()
     conn.close()
-    logging.info("Paths and Packages from csv updated to codesigning DB %s" % db )
 
 def copy_file(src, dst):
     dst_dir = os.path.dirname(dst)
@@ -302,7 +308,7 @@ def b64_decode(encoded):
         returncode = subprocess.call(command.split())
         if returncode != 0:
             logging.error("Failed to decode signature of file: %s" % path)
-            return None
+            sys.exit(1)
         else:
             return decoded_file.read()
     except Exception as e:
@@ -344,7 +350,7 @@ def add_cert_to_db(certificate_dict, sqlite_file_name):
 def update_signatures(kwargs, server_response):
     if server_response["error"] != 0:
         logging.error("Error message from server: %s" % server_response["msg"])
-        sys.exit(1)
+        sys.exit(SERVER_ERROR)
     sqlite_file_name = kwargs["db"]
     certid = add_cert_to_db(server_response["certificate"], sqlite_file_name)
     signatures = server_response["signatures"]
@@ -352,6 +358,7 @@ def update_signatures(kwargs, server_response):
     cur = conn.cursor()
     sql_update_signature = "UPDATE SignedFile SET CertID=?, Signature=? WHERE Path=?"
     sql_insert_signature = "INSERT INTO SignedFile (Path,Signature,CertID) VALUES (?,?,?)"
+    signatures_added = False
     for item in signatures:
         file_path = item["file"]
         signature = b64_decode(item["signature"])
@@ -361,9 +368,13 @@ def update_signatures(kwargs, server_response):
         if cur.rowcount == 0:
             # The path doesnot exist in DB, insert new one
             cur.execute(sql_insert_signature, (file_path, sqlite3.Binary(signature), certid))
+        signatures_added = True
     conn.commit()
     cur.execute("DELETE FROM SignedFile WHERE Signature IS NULL;")
     conn.commit()
     cur.close()
     conn.close()
-    logging.info("Updated signatures to DB %s" % sqlite_file_name)
+    if signatures_added:
+        logging.info("Updated signatures to anti-tampering DB")
+    else:
+        logging.warning("No signature is added into anti-tampering DB")
