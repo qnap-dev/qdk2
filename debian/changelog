@@ -1,6 +1,12 @@
+qdk2 (0.27) trusty; urgency=medium
+
+  * Merge QDK v2.3.10
+
+ -- ED Hong <edhongcy@gmail.com>  Fri, 19 Apr 2019 10:55:00 +0800
+
 qdk2 (0.26) trusty; urgency=medium
 
-  * Some enhabcement and bug fix for code signing 
+  * Some enhabcement and bug fix for code signing
 
  -- ED Hong <edhongcy@gmail.com>  Fri, 19 Apr 2019 10:55:00 +0800
 
