@@ -782,7 +782,7 @@ add_qpkg_header(){
 		/bin/cat >>$QDK_QPKG_FILE <<-EOF
 		wrong_arch(){
 			if [ -x "/usr/local/sbin/notify" ]; then
-				/usr/local/sbin/notify send -A A039 -C C001 -M 51 -l error -t 3 "[{0}] {1} {2} install failed due to the platform is imcompatable. Please use correct package for installation." "$PREFIX" "$QPKG_DISPLAY_NAME" "$QPKG_VER"
+				/usr/local/sbin/notify send -A A039 -C C001 -M 51 -l error -t 3 "[{0}] {1} {2} install failed due to the platform is incompatible. Please use correct package for installation." "$PREFIX" "$QPKG_DISPLAY_NAME" "$QPKG_VER"
 				echo -1 > /tmp/update_process && exit 1
 			else
 				local wrong_arch_msg="$wrong_arch"
