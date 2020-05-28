@@ -1,3 +1,9 @@
+qdk2 (0.29) trusty; urgency=medium
+
+  * Merge QDK v2.3.11
+
+ -- ED Hong <edhongcy@gmail.com>  Thu, 28 May 2019 10:08:00 +0800
+
 qdk2 (0.28) trusty; urgency=medium
 
   * Adjust code signing log to stdout
