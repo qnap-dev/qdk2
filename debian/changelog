@@ -1,3 +1,9 @@
+qdk2 (0.30) trusty; urgency=medium
+
+  * Fix 7z command extract .xz file
+
+ -- ED Hong <edhongcy@gmail.com>  Fri, 23 Apr 2021 16:33:00 +0800
+
 qdk2 (0.29) trusty; urgency=medium
 
   * Merge QDK v2.3.11
