@@ -316,7 +316,7 @@ codesigning_extract_data(){
 			if [ $? = 0 ]; then
 				$CMD_CP -arf "$codesigning_dir" "$root_dir"
 				codesigning_preinstall
-				$CMD_7Z x -so "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" --exclude="$codesigning_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
+				LD_LIBRARY_PATH=${PWD}/lib $xz_ld_wrapper bin/xzcat "$archive" 2>/dev/null | $CMD_TAR xv -C "$root_dir" --exclude="$codesigning_dir" 2>/dev/null >>$SYS_QPKG_DIR/.list
 				ret=$?
                                 if [ $ret = 0 ]; then
 					SYS_DELAY_ANTITAMPER_POST=1
