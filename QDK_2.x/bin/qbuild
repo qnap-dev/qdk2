@@ -974,7 +974,7 @@ add_qpkg_signature(){
 			verbose_msg "Creating code signing digital signature..."
 			openssl dgst -sha1 -binary "${QDK_QPKG_FILE}" > "${QDK_QPKG_FILE}.sha"
 			openssl cms -sign -in "${QDK_QPKG_FILE}.sha" -binary -nodetach -out "${QDK_QPKG_FILE}.msg" \
-				-signer certificate -inkey private_key 2>/dev/null
+				-signer certificate -inkey private_key -certfile ca_certs 2>/dev/null
 			local err_code=$?
 			if [ $err_code = "2" ]; then
 				warn_msg "Failed to open certificate or private key"
