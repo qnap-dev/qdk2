@@ -1,3 +1,9 @@
+qkd2 (0.31) trusty; urgency=medium
+
+  * Add Force Visible optional
+
+ -- ED Hong <edhongcy@gmail.com>  Mon, 5 Sep 2022 18:33:00 +0800
+
 qdk2 (0.30) trusty; urgency=medium
 
   * Fix 7z command extract .xz file
