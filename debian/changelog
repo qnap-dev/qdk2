@@ -1,3 +1,10 @@
+qdk2 (0.32) trusty; urgency=medium
+
+  * Add HSM (USB Token) support while doing QNAP code signing
+  * Add QTS Hero option in qpkg.cfg
+
+ -- ED Hong <edhongcy@gmail.com>  Mon, 10 Sep 2024 10:04:00 +0800
+
 qdk2 (0.31) trusty; urgency=medium
 
   * Add Force Visible optional
