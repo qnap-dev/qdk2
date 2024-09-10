@@ -157,6 +157,7 @@ def verify_result(kwargs):
     if (db != 1) or (db_sig != 1) or (cert != 1):
         logging.error("something goes wrong, please check csv file and code_signing.log")
         sys.exit(1)
+
 def print_usage():
     usage_string = """
     Usage:
