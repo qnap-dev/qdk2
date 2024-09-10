@@ -37,11 +37,22 @@ if [ ! -e "$CS_PYTHON" ]; then
 CS_PYTHON="/usr/local/bin/python2"
 fi
 
+if [ -f "/etc/config/uLinux.conf" ]; then
+    IS_NAS="TRUE"
+else
+    IS_NAS="FALSE"
+fi
+
 # Cleanup any temporary directories and files at termination.
 trap 'cleanup_all' INT TERM
 
-QDK_PATH="${QDK_PATH:-$(dirname "$(dirname "$(readlink -f "$0")")")}"
-
+if [ $IS_NAS = "TRUE" ]; then
+    CONF=/etc/config/qpkg.conf
+    QPKG_NAME=qdk
+    QDK_PATH=$(/sbin/getcfg $QPKG_NAME Install_Path -d "" -f $CONF)
+else
+    QDK_PATH="${QDK_PATH:-$(dirname "$(dirname "$(readlink -f "$0")")")}"
+fi
 # Check for deprecated definitions and replace them with new
 # definitions (when applicable).
 check_deprecated_definitions(){
@@ -966,15 +977,47 @@ add_qpkg_signature(){
 			warn_msg "Will not create code signing digital signature because certificate is missing"
 		elif [ -f "certificate" ]; then
 			warn_msg "Will not create code signing digital signature because private key is missing"
+		elif [ -f "certificate_hsm" ]; then
+			DO_CODE_SIGNING_OFFLINE_HSM="TRUE"
 		fi
 
 		if [ "$DO_CODE_SIGNING_OFFLINE" = "TRUE" ] && [ "$QDK_SIGN" = "TRUE" ]; then
 			err_msg "Can not sign QPKG using QNAP certificate and gpg key at same time"
-		elif [ "$DO_CODE_SIGNING_OFFLINE" = "TRUE" ]; then
-			verbose_msg "Creating code signing digital signature..."
+	    elif [ "$DO_CODE_SIGNING_OFFLINE_HSM" = "TRUE" ] && [ "$QDK_SIGN" = "TRUE" ]; then
+			err_msg "Can not sign QPKG using QNAP certificate and gpg key at same time"
+		elif [ "$DO_CODE_SIGNING_OFFLINE_HSM" = "TRUE" ] || [ "$DO_CODE_SIGNING_OFFLINE" = "TRUE" ]; then
 			openssl dgst -sha1 -binary "${QDK_QPKG_FILE}" > "${QDK_QPKG_FILE}.sha"
-			openssl cms -sign -in "${QDK_QPKG_FILE}.sha" -binary -nodetach -out "${QDK_QPKG_FILE}.msg" \
-				-signer certificate -inkey private_key -certfile ca_certs 2>/dev/null
+			if [ "$DO_CODE_SIGNING_OFFLINE_HSM" = "TRUE" ]; then
+				msg "Creating code signing digital signature using HSM..."
+				if [ "x${HSM_SLOT}" = "x" ]; then
+					HSM_SLOT="0"
+				fi
+				if [ "x${HSM_KEY_ID}" != "x" ]; then
+					INKEY="$HSM_SLOT:$HSM_KEY_ID"
+				elif [ "x${HSM_KEY_LABEL}" != "x" ]; then
+					INKEY="slot_${HSM_SLOT}-label_${HSM_KEY_LABEL}"
+				else
+					err_msg "Need to set at least HSM_KEY_ID or HSM_KEY_LABEL environment variable while using HSM"
+				fi
+				if [ -f "ca_certs_hsm" ]; then
+					openssl cms -engine pkcs11 -keyform engine -sign -in "${QDK_QPKG_FILE}.sha" -binary -nodetach -out "${QDK_QPKG_FILE}.msg" \
+						-signer certificate_hsm -inkey "${INKEY}" \
+						-certfile ca_certs_hsm 2>/dev/null
+				else
+					openssl cms -engine pkcs11 -keyform engine -sign -in "${QDK_QPKG_FILE}.sha" -binary -nodetach -out "${QDK_QPKG_FILE}.msg" \
+						-signer certificate_hsm -inkey "${INKEY}" 2>/dev/null
+				fi
+			else
+				verbose_msg "Creating code signing digital signature..."
+				if [ -f "ca_certs" ]; then
+					openssl cms -sign -in "${QDK_QPKG_FILE}.sha" -binary -nodetach -out "${QDK_QPKG_FILE}.msg" \
+						-signer certificate -inkey private_key \
+						-certfile ca_certs 2>/dev/null
+				else
+					openssl cms -sign -in "${QDK_QPKG_FILE}.sha" -binary -nodetach -out "${QDK_QPKG_FILE}.msg" \
+						-signer certificate -inkey private_key 2>/dev/null
+				fi
+			fi
 			local err_code=$?
 			if [ $err_code = "2" ]; then
 				warn_msg "Failed to open certificate or private key"
@@ -983,6 +1026,7 @@ add_qpkg_signature(){
 			elif [ $err_code != "0" ]; then
 				warn_msg "Failed to create digital signature"
 			fi
+
 			/bin/rm ${QDK_QPKG_FILE}.sha
 			if [ -f "${QDK_QPKG_FILE}.msg" ]; then
 				add_qdk_area_begin
@@ -994,29 +1038,29 @@ add_qpkg_signature(){
 			else
 				err_msg "$QDK_QPKG_FILE: Code signing digital signature was not added"
 			fi
-	elif [ "$QDK_SIGN" = "TRUE" ]; then
-		verbose_msg "Adding signature..."
+		elif [ "$QDK_SIGN" = "TRUE" ]; then
+			verbose_msg "Adding signature..."
 
-		case "$QDK_SIGNATURE" in
-			gpg)
-				local gpg_options="--detach-sign -o-"
-				[ -n "$QDK_GPG_NAME" ] && gpg_options="$gpg_options -u $QDK_GPG_NAME"
-				is_quiet && gpg_options="$gpg_options --no-tty"
-				debug_msg "$QDK_GPG_APP $gpg_options $QDK_QPKG_FILE >> ${QDK_QPKG_FILE}.sig"
-				if $QDK_GPG_APP $gpg_options $QDK_QPKG_FILE >> ${QDK_QPKG_FILE}.sig; then
-					add_qdk_area_begin
-					add_qdk_area_signature ${QDK_QPKG_FILE}.sig
-					add_qdk_area_end
-					/bin/rm ${QDK_QPKG_FILE}.sig
-				else
-					warn_msg "$QDK_QPKG_FILE: no signature added"
-				fi
-				;;
-			*)
-				err_msg "$QDK_SIGNATURE: not supported signature type"
-				;;
-		esac
-	fi
+			case "$QDK_SIGNATURE" in
+				gpg)
+					local gpg_options="--detach-sign -o-"
+					[ -n "$QDK_GPG_NAME" ] && gpg_options="$gpg_options -u $QDK_GPG_NAME"
+					is_quiet && gpg_options="$gpg_options --no-tty"
+					debug_msg "$QDK_GPG_APP $gpg_options $QDK_QPKG_FILE >> ${QDK_QPKG_FILE}.sig"
+					if $QDK_GPG_APP $gpg_options $QDK_QPKG_FILE >> ${QDK_QPKG_FILE}.sig; then
+						add_qdk_area_begin
+						add_qdk_area_signature ${QDK_QPKG_FILE}.sig
+						add_qdk_area_end
+						/bin/rm ${QDK_QPKG_FILE}.sig
+					else
+						warn_msg "$QDK_QPKG_FILE: no signature added"
+					fi
+					;;
+				*)
+					err_msg "$QDK_SIGNATURE: not supported signature type"
+					;;
+			esac
+		fi
 	fi
 }
 
@@ -1088,7 +1132,7 @@ create_qpkg(){
 	add_qpkg_encryption
 
 	local ret=0
-	if [ "x${QNAP_CODE_SIGNING}" = "x1" ] || [ "$DO_CODE_SIGNING_OFFLINE" = "TRUE" ] ; then
+	if [ "x${QNAP_CODE_SIGNING}" = "x1" ] || [ "$DO_CODE_SIGNING_OFFLINE" = "TRUE" ] || [ "$DO_CODE_SIGNING_OFFLINE_HSM" = "TRUE" ] ; then
 		verify_code_signing ${QDK_QPKG_FILE}
 		ret=$?
 	fi
@@ -1621,8 +1665,8 @@ add_code_signing(){
 
 	if [ "x${QNAP_CODE_SIGNING}" = "x1" ]; then
 		# Connecting to server
-	[ -z "$QNAP_CODE_SIGNING_SERVER_IP" ] && QNAP_CODE_SIGNING_SERVER_IP=$DEFAULT_QNAP_CODE_SIGNING_SERVER_IP
-	[ -z "$QNAP_CODE_SIGNING_SERVER_PORT" ] && QNAP_CODE_SIGNING_SERVER_PORT=$DEFAULT_QNAP_CODE_SIGNING_SERVER_PORT
+		[ -z "$QNAP_CODE_SIGNING_SERVER_IP" ] && QNAP_CODE_SIGNING_SERVER_IP=$DEFAULT_QNAP_CODE_SIGNING_SERVER_IP
+		[ -z "$QNAP_CODE_SIGNING_SERVER_PORT" ] && QNAP_CODE_SIGNING_SERVER_PORT=$DEFAULT_QNAP_CODE_SIGNING_SERVER_PORT
 		[ -n "$QPKG_NAME" ] || err_msg "$code_signing_cfg: QPKG_NAME not provided"
 		[ -n "$QPKG_VER" ] || err_msg "$code_signing_cfg: QPKG_VER not provided"
 		if [ "$QNAP_CODE_SIGNING_SERVER_IP" = "172.17.21.68" ]; then
@@ -1632,8 +1676,8 @@ add_code_signing(){
 		fi
 	else
 		# 3rd party, not connected to server, sign using local certificate and private key
-                [ -f "$QNAP_CERT" ] || err_msg "$code_signing_cfg: QNAP_CERT $QNAP_CERT cannot be found"
-                [ -f "$PRIVATE_KEY" ] || err_msg "$code_signing_cfg: PRIVATE_KEY $PRIVATE_KEY cannot be found"
+		[ -f "$QNAP_CERT" ] || err_msg "$code_signing_cfg: QNAP_CERT $QNAP_CERT cannot be found"
+		[ -f "$PRIVATE_KEY" ] || err_msg "$code_signing_cfg: PRIVATE_KEY $PRIVATE_KEY cannot be found"
 	fi
 
 	local qpkg_data_file="${qpkg}.data"
@@ -1652,14 +1696,14 @@ add_code_signing(){
 	openssl dgst -sha1 -binary "${qpkg}.$$" > "${qpkg}.sha"
 
 	if [ "x${QNAP_CODE_SIGNING}" = "x1" ]; then
-	# Send qpkg digest to server
+		# Send qpkg digest to server
 		verbose_msg "Connecting to code signing server to create digital signature..."
 		$CS_PYTHON "${QDK_SCRIPTS_DIR}/codesigning_qpkg_cms.py" server=${QNAP_CODE_SIGNING_SERVER_IP}:${QNAP_CODE_SIGNING_SERVER_PORT} qpkgname=${QPKG_NAME} version=${QPKG_VER} in="${qpkg}.sha" out="${qpkg}.msg" 2>&1 | tee -a code_signing.log
 	else
 		# 3rd party, not connected to server, sign using local certificate and private key
 		verbose_msg "Creating code signing digital signature..."
 		if [ -f "${CA_CERTS}" ]; then
-		openssl cms -sign -in "${qpkg}.sha" -binary -nodetach -out "${qpkg}.msg" \
+			openssl cms -sign -in "${qpkg}.sha" -binary -nodetach -out "${qpkg}.msg" \
 				-signer ${QNAP_CERT} -inkey ${PRIVATE_KEY} \
 				-certfile ${CA_CERTS} 2>/dev/null
 		else
@@ -1694,13 +1738,12 @@ add_code_signing(){
 	printf "$(/usr/bin/tail -c$TAIL_DATA_LEN $qpkg)" >> ${qpkg}.$$
 	verbose_msg "Adding QPKG checksum: $(/sbin/qpkg --encrypt ${qpkg}.$$)"
 	/bin/mv ${qpkg}.$$ $qpkg
+
 	md5sum $qpkg > $qpkg.md5
 }
 
 # Verify code signing digital signature in a QPKG
 verify_code_signing_online(){
-
-
 	[ -z "$QNAP_CODE_SIGNING_SERVER_IP" ] && QNAP_CODE_SIGNING_SERVER_IP=$DEFAULT_QNAP_CODE_SIGNING_SERVER_IP
 	[ -z "$QNAP_CODE_SIGNING_SERVER_PORT" ] && QNAP_CODE_SIGNING_SERVER_PORT=$DEFAULT_QNAP_CODE_SIGNING_SERVER_PORT
 	if [ "$QNAP_CODE_SIGNING_SERVER_IP" = "172.17.21.68" ]; then
@@ -1713,6 +1756,7 @@ verify_code_signing_online(){
 	local output=
 	local server_err=
 	local server_msg=
+
 	# Get ca cert
 	local ca_cert_file="${qpkg}.ca"
 	curl_cmd="curl -k -X GET -d 'token=${QNAP_CODESIGNING_TOKEN}' \
@@ -1722,7 +1766,7 @@ verify_code_signing_online(){
 	server_err=$(echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["error"]')
 	if [ $server_err -ne 0 ]; then
 		server_msg=$(echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["msg"]')
-		err_msg "error from code signing server: $server_msg"
+		err_msg "Error from code signing server: $server_msg"
 	fi
 	echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["certificate"]["pem"]' > $ca_cert_file
 
@@ -1735,7 +1779,7 @@ verify_code_signing_online(){
 	server_err=$(echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["error"]')
 	if [ $server_err -ne 0 ]; then
 		server_msg=$(echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["msg"]')
-		err_msg "error from code signing server: $server_msg"
+		err_msg "Error from code signing server: $server_msg"
 	fi
 	echo $output | $CS_PYTHON -c 'import json,sys;obj=json.load(sys.stdin);print obj["certificate"]["pem"]' > $ca_cert3_file
 
@@ -1785,12 +1829,14 @@ verify_code_signing_online(){
 	/bin/rm $ca_cert3_2_file
 	return $ret
 }
+
 # Verify code signing digital signature in a QPKG offline
 verify_code_signing_offline(){
 	local ca_cert="${QDK_SCRIPTS_DIR}/ca_cert3"
 	[ -f $ca_cert ] || err_msg "Can not find QNAP CA certificate ${ca_cert}"
 	local ca_cert_2="${QNAP_CA_CERT:-${QDK_SCRIPTS_DIR}/ca_cert3_2}"
 	[ -f $ca_cert_2 ] || err_msg "Can not find QNAP CA certificate ${ca_cert_2}"
+
 	# Verify using 3rd party CA
 	local verify_dgst_file="${qpkg}.verify"
 	local ret=
@@ -1812,26 +1858,30 @@ verify_code_signing_offline(){
 				msg "Code signing digital signature verification successful (non QNAP-issued certificate)"
 				ret=0
 			else
-			        msg "Code signing digital signature verification failed"
-			        ret=1
+				msg "Code signing digital signature verification failed"
+				ret=1
 			fi
 		fi
 	fi
 	/bin/rm $verify_dgst_file
 	return $ret
 }
+
 verify_code_signing(){
 	[ -n "$1" ] || err_msg "internal error: verify_code_signing called with no argument"
 	local qpkg="$1"
 	[ -f $qpkg ] || err_msg "$qpkg: no such file"
 	local code_signing_cfg="${2:-"`pwd`/qpkg.cfg"}"
 	[ -f $code_signing_cfg ] || err_msg "$code_signing_cfg: no such file"
+
 	. "$code_signing_cfg" || err_msg "$code_signing_cfg: corrupt configuration file"
+
 	local data_size=$(get_qdk_area_pos $qpkg) || err_msg "Code signing verification failed: cannot find digital signature"
 	local code_signing_pos=$(get_code_signing_pos $qpkg) || \
 		err_msg "Code signing verification failed: cannot find digital signature"
 	local code_signing_len=$(get_code_signing_len $qpkg) || \
 		err_msg "Code signing verification failed: cannot find digital signature"
+
 	local qpkg_data_file="${qpkg}.data"
 	local qpkg_data1_file="${qpkg}.data1"
 	local dgst_file="${qpkg}.dgst"
@@ -1847,6 +1897,7 @@ verify_code_signing(){
 	#/bin/dd if=$qpkg bs=$data_size count=1 2>/dev/null > $qpkg_data_file
 	openssl dgst -sha1 -binary $qpkg_data_file 2>/dev/null > $dgst_file
 	/bin/dd if=$qpkg bs=1 skip=$code_signing_pos count=$code_signing_len 2>/dev/null > $signature_file
+
 	local ret=
 	if [ "x${QNAP_CODE_SIGNING}" = "x1"  ]; then
 		verify_code_signing_online ${signature_file} ${dgst_file}
@@ -2025,6 +2076,7 @@ main(){
 	QDK_CONTROL_FILE="${QDK_CONTROL_FILE:-control.tar}"
 	QDK_COMPRESS_FILE="${QDK_COMPRESS_FILE:-data.tar.gz}"
 	QDK_GPG_PUBKEYRING="${QDK_GPG_PUBKEYRING:-/etc/config/qpkg.gpg}"
+
 	QDK_ALLOW_NO_VOLUME=0
 
 	[ -n "$QDK_GPG_KEYPATH" ] && export GNUPGHOME="$QDK_GPG_KEYPATH"
@@ -2253,12 +2305,16 @@ main(){
 
 # System-wide definitions
 
-if [ -f "${QDK_PATH}/qdk.conf" ]; then
-    QDK_CONF_FILE="${QDK_PATH}/qdk.conf"
-elif [ -f "./qdk.conf" ]; then
-    QDK_CONF_FILE="./qdk.conf"
+if [ -f "/etc/config/qdk.conf" ]; then
+    QDK_CONF_FILE="/etc/config/qdk.conf"
 else
-    err_msg "qdk.conf: not found"
+    if [ -f "${QDK_PATH}/qdk.conf" ]; then
+        QDK_CONF_FILE="${QDK_PATH}/qdk.conf"
+    elif [ -f "./qdk.conf" ]; then
+        QDK_CONF_FILE="./qdk.conf"
+    else
+        err_msg "qdk.conf: not found"
+    fi
 fi
 
 . ${QDK_CONF_FILE}
